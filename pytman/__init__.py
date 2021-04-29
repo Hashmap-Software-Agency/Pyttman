@@ -1,16 +1,16 @@
-from .tools.apihandles import RestApiHandle
-from .tools.scheduling.schedule import schedule
+from pytman.tools.apihandles import RestApiHandle
+from pytman.tools.scheduling.schedule import schedule
 
-from .tools.pollcache import PollCache
-from .core.commandprocessor import CommandProcessor
-from .core.interpretation import Interpretation
-from .core.decorators import Logger as logger
-from .core.decorators import scheduledmethod
-from .core.internals import _cim, is_dst
-from .core.callback import Callback
-from .core.bases import Feature
-from .models.message import Message
-from .core.internals import load_settings
+from pytman.tools.pollcache import PollCache
+from pytman.core.commandprocessor import CommandProcessor
+from pytman.core.interpretation import Interpretation
+from pytman.core.decorators import Logger as logger
+from pytman.core.decorators import scheduledmethod
+from pytman.core.internals import _cim, is_dst
+from pytman.core.callback import Callback
+from pytman.core.bases import Feature
+from pytman.models.message import Message
+from pytman.core.internals import load_settings
 
 __version__ = '1.0.0'
 
