@@ -35,3 +35,6 @@ DEFAULT_RESPONSES = {
 APP_BASE_DIR = Path(os.path.dirname(os.path.realpath(__file__)))
 
 LOG_FILE_DIR = APP_BASE_DIR / Path("logs")
+
+APP_NAME = "pytman-example-app"
+
