@@ -23,9 +23,8 @@ class TerraFormer:
         application_path = Path(os.path.dirname(os.path.abspath(__file__)))
 
         if source is None:
-            print(application_path.parent.parent.parent)
-            self.source = Path(application_path)\
-                              .parent.parent.parent / Path("project_template.7z")
+            self.source = Path(application_path).parent.parent / Path("core") / \
+                          Path("terraform_template") / Path("project_template.7z")
             if not os.path.isfile(self.source):
                 raise FileNotFoundError("Pytman could not locate the template "
                                         ".7z archive for terraforming. It was "

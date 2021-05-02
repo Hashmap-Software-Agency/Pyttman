@@ -10,8 +10,8 @@ README = (HERE / "README.md").read_text()
 
 # This call to setup() does all the work
 setup(
-    name="pytman",
-    version="1.0.0",
+    name="Pytman",
+    version="0.0.1",
     description="The virtual assistant framework made for developers with ideas",
     long_description=README,
     long_description_content_type="text/markdown",
@@ -34,7 +34,6 @@ setup(
     data_files=[('', ['pytman/core/terraform_template/project_template.7z'])],
     install_requires=[
         "multidict",
-        "python-dotenv",
         "pytz",
         "requests",
         "py7zr"
