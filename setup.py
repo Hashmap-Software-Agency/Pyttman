@@ -31,7 +31,7 @@ setup(
     python_requires=">=3.8",
     packages=find_packages(),
     include_package_data=True,
-    data_files= [('', ['pytman/core/terraform_template/project_template.7z'])],
+    data_files=[('', ['pytman/core/terraform_template/project_template.7z'])],
     install_requires=[
         "multidict",
         "python-dotenv",
