@@ -26,7 +26,7 @@ setup(
         "License :: OSI Approved :: MIT License",
         "Programming Language :: Python :: 3 :: Only",
         "Programming Language :: Python :: 3.8",
-        "Operating System :: Microsoft :: Windows :: Windows 10"
+        "Operating System :: OS Independent",
     ],
     python_requires=">=3.8",
     packages=find_packages(),

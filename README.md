@@ -33,7 +33,7 @@ It's very easy to get started with Pytman.
 
 * Install it using pip: `pip install pytman`
 * Navigate to the directory where you want to develop your Pytman app
-* Start a project using the command `pytman-cli -newapp <projectname>`
+* Start a project using the command `pytman-cli newapp <projectname>`
 * Use the created directories to build your app. Run it with main.py, which sets up Pytman for you
 * Add settings to `settings.py` as you wish and access them in your app through `pytman.settings.setting_name` 
 * Consult the documentation for guidance on how to use Pytman to its full potential.

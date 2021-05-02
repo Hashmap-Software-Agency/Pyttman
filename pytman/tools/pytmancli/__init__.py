@@ -77,7 +77,7 @@ def run(argv=None):
         terraformer.terraform()
     else:
         from pytman import __version__
-        print(f"\n\nPytman CLI, version {__version__}", end="\n\n")
-        print(f"\n\nSupported commands:\n\n * -newapp [<app name>] - "
+        print(f"\nPytman CLI, version {__version__}")
+        print(f"\nSupported commands:\n * newapp [<app name>] - "
               "Start a new app project. Creates files and "
               "directories in the current directory")
