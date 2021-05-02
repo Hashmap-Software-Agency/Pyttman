@@ -5,7 +5,7 @@ from typing import Callable
 from datetime import datetime, timedelta
 from threading import Thread
 
-import pytman
+import pyttman
 
 
 class TimeTrigger:
@@ -213,7 +213,7 @@ class Job(Thread):
 
         while True:
             if self.time_to_die:
-                pytman.logger.log(
+                pyttman.logger.log(
                     f"Job '{self.native_id}' got a "
                     f"graceful kill signal, shutting "
                     f"down.")
@@ -230,7 +230,7 @@ class Job(Thread):
                     else:
                         self.result = self.func()
                 except Exception as e:
-                    pytman.logger.log(f"The schedule job '{self.name}' "
+                    pyttman.logger.log(f"The schedule job '{self.name}' "
                                       f"raised {type(e).__name__}('{str(e)}') "
                                       f"upon executing it", level="error")
                     self.error = e
@@ -245,7 +245,7 @@ class Job(Thread):
                     else:
                         self.recipient(output)
                 except Exception as e:
-                    pytman.logger.log(f"The schedule job '{self.name}' "
+                    pyttman.logger.log(f"The schedule job '{self.name}' "
                                                  f"ran OK but the recipient function "
                                                  f"{self.recipient} raised {type(e).__name__}"
                                                  f"('{str(e)}') ", level="error")

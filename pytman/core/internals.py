@@ -5,18 +5,18 @@ from pathlib import Path
 
 import pytz
 
-import pytman
+import pyttman
 
 """
 Details:
     2020-07-05
     
-    pytman framework internal source file
+    pyttman framework internal source file
 
 Module details:
     
     data containers and functions used by objects in
-    the pytman package.
+    the pyttman package.
 """
 
 
@@ -43,34 +43,34 @@ class _cim:
     """
     This class is only used as a namespace
     for internal messages used by exceptions
-    or elsewhere by pytman classes
+    or elsewhere by pyttman classes
     and functions. Not for instantiating.
     """
-    deprecated_warn: str = "pytman DEPRECATED WARNING"
-    warn: str = "Pytman WARNING"
-    err: str = "Pytman ERROR"
+    deprecated_warn: str = "pyttman DEPRECATED WARNING"
+    warn: str = "Pyttman WARNING"
+    err: str = "Pyttman ERROR"
 
 
 def load_settings(settings):
-    pytman.settings = settings
-    if pytman.settings is None:
+    pyttman.settings = settings
+    if pyttman.settings is None:
         raise NotImplementedError("Import settings in your project "
-                                  "and assign pytman.settings = settings "
+                                  "and assign pyttman.settings = settings "
                                   "before calling this function")
-    app_name = pytman.settings.APP_NAME
-    if pytman.settings.APPEND_LOG_FILES:
+    app_name = pyttman.settings.APP_NAME
+    if pyttman.settings.APPEND_LOG_FILES:
         file_name = Path(f"{app_name}.log")
     else:
         file_name = Path(f"{app_name}-{datetime.now().strftime('%y%m%d-%H-%M-%S')}.log")
 
-    log_file_name = Path(pytman.settings.LOG_FILE_DIR) / file_name
+    log_file_name = Path(pyttman.settings.LOG_FILE_DIR) / file_name
     logging_handle = logging.FileHandler(filename=log_file_name, encoding="utf-8",
-                                         mode="a+" if pytman.settings.APPEND_LOG_FILES else "w")
+                                         mode="a+" if pyttman.settings.APPEND_LOG_FILES else "w")
 
     logging_handle.setFormatter(logging.Formatter("%(asctime)s:%(levelname)"
                                                   "s:%(name)s: %(message)s"))
-    _logger = logging.getLogger("Pytman logger")
+    _logger = logging.getLogger("Pyttman logger")
     _logger.setLevel(logging.DEBUG)
     _logger.addHandler(logging_handle)
-    pytman.logger.set_logger(_logger)
-    pytman.logger.log(f" -- App {app_name} started: {datetime.now()} -- ")
+    pyttman.logger.set_logger(_logger)
+    pyttman.logger.log(f" -- App {app_name} started: {datetime.now()} -- ")

@@ -12,7 +12,7 @@ from pathlib import Path
 class TerraFormer:
     """
     Terraform a directory to start developing
-    a Pytman project.
+    a Pyttman project.
     """
 
     def __init__(self, app_name: str, source=None):
@@ -26,12 +26,12 @@ class TerraFormer:
             self.source = Path(application_path).parent.parent / Path("core") / \
                           Path("terraform_template") / Path("project_template.7z")
             if not os.path.isfile(self.source):
-                raise FileNotFoundError("Pytman could not locate the template "
+                raise FileNotFoundError("Pyttman could not locate the template "
                                         ".7z archive for terraforming. It was "
                                         f"expected to be here: '{self.source}'. "
                                         "If you want, you can create this "
                                         "structure and place the template "
-                                        f"file here, or reinstall Pytman. "
+                                        f"file here, or reinstall Pyttman. "
                                         f"If you think this error is our fault - "
                                         f"please submit an issue on GitHub!")
         else:
@@ -57,7 +57,7 @@ def run(argv=None):
     if argv is None:
         argv = sys.argv[:]
 
-    argparser = argparse.ArgumentParser(prog="Pytman CLI",
+    argparser = argparse.ArgumentParser(prog="Pyttman CLI",
                                         usage="%(prog)s command",
                                         add_help=False,
                                         allow_abbrev=False)
@@ -75,8 +75,8 @@ def run(argv=None):
         terraformer = TerraFormer(app_name=app_name)
         terraformer.terraform()
     else:
-        from pytman import __version__
-        print(f"\nPytman CLI, version {__version__}")
+        from pyttman import __version__
+        print(f"\nPyttman CLI, version {__version__}")
         print(f"\nSupported commands:\n * newapp [<app name>] - "
               "Start a new app project. Creates files and "
               "directories in the current directory")

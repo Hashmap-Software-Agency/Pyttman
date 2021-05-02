@@ -1,11 +1,11 @@
-from pytman import Feature, Callback, schedule
+from pyttman import Feature, Callback, schedule
 
 
 # noinspection PyMethodMayBeStatic
 class SchedulingFeature(Feature):
     """
     A demo Feature to manipulate and view
-    Pytman's built in Schedule API
+    Pyttman's built in Schedule API
     """
     def configure(self):
         self.callbacks = (Callback(func=self.list_all_running_jobs,

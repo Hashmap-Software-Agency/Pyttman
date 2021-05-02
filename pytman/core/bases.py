@@ -3,20 +3,20 @@ import sys
 from abc import ABC, abstractmethod
 from typing import Callable, Optional, Dict, Any, Tuple
 
-from pytman.core.callback import Callback
-from pytman.core.internals import _cim
-from pytman.models.message import Message
+from pyttman.core.callback import Callback
+from pyttman.core.internals import _cim
+from pyttman.models.message import Message
 
 """
 Details:
     2020-06-21
     
-    pytman framework baseclass source file
+    pyttman framework baseclass source file
 
 Module details:
     
     This file contains abstract and base classes for 
-    the framework called pytman. 
+    the framework called pyttman. 
 
     In order for a developer to integrate their software
     with a way to bind certain actions and methods in their
@@ -90,7 +90,7 @@ class Feature(FeatureABC):
     Base class for features.
     There's no need for users to inherit from
     this base class, as the subclass 'Feature'
-    in pytman.models subclasses Feature,
+    in pyttman.models subclasses Feature,
     and can be extended further.
     """
 

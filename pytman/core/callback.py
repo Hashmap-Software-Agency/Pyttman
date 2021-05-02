@@ -1,11 +1,11 @@
 from itertools import zip_longest
-from pytman.models.message import Message
+from pyttman.models.message import Message
 
 """
 Details:
     2020-07-17
     
-    pytman framework source file with Callback
+    pyttman framework source file with Callback
     objects
 
     This module contains objects that are designed to make
@@ -87,7 +87,7 @@ class Callback:
         exits with False.
 
         :param message:
-            pytman.Message
+            pyttman.Message
         :returns:
             Bool, True if self matches command
         """

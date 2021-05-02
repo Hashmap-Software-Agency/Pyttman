@@ -1,6 +1,6 @@
 from datetime import datetime
 
-from pytman import Feature, Callback
+from pyttman import Feature, Callback
 
 
 # noinspection PyMethodMayBeStatic

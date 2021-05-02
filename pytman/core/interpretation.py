@@ -3,7 +3,7 @@
 Details:
     2020-07-05
     
-    pytman framework Interpretation source file
+    pyttman framework Interpretation source file
 
 Module details:
     

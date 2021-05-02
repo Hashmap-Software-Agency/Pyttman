@@ -5,7 +5,7 @@ from datetime import datetime
 Details:
     2020-07-05
     
-    pytman framework Message source file
+    pyttman framework Message source file
 
 Module details:
     
@@ -19,7 +19,7 @@ Module details:
     property of the provided object from the front end,
     so it cannot simply be a string, it needs this property.
 
-    Since pytman is supposed to be platform and
+    Since pyttman is supposed to be platform and
     API independent, this Message object is used for
     type hinting throughout the framework, and is a good
     contender for when a developer needs a container for 

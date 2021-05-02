@@ -5,7 +5,7 @@ import functools
 Details:
     2020-07-05
     
-    pytman framework source file with decorator
+    pyttman framework source file with decorator
     objects
 
     This module contains functions and classes that are
@@ -37,9 +37,9 @@ class Logger:
         the wrapped method are both logged to the log file using
         the static 'logging' instance, configured for the class.
         Simply add the decorator above your method to enable logging
-        for it. Presuming you import this package as pytman;
+        for it. Presuming you import this package as pyttman;
 
-        @pytman.logger.log
+        @pyttman.logger.log
         def myfunc(self, *args, **kwargs):
             ...
 
@@ -54,7 +54,7 @@ class Logger:
     @staticmethod
     def __verify_config_complete():
         if Logger.LOG_INSTANCE is None:
-            sys.stderr.write('pytman -- logging error: '
+            sys.stderr.write('pyttman -- logging error: '
                              'Cannot log, no log set.\r\n')
             sys.stderr.write('Configure an instance of logger, and'
                              ' pass it to Logger.set_logger()\r\n.')

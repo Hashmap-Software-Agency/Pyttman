@@ -5,23 +5,23 @@ import traceback
 
 from typing import Tuple
 
-import pytman
-from pytman.core.decorators import Logger
-from pytman.core.internals import _cim
-from pytman.core.interpretation import Interpretation
-from pytman.models.message import Message
-from pytman.core.bases import Feature
+import pyttman
+from pyttman.core.decorators import Logger
+from pyttman.core.internals import _cim
+from pyttman.core.interpretation import Interpretation
+from pyttman.models.message import Message
+from pyttman.core.bases import Feature
 
 """
 Details:
     2020-07-05
     
-    pytman framework ComandProcessor source file
+    pyttman framework ComandProcessor source file
 
 Module details:
     
     The CommandProcessor is the routing object of
-    pytman, acting as the main agent that
+    pyttman, acting as the main agent that
     will direct messages to Features in the application.
 """
 
@@ -40,7 +40,7 @@ class CommandProcessor:
 
     def __init__(self, **kwargs):
         try:
-            self.default_responses = pytman.settings.DEFAULT_RESPONSES
+            self.default_responses = pyttman.settings.DEFAULT_RESPONSES
         except AttributeError:
             self.default_responses = None
 
@@ -48,12 +48,12 @@ class CommandProcessor:
         for k, v in kwargs.items():
             setattr(self, k, v)
 
-        if pytman.settings is None:
+        if pyttman.settings is None:
             raise NotImplementedError(f"{_cim.warn}: Settings are not loaded for "
                                       f"your app. CommandProcessor cannot process "
                                       f"messages unless language and default responses\n"
                                       f"are configured. Use the 'settings.py' file in "
-                                      f"the app directory and call 'pytman.load_setings() "
+                                      f"the app directory and call 'pyttman.load_setings() "
                                       f"in your main.py file for your app,\n"
                                       f"before instantiating a CommandProcessor.\n")
 
@@ -112,10 +112,10 @@ class CommandProcessor:
                                       response=return_callable,
                                       original_message=tuple(message.content))
 
-        language = pytman.settings.CHOSEN_LANGUAGE
+        language = pyttman.settings.CHOSEN_LANGUAGE
         default_responses = self.default_responses[language]["NoResponse"]
         random_response = functools.partial(random.choice, default_responses)
 
-        return Interpretation(feature_name="pytman_builtin",
+        return Interpretation(feature_name="pyttman_builtin",
                               response=random_response,
                               original_message=tuple(message.content))

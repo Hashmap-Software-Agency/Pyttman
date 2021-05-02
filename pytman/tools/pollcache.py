@@ -3,7 +3,7 @@
 Details:
     2020-07-05
     
-    pytman framework PollCache source file
+    pyttman framework PollCache source file
 
 Module details:
     

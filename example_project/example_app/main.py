@@ -1,16 +1,16 @@
-import pytman
+import pyttman
 from features.clockfeature import ClockFeature
 from features.schedulingfeature import SchedulingFeature
 
-# These two steps are important for Pytman to work properly for your app
+# These two steps are important for Pyttman to work properly for your app
 import settings
-pytman.load_settings(settings)
+pyttman.load_settings(settings)
 
 # This shows a small exmaple of how you create a CommandProcessor,
 # provide it with the features you want to use, then give it a spin!
-processor = pytman.CommandProcessor()
+processor = pyttman.CommandProcessor()
 processor.features = (SchedulingFeature(), ClockFeature())
-message = pytman.Message()
+message = pyttman.Message()
 
 if __name__ == "__main__":
 

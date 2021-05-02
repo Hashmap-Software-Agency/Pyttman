@@ -6,7 +6,7 @@ from datetime import datetime
 Details:
     2020-07-05
     
-    pytman framework apihandles source file
+    pyttman framework apihandles source file
 
 Module details:
     
@@ -59,7 +59,7 @@ class RestApiHandle:
 	def uri(self, uri: str) -> None:
 		self._uri = uri
 		if not uri.startswith('https'):
-			raise Warning('pytman RestApiHandle - Security Warning: Got "http", expected "https"')
+			raise Warning('pyttman RestApiHandle - Security Warning: Got "http", expected "https"')
 	
 	@property
 	def last_api_call(self) -> str:

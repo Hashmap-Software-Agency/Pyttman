@@ -1,5 +1,5 @@
 
-# Use these settings to configure Pytman for your app.
+# Use these settings to configure Pyttman for your app.
 # LOG_FILE_DIR is set up for you when creating new projects. You can
 # set this path to whatever you want as long as it is exists.
 import os
@@ -36,5 +36,5 @@ APP_BASE_DIR = Path(os.path.dirname(os.path.realpath(__file__)))
 
 LOG_FILE_DIR = APP_BASE_DIR / Path("logs")
 
-APP_NAME = "pytman-example-app"
+APP_NAME = "pyttman-example-app"
 

@@ -6,8 +6,8 @@ from typing import Dict, Generator, Any, Callable, Tuple
 
 from multidict import MultiDict
 
-from pytman.core.decorators import Logger
-from pytman.tools.scheduling.components import Job, TimeTrigger
+from pyttman.core.decorators import Logger
+from pyttman.tools.scheduling.components import Job, TimeTrigger
 
 
 # noinspection PyPep8Naming

@@ -1,5 +1,5 @@
 import unittest
-import pytman
+import pyttman
 
 
 # Develop unittests for your features here

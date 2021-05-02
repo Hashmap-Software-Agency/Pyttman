@@ -10,15 +10,15 @@ README = (HERE / "README.md").read_text()
 
 # This call to setup() does all the work
 setup(
-    name="Pytman",
-    version="0.0.1",
+    name="Pyttman",
+    version="0.0.2",
     description="The virtual assistant framework made for developers with ideas",
     long_description=README,
     long_description_content_type="text/markdown",
-    url="https://github.com/dotchetter/Pytman",
+    url="https://github.com/dotchetter/Pyttman",
     author="Simon Olofsson",
     project_urls={
-        "Bug Tracker": "https://github.com/dotchetter/Pytman/issues",
+        "Bug Tracker": "https://github.com/dotchetter/Pyttman/issues",
     },
     author_email="dotchetter@protonmail.ch",
     license="MIT",
@@ -31,7 +31,7 @@ setup(
     python_requires=">=3.8",
     packages=find_packages(),
     include_package_data=True,
-    data_files=[('', ['pytman/core/terraform_template/project_template.7z'])],
+    data_files=[('', ['pyttman/core/terraform_template/project_template.7z'])],
     install_requires=[
         "multidict",
         "pytz",
@@ -40,7 +40,7 @@ setup(
     ],
     entry_points={
         "console_scripts": [
-            "pytman-cli=pytman.tools.pytmancli:run",
+            "pyttman-cli=pyttman.tools.pyttmancli:run",
         ]
     },
 )
