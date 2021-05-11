@@ -95,10 +95,12 @@ class schedule:
             recipient = schedule.schedule_default_catcher
             return_self = True
 
-        if is_async := inspect.iscoroutinefunction(func) and async_loop is None:
-            warnings.warn(async_warn.format(func))
+        is_async = inspect.iscoroutinefunction(func)
+        if is_async or inspect.iscoroutinefunction(recipient):
+            if async_loop is None:
+                warnings.warn(async_warn.format(func))
 
-        elif is_async := inspect.iscoroutinefunction(recipient) and async_loop is None:
+        if inspect.iscoroutinefunction(recipient) and async_loop is None:
             warnings.warn(async_warn.format(recipient))
 
         job = Job(func=functools.partial(func, **kwargs),

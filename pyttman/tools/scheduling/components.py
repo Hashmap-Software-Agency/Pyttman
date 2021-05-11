@@ -217,7 +217,6 @@ class Job(Thread):
         passed as self.func.
         """
         self._running = True
-        loop = asyncio.new_event_loop() if not self.async_loop else self.async_loop
 
         while True:
             if self.time_to_die:
@@ -231,8 +230,13 @@ class Job(Thread):
             if self.trigger.is_pulled():
                 try:
                     # Evaluate whether main callable and/or recipient is async
+                    # Run it with async.run if no loop is defined, otherwise add
+                    # it to existing loop as a created task
                     if self.is_async:
-                        loop.create_task(self.func())
+                        if not self.async_loop:
+                            self.result = asyncio.run(self.func())
+                        else:
+                            self.async_loop.create_task(self.func())
                     else:
                         self.result = self.func()
                 except Exception as e:
@@ -244,10 +248,12 @@ class Job(Thread):
 
                 # Call the recipient function with the job output
                 output = self if self.return_self else self.result
-
                 try:
                     if inspect.iscoroutinefunction(self.recipient):
-                        loop.create_task(self.recipient(output))
+                        if self.async_loop:
+                            self.async_loop.create_task(self.recipient(output))
+                        else:
+                            asyncio.run(self.recipient(output))
                     else:
                         self.recipient(output)
                 except Exception as e:
