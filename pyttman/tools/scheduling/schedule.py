@@ -1,5 +1,7 @@
 import functools
+
 import inspect
+import warnings
 from datetime import datetime
 from queue import Queue
 from typing import Dict, Generator, Any, Callable, Tuple
@@ -34,6 +36,14 @@ class schedule:
         """
         Registers a new schedule Job.
 
+        Users can provide an async loop to schedule an async task
+        in, but it is not mandatory - this may cause problems
+        however in context managed async tasks which requires
+        access to the loop to retrieve tasks themselves.
+        TL;DR - if problems occur when 'async_loop' argument
+        is omitted - provide the loop for where to schedule
+        the recipient coroutine.
+
         @param func: Callable to be scheduled - unbound or bound, sync or async
         @param at: str, Timestamp for execution, "HH:MM" ("HH:MM:SS optionally)
         @param every: str Options: monday -> friday, day, hour, minute, second
@@ -42,10 +52,20 @@ class schedule:
         @param recipient: callable to which the job output will be passed to
         @param start_now: Start the job now, default: True. If not,
                           see schedule.unstarted
+        @param async_loop: optional loop to schedule job and/or recipient in
         @param kwargs: kwargs, passed to the function in 'func' when creating
                        the partial function which is then passed to the Job
-        @return: None
+        @return: Job instance
+
         """
+        async_warn = "\nThe callable '{0}' is asynchronous but the 'async_loop' "        \
+                     "argument was omitted.\nThis will cause this job to run in a "      \
+                     "new loop created for it by Pyttman. For most use cases this "      \
+                     "is fine, but it may cause unwanted behavior since it may "         \
+                     "interfere with other loops and coroutines in your application, "   \
+                     "0causing the call stack between them to fail.\nIf your scheduled " \
+                     "job doesn't run as desired, try passing the loop in which the "    \
+                     "other coroutines are scheduled in."
 
         return_self = False
 
@@ -58,11 +78,18 @@ class schedule:
             recipient = schedule.schedule_default_catcher
             return_self = True
 
+        if is_async := inspect.iscoroutinefunction(func) and async_loop is None:
+            warnings.warn(async_warn.format(func))
+
+        elif is_async := inspect.iscoroutinefunction(recipient) and async_loop is None:
+            warnings.warn(async_warn.format(recipient))
+
         job = Job(func=functools.partial(func, **kwargs),
-                  is_async=inspect.iscoroutinefunction(func),
+                  is_async=is_async,
                   trigger=trigger,
                   recipient=recipient,
-                  func_name=func.__name__,
+                  func_name=repr(func),
+                  async_loop=async_loop,
                   return_self=return_self)
 
         # Map job in schedule and start it

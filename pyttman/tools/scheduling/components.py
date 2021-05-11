@@ -169,6 +169,18 @@ class Job(Thread):
     The Job class is runnable as a separate
     thread, thus leaving any function that it's
     calling non-blocking.
+
+    The Job can run both async and sync functions
+    both as the main callable and recipients.
+
+    Users can provide which loop to schedule an async task
+    in, but it is not mandatory - this may cause problems
+    however in context managed async tasks which requires
+    access to the loop to retrieve tasks themselves.
+
+    TL;DR - if problems occur when 'async_loop' argument
+    is omitted - provide the loop for where to schedule
+    the recipient coroutine.
     """
 
     def __init__(self, func: Callable,
@@ -176,6 +188,7 @@ class Job(Thread):
                  trigger: TimeTrigger,
                  recipient: Callable,
                  func_name: str,
+                 async_loop = None,
                  return_self: bool = False):
         super().__init__()
         self.kwargs = None
@@ -188,6 +201,7 @@ class Job(Thread):
         self.time_to_die = False
         self.error = None
         self.result = None
+        self.async_loop = async_loop
         self._running = False
 
     def __repr__(self):
@@ -210,6 +224,7 @@ class Job(Thread):
         passed as self.func.
         """
         self._running = True
+        loop = asyncio.new_event_loop() if not self.async_loop else self.async_loop
 
         while True:
             if self.time_to_die:
@@ -219,14 +234,12 @@ class Job(Thread):
                     f"down.")
                 break
 
+            # Evaluate if self.func and / or recipient is async or not
             if self.trigger.is_pulled():
-
-                # Evaluate if self.func and / or recipient is async or
-                # not. Call them accordingly.
                 try:
-                    # Get the output of the scheduled function
+                    # Evaluate whether main callable and/or recipient is async
                     if self.is_async:
-                        self.result = asyncio.run(self.func())
+                        loop.create_task(self.func())
                     else:
                         self.result = self.func()
                 except Exception as e:
@@ -237,18 +250,18 @@ class Job(Thread):
                     break
 
                 # Call the recipient function with the job output
+                output = self if self.return_self else self.result
+
                 try:
-                    # Pass it on to the recipient
-                    output = self if self.return_self else self.result
                     if inspect.iscoroutinefunction(self.recipient):
-                        asyncio.run(self.recipient(output))
+                        loop.create_task(self.recipient(output))
                     else:
                         self.recipient(output)
                 except Exception as e:
                     pyttman.logger.log(f"The schedule job '{self.name}' "
-                                                 f"ran OK but the recipient function "
-                                                 f"{self.recipient} raised {type(e).__name__}"
-                                                 f"('{str(e)}') ", level="error")
+                                       f"ran OK but the recipient function "
+                                       f"{self.recipient} raised {type(e).__name__}"
+                                       f"('{str(e)}') ", level="error")
                     break
             if not self.trigger.reoccurring and self.trigger.amount_of_runs > 0:
                 break
