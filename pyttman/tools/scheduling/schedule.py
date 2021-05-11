@@ -32,9 +32,26 @@ class schedule:
     def method(func, at: str=None, every: str=None,
                delay=None, exactly_at: datetime=None,
                recipient: Callable=None, start_now=True,
-               **kwargs):
+               async_loop=None, **kwargs) -> Job:
         """
-        Registers a new schedule Job.
+        Registers a new schedule Job. Provide strings
+        to define when to execute the job, if it is
+        reccurring and whether to pass the output to
+        another callable as 'recipient'.
+
+        example:
+            schedule.method(every="day", at="10:30",
+                            func=some_func,
+                            some_arg="hello world")
+
+        With defined recipient which will recieve the
+        output from the job as the first arg:
+
+        example:
+            schedule.method(every="day", at="10:30",
+                            func=some_func,
+                            some_arg="hello world",
+                            recipient=print)
 
         Users can provide an async loop to schedule an async task
         in, but it is not mandatory - this may cause problems
@@ -206,4 +223,3 @@ class schedule:
         @return: bool, jobs were or were not started
         """
         return bool([job.start() for job in list(schedule.get_jobs(name))])
-

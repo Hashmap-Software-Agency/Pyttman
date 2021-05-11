@@ -1,9 +1,9 @@
 import asyncio
 import inspect
 import time
-from typing import Callable
 from datetime import datetime, timedelta
 from threading import Thread
+from typing import Callable
 
 import pyttman
 
@@ -46,17 +46,10 @@ class TimeTrigger:
 
         :param every: str, a day, every day or timeunit.
             Valid parameters:
-                "day"
-                "monday"
-                "tuesday"
-                "wednesday"
-                "thursday"
-                "friday"
-                "saturday"
-                "sunday"
-                "hour"
-                "minute"
-                "second"
+                "day", "monday", "tuesday", "wednesday"
+                "thursday", "friday", "saturday"
+                "sunday", "hour", "minute", "second"
+
         :param at: str, time of scheduling.
                   Valid in HH:MM:SS format or HH:MM format.
                   Example: "10:00" or "10:00:22". Seconds (SS)
