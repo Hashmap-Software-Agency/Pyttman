@@ -25,10 +25,10 @@ setup(
     classifiers=[
         "License :: OSI Approved :: MIT License",
         "Programming Language :: Python :: 3 :: Only",
-        "Programming Language :: Python :: 3.8",
+        "Programming Language :: Python :: 3.9",
         "Operating System :: OS Independent",
     ],
-    python_requires=">=3.8",
+    python_requires=">=3.9",
     packages=find_packages(),
     include_package_data=True,
     data_files=[('', ['pyttman/core/terraform_template/project_template.7z'])],
