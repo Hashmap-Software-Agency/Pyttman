@@ -94,8 +94,7 @@ class Feature(FeatureABC):
     and can be extended further.
     """
 
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
+    def __init__(self):
         self.name = None
         self._callbacks = ()
         self.configure()
