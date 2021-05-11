@@ -100,6 +100,7 @@ class schedule:
         # Start the job, or add it to unstarted for later starts
         if start_now:
             job.start()
+        return job
 
     @staticmethod
     def schedule_default_catcher(job: Job) -> None:
