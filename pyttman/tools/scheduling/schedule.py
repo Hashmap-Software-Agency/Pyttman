@@ -114,11 +114,11 @@ class schedule:
         # Map job in schedule and start it
         Logger.log(f"Scheduler created job {job}", level="info")
         schedule.name_job_map.add(job.func_name, job)
-        schedule.id_job_map[job.native_id] = job
 
         # Start the job, or add it to unstarted for later starts
         if start_now:
             job.start()
+            schedule.id_job_map[job.native_id] = job
         return job
 
     @staticmethod
@@ -217,11 +217,13 @@ class schedule:
                       if i.running is False])
 
     @staticmethod
-    def start_job(name: str) -> bool:
+    def start_job(name: str) -> None:
         """
         Start the scheudling of a given method,
         if a Job with the name is found
         @param name: Name of the job to start (may start multiple)
-        @return: bool, jobs were or were not started
+        @return: None
         """
-        return bool([job.start() for job in list(schedule.get_jobs(name))])
+        for job in schedule.get_jobs(job_name=name):
+            job.start()
+            schedule.id_job_map[job.native_id] = job
