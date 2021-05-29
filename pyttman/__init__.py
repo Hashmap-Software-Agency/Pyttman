@@ -12,7 +12,7 @@ from pyttman.core.bases import Feature
 from pyttman.models.message import Message
 from pyttman.core.internals import load_settings
 
-__version__ = '1.0.1'
+__version__ = '1.0.3'
 
 # Set by the user in each projects' main.py file, imported locally
 settings = None

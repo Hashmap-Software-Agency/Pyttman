@@ -156,8 +156,12 @@ class TimeTrigger:
 
 class Job(Thread):
     """
-    Threaded job, scheduled for a specific
-    interval and / or time of execution.
+    Class subclassing Thread, representing a scheduled
+    function, class or other callable.
+
+    The Job class is not designed to be accessed by
+    users but is internally managed in the schedule
+    API using Pyttman's scheduler.
 
     The Job class is runnable as a separate
     thread, thus leaving any function that it's
