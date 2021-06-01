@@ -73,3 +73,13 @@ class DateTimeStringIdentifier(Identifier):
 class DateTimeFormatIdentifier(Identifier):
     """ identifies a datetime format configuration string """
     patterns = (r"^%.*$",)
+
+
+class IntegerIdentifier(Identifier):
+    """ identifies all integers """
+    patterns = (r"[0-9]+",)
+
+
+class NameIdentifier(Identifier):
+    """ identifies names by looking for capitalized strings """
+    patterns = (r"^([A-Z][a-z]*)$",)
