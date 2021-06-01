@@ -104,11 +104,6 @@ class BaseCommand(AbstractCommand, ABC):
 
         Class variables dictate the name of the key
         in which an identified value is placed under.
-
-        :example:
-            You develop a Command which ha
-            class ValueParser:
-                color = parsers.ValueParser(prefixes=("color", "colors"))
         """
         pass
 
