@@ -66,6 +66,10 @@ class AbstractCommand(abc.ABC):
         subclass has defined, as well as including
         the syntax for the command using the lead
         and trail fields.
+
+        if the help_string is already defined, this
+        help is used and no automated help is
+        generated.
         :return:
         """
         pass

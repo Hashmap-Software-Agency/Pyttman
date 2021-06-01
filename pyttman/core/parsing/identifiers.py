@@ -20,6 +20,12 @@ class Identifier:
 
     The Identifier will use regex to assess
     the similarity of given string.
+
+    This class is subclassed and patterns are
+    defined in the tuple 'patterns' as raw
+    python strings (prepend the string with 'r').
+    The regex pattern is evaluated by the Parser
+    at runtime.
     """
     patterns = (r"^.*$",)
 
