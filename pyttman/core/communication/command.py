@@ -87,12 +87,12 @@ class BaseCommand(AbstractCommand, ABC):
     Message. The user can interact with the internal
     methods such as
     """
-    description = __name__
-    example = str()
+    description = "Unavailable"
+    example = None
     lead = tuple()
     trail = tuple()
     ordered = False
-    help_string = "Unavailable"
+    help_string = None
 
     class InputStringParser:
         """
