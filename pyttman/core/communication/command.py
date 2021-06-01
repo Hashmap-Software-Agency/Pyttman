@@ -208,22 +208,26 @@ class BaseCommand(AbstractCommand, ABC):
 
     def generate_help(self) -> str:
         if not self.help_string:
-                      f"\n\t* Description: {self.description}" \
-                      f"\n\t* Syntax: [{'|'.join(self.lead)}] [{'|'.join(self.trail)}]"
+            help_string = f"\n# Help for command '{self.__class__.__name__}'\n" \
+                          f"\n\t> Description: {self.description}" \
+                          f"\n\t> Syntax: [{'|'.join(self.lead)}] [{'|'.join(self.trail)}]"
+            if self.example:
+                help_string += f"\n\t> Example: '{self.example}'"
+        else:
+            help_string = self.help_string
+        return f"{'-' * 50}{help_string}\n{'-' * 50}"
 
-        return f"{'=' * 50}{help_string}\n{'=' * 50}"
-
-    def parse_for_query_strings(self, message: Message) -> None:
+    def process(self, message: Message) -> Reply:
         """
         Iterate over all ValueParser objects and the name
         of the field it's allocated as.
         :param message: Message object
-        :return: None
+        :return: Reply, logic defined in the 'respond' method
         """
         for query_string_name in dir(self.InputStringParser):
             query_string_obj = getattr(self.InputStringParser, query_string_name)
 
-            # Put the value of the ValueParser behind its name in the query_strings dict, if found
+            # Put the value of the ValueParser behind its name in the input_strings dict, if found
             if not query_string_name.startswith("__") and not callable(query_string_obj) \
                     and isinstance(query_string_obj, Parser):
 
@@ -235,6 +239,7 @@ class BaseCommand(AbstractCommand, ABC):
                     self.input_strings[query_string_name] = query_string_obj.value
                 else:
                     self.input_strings[query_string_name] = None
+        return self.respond(messsage=message)
 
 
 class Command(BaseCommand):

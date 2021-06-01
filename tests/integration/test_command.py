@@ -59,7 +59,7 @@ class TestCommand(unittest.TestCase):
         set_time_command = SetTimeFormat()
 
         if set_time_command.matches(msg):
-            set_time_command.parse_for_query_strings(msg)
+            set_time_command.process(msg)
 
         print(set_time_command.input_strings)
         self.assertEqual(set_time_command.input_strings.get("datetime_format"),
@@ -72,7 +72,7 @@ class TestCommand(unittest.TestCase):
         get_last_item = GetLastItem()
 
         msg = Message("the last item is turtle")
-        get_last_item.parse_for_query_strings(msg)
+        get_last_item.process(msg)
 
         print(get_last_item.input_strings)
         self.assertEqual(get_last_item.input_strings.get("last_word"), "turtle")
