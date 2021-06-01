@@ -101,21 +101,10 @@ class BaseCommand(AbstractCommand, ABC):
         Class variables dictate the name of the key
         in which an identified value is placed under.
 
-        Sometimes values are provided in a message
-        without a clear prefix or suffix to identify
-        the value itself. For these edge cases, a few
-        magic strings are available
-
-        There are a few config strings for this
-        available, defined below.
-
-        '$lastitem' - the last element in the message
-        '$firstitem' - the first element in the message
-        '$timestr'
-
         :example:
+            You develop a Command which ha
             class ValueParser:
-                color = parsers.ValueParser(keys=("color", "colors"), )
+                color = parsers.ValueParser(prefixes=("color", "colors"))
         """
         pass
 
@@ -137,10 +126,6 @@ class BaseCommand(AbstractCommand, ABC):
         Boolean indicator to whether the callback
         matches a given message, without returning
         the function itself as with the .Parse method.
-
-        Return the callable bound to the Callback instance
-        if the message matches the subset(s) of strings
-        defined in this object.
 
         To begin with, the message has to match at least
         one word in the self.lead property. This is asserted
@@ -235,8 +220,8 @@ class BaseCommand(AbstractCommand, ABC):
         :param message: Message object
         :return: None
         """
-        for query_string_name in dir(self.QueryStringParser):
-            query_string_obj = getattr(self.QueryStringParser, query_string_name)
+        for query_string_name in dir(self.InputStringParser):
+            query_string_obj = getattr(self.InputStringParser, query_string_name)
 
             # Put the value of the ValueParser behind its name in the query_strings dict, if found
             if not query_string_name.startswith("__") and not callable(query_string_obj) \
