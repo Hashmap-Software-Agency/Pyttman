@@ -1,18 +1,49 @@
 from datetime import datetime
 
-from pyttman import Feature, Callback
+from pyttman import Feature
+from pyttman.core.communication.command import Command
+from pyttman.core.communication.models.containers import Reply, Message
+from pyttman.core.parsing import parsers
+from pyttman.core.parsing.identifiers import DateTimeFormatIdentifier
 
 
-# noinspection PyMethodMayBeStatic
+class SetTimeFormat(Command):
+    description = "Sets the format of datetime outputs"
+    lead = ("set",)
+    trail = ("datetime", "format",)
+
+    class InputStringParser:
+        datetime_format = parsers.ValueParser(identifier=DateTimeFormatIdentifier)
+
+    def respond(self, messsage: Message) -> Reply:
+        if datetime_format := self.query_strings.get("datetime_format"):
+            return Reply(f"Set datetime format to: {datetime_format}")
+
+
+class GetLastItem(Command):
+    lead = ("last",)
+
+    class InputStringParser:
+        last_word = parsers.PositionalParser()
+
+    def respond(self, messsage: Message) -> Reply:
+        return Reply(f"The last value was: "
+                     f"{self.query_strings.get('last_word')}")
+
+
+class GetTime(Command):
+    description = "Returns the current time"
+    lead = ("what",)
+    trail = ("time",)
+
+    def respond(self, messsage: Message) -> Reply:
+        timestr = datetime.now().strftime(self.query_strings.get("datetime_format"))
+        return Reply(f"The time is currently {timestr}")
+
+
 class ClockFeature(Feature):
     """
     A basic, simple feature which
     answers what time it is.
     """
-
-    def configure(self):
-        self.callbacks = Callback(func=self.get_time,
-                                  lead="what", trail="time")
-
-    def get_time(self, message):
-        return f"the time is currently {datetime.now().strftime('%H:%M')}"
+    commands = (GetTime, SetTimeFormat)
