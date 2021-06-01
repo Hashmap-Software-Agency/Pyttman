@@ -1,5 +1,5 @@
 from itertools import zip_longest
-from pyttman.models.message import Message
+from pyttman.core.communication.command import Message
 
 """
 Details:

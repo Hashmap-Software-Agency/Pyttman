@@ -1,4 +1,6 @@
 import pyttman
+import pyttman.core.communication.command
+import pyttman.core.communication.models.containers
 from features.clockfeature import ClockFeature
 from features.schedulingfeature import SchedulingFeature
 
@@ -10,7 +12,7 @@ pyttman.load_settings(settings)
 # provide it with the features you want to use, then give it a spin!
 processor = pyttman.CommandProcessor()
 processor.features = (SchedulingFeature(), ClockFeature())
-message = pyttman.Message()
+message = pyttman.core.communication.models.containers.Message()
 
 if __name__ == "__main__":
 

@@ -6,10 +6,10 @@ import traceback
 from typing import Tuple
 
 import pyttman
+from pyttman.core.communication.models.containers import Message
 from pyttman.core.decorators import Logger
 from pyttman.core.internals import _cim
 from pyttman.core.interpretation import Interpretation
-from pyttman.core.communication.message import Message
 from pyttman.core.features import Feature
 
 """

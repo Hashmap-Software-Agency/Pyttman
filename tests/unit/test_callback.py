@@ -1,6 +1,8 @@
 from unittest import TestCase
 
 import pyttman
+import pyttman.core.communication.command
+import pyttman.core.communication.models.containers
 
 
 class TestCallback(TestCase):
@@ -12,7 +14,7 @@ class TestCallback(TestCase):
         print("get_area_called")
 
     def setUp(self) -> None:
-        self.message = pyttman.Message()
+        self.message = pyttman.core.communication.models.containers.Message()
         self.time_callback = pyttman.Callback(func=self.get_time, lead="get", trail="time")
 
     def test_matches(self):

@@ -3,7 +3,7 @@ from abc import ABC, abstractmethod
 from typing import Optional, Any, Tuple
 
 from pyttman.core.callback import Callback
-from pyttman.core.communication.message import Message
+from pyttman.core.communication.command import Message
 
 """
 Details:
