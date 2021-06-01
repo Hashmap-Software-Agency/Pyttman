@@ -92,6 +92,8 @@ class Feature(FeatureABC):
     and can be extended further.
     """
 
+    commands = tuple()
+
     def __init__(self):
         self.name = None
         self._callbacks = ()
