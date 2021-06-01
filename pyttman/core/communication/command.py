@@ -90,7 +90,7 @@ class BaseCommand(AbstractCommand, ABC):
     ordered = False
     help_string = "Unavailable"
 
-    class QueryStringParser:
+    class InputStringParser:
         """
         Optional inner class to configure query strings
         in recieved messages which matches a Command.
