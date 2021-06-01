@@ -16,7 +16,7 @@ class SetTimeFormat(Command):
         datetime_format = parsers.ValueParser(identifier=DateTimeFormatIdentifier)
 
     def respond(self, messsage: Message) -> Reply:
-        if datetime_format := self.query_strings.get("datetime_format"):
+        if datetime_format := self.input_strings.get("datetime_format"):
             return Reply(f"Set datetime format to: {datetime_format}")
 
 
@@ -28,7 +28,7 @@ class GetLastItem(Command):
 
     def respond(self, messsage: Message) -> Reply:
         return Reply(f"The last value was: "
-                     f"{self.query_strings.get('last_word')}")
+                     f"{self.input_strings.get('last_word')}")
 
 
 class GetTime(Command):
@@ -37,7 +37,7 @@ class GetTime(Command):
     trail = ("time",)
 
     def respond(self, messsage: Message) -> Reply:
-        timestr = datetime.now().strftime(self.query_strings.get("datetime_format"))
+        timestr = datetime.now().strftime(self.input_strings.get("datetime_format"))
         return Reply(f"The time is currently {timestr}")
 
 

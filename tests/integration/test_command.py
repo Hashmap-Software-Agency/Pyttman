@@ -17,7 +17,7 @@ class SetTimeFormat(Command):
         datetime_format = parsers.ValueParser(identifier=DateTimeFormatIdentifier)
 
     def respond(self, messsage: Message) -> Reply:
-        if datetime_format := self.query_strings.get("datetime_format"):
+        if datetime_format := self.input_strings.get("datetime_format"):
             return Reply(f"Set datetime format to: {datetime_format}")
 
 
@@ -29,7 +29,7 @@ class GetLastItem(Command):
 
     def respond(self, messsage: Message) -> Reply:
         return Reply(f"The last value was: "
-                     f"{self.query_strings.get('last_word')}")
+                     f"{self.input_strings.get('last_word')}")
 
 
 class GetTime(Command):
@@ -38,7 +38,7 @@ class GetTime(Command):
     trail = ("time",)
 
     def respond(self, messsage: Message) -> Reply:
-        timestr = datetime.now().strftime(self.query_strings.get("datetime_format"))
+        timestr = datetime.now().strftime(self.input_strings.get("datetime_format"))
         return Reply(f"The time is currently {timestr}")
 
 
@@ -61,8 +61,8 @@ class TestCommand(unittest.TestCase):
         if set_time_command.matches(msg):
             set_time_command.parse_for_query_strings(msg)
 
-        print(set_time_command.query_strings)
-        self.assertEqual(set_time_command.query_strings.get("datetime_format"),
+        print(set_time_command.input_strings)
+        self.assertEqual(set_time_command.input_strings.get("datetime_format"),
                          "%y-%m-%d")
         print(set_time_command.generate_help())
         print(set_time_command.respond(messsage=msg).as_str())
@@ -74,7 +74,7 @@ class TestCommand(unittest.TestCase):
         msg = Message("the last item is turtle")
         get_last_item.parse_for_query_strings(msg)
 
-        print(get_last_item.query_strings)
-        self.assertEqual(get_last_item.query_strings.get("last_word"), "turtle")
+        print(get_last_item.input_strings)
+        self.assertEqual(get_last_item.input_strings.get("last_word"), "turtle")
 
         print(get_last_item.respond(messsage=msg).as_str())

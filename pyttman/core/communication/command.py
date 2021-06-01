@@ -96,7 +96,7 @@ class BaseCommand(AbstractCommand, ABC):
         in recieved messages which matches a Command.
 
         The identified values are stored in the
-        'query_strings' dict.
+        'input_strings' dict.
 
         Class variables dictate the name of the key
         in which an identified value is placed under.
@@ -114,7 +114,7 @@ class BaseCommand(AbstractCommand, ABC):
                                  f"containing strings for parsing to work "
                                  f"correctly")
         self.help_string = self.generate_help()
-        self.query_strings = {}
+        self.input_strings = {}
 
     def __repr__(self):
         return f"{self.__class__.__name__}(lead={self.lead}, " \
@@ -207,7 +207,7 @@ class BaseCommand(AbstractCommand, ABC):
         message.content = list(as_set)
 
     def generate_help(self) -> str:
-        help_string = f"\nHelp for command {self.__class__.__name__}\n" \
+        if not self.help_string:
                       f"\n\t* Description: {self.description}" \
                       f"\n\t* Syntax: [{'|'.join(self.lead)}] [{'|'.join(self.trail)}]"
 
@@ -232,9 +232,9 @@ class BaseCommand(AbstractCommand, ABC):
 
                 # Set query string values to None if none found
                 if query_string_obj.value:
-                    self.query_strings[query_string_name] = query_string_obj.value
+                    self.input_strings[query_string_name] = query_string_obj.value
                 else:
-                    self.query_strings[query_string_name] = None
+                    self.input_strings[query_string_name] = None
 
 
 class Command(BaseCommand):
