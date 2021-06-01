@@ -65,8 +65,8 @@ class ValueParser(Parser):
     and stored.
     """
     identifier = None
-    prefixes = None
-    suffixes = None
+    prefixes = tuple()
+    suffixes = tuple()
 
     def parse_message(self, message: Message) -> None:
         """
@@ -77,29 +77,77 @@ class ValueParser(Parser):
         :param message:
         :return:
         """
-        if self.identifier is not None:
-            if value := self.identifier().get_matching_string(message):
-                self.value = value
+        identifier_value = None
+        prefix_value = None
+        suffix_value = None
 
-        if self.prefixes:
+        # If all criterias are defined, ensure that the Identifier value
+        # satisfies the prefixes and/or suffixes strings
+        if self.identifier:
+            if not (identifier_value := self.identifier().get_matching_string(message)):
+                return
+            else:
+                identifier_index = message.content.index(identifier_value)
+
+            # Make sure the identified value, if any, occurs after all prefixes
+            if self.prefixes:
+                for prefix in self.prefixes:
+                    if prefix in message.content:
+                        prefix_index = message.content.index(prefix)
+                        if not prefix_index < identifier_index:
+                            return
+                    else:
+                        return
+
+            # Make sure the identified value, if any, occurs before all suffixes
+            if self.suffixes:
+                for suffix in self.suffixes:
+                    if suffix in message.content:
+                        suffix_index = message.content.index(suffix)
+                        if not suffix_index > identifier_index:
+                            return
+                    else:
+                        return
+
+        else:
             for prefix in self.prefixes:
                 try:
                     prefix_index = message.content.index(prefix)
-                    value = message.content[prefix_index + 1]
+                    prefix_value = message.content[prefix_index + 1]
                 except ValueError:
                     continue
-                else:
-                    self.value = value
 
-        elif self.suffixes:
             for suffix in self.suffixes:
                 try:
-                    prefix_index = message.content.index(suffix)
-                    value = message.content[prefix_index - 1]
+                    suffix_index = message.content.index(suffix)
+                    suffix_value = message.content[suffix_index - 1]
                 except ValueError:
                     continue
-                else:
-                    self.value = value
+
+        """
+        If an identifier is specified without prefix and suffix, its value is
+        saved as the ultimate value. 
+        
+        If suffixes or prefixes or both are also defined, these must occur before
+        and after the identifiers value, respectively.
+        
+        If suffix and prefix are defined together, they should be pointing to the 
+        same string, which is only logical. If so, that value is set as the ultimate
+        value. 
+        
+        If suffix or prefix are alone, their first encountered value is set as the
+        ultimate value.
+        """
+        if (self.suffixes and self.prefixes) and not self.identifier and (prefix_value == suffix_value):
+            self.value = prefix_value
+        elif (self.identifier and self.prefixes) or (self.identifier and self.suffixes):
+            self.value = identifier_value
+        elif self.prefixes and not self.suffixes:
+            self.value = prefix_value
+        elif self.suffixes and not self.prefixes:
+            self.value = suffix_value
+        elif self.identifier and not self.prefixes and not self.suffixes:
+            self.value = identifier_value
 
 
 class PositionalParser(Parser):
