@@ -4,7 +4,7 @@ from typing import List
 
 class Message:
 
-    def __init__(self, content, **kwargs):
+    def __init__(self, content="", **kwargs):
         self.sender = None
         self.author = "anonymous"
         self.created = datetime.now()
