@@ -199,19 +199,19 @@ class BaseCommand(AbstractCommand, ABC):
                 break
         return ordered_trail and ordered_lead
 
-    def truncate(self, message: Message):
+    def truncated(self, message: Message):
         as_set = set([i.lower() for i in message.content])
-        as_set -= self.lead
-        as_set -= self.trail
-        message.content = list(as_set)
+        as_set -= set(self.lead)
+        as_set -= set(self.trail)
+        return list(as_set)
 
     def generate_help(self) -> str:
         if not self.help_string:
-            help_string = f"\n# Help for command '{self.__class__.__name__}'\n" \
-                          f"\n\t> Description: {self.description}" \
-                          f"\n\t> Syntax: [{'|'.join(self.lead)}] [{'|'.join(self.trail)}]"
+            help_string = f"\n* Help for command '{self.__class__.__name__}'\n" \
+                          f"\n\t> Description:\n\t\t{self.description}\n" \
+                          f"\n\t> Syntax:\n\t\t{'|'.join(self.lead)} {'|'.join(self.trail)}\n"
             if self.example:
-                help_string += f"\n\t> Example: '{self.example}'"
+                help_string += f"\n\t> Example:\n\t\t'{self.example}'\n"
         else:
             help_string = self.help_string
         return f"{'-' * 50}{help_string}\n{'-' * 50}"
