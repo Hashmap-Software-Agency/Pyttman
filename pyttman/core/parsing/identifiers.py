@@ -64,15 +64,10 @@ class Identifier:
         :return str: Element in message.content which matched
         the pattern assigned
         """
-
-        identified_elem = None
-
         for pattern in self.patterns:
             for elem in message.content:
-                if re.match(pattern, elem):
-                    if self._assert_length_requirement(elem):
-                        identified_elem = elem
-        return identified_elem
+                if re.match(pattern, elem) and self._assert_length_requirement(elem):
+                    return elem
 
 
 class CellPhoneNumberIdentifier(Identifier):
@@ -82,7 +77,7 @@ class CellPhoneNumberIdentifier(Identifier):
 
 class DateTimeStringIdentifier(Identifier):
     """ Identifies whether a string looks like a date string """
-    patterns = (r"^(\d{4}).(\d{2}).(\d{2}).(\d{2}):(\d{2}).*$",
+    patterns = (r"^(\d{4}).(\d{2}).(\d{2}).(\d{2}):(\d).*$",
                 r"^(\d{2}).(\d{2}).(\d{2}).(\d{2}):(\d{2}).*$")
 
 
