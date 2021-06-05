@@ -4,6 +4,7 @@ from typing import Optional, Any, Tuple
 
 from pyttman.core.callback import Callback
 from pyttman.core.communication.command import Message
+from pyttman.core.storage.basestorage import Storage
 
 """
 Details:
@@ -93,11 +94,15 @@ class Feature(FeatureABC):
     """
 
     commands = tuple()
+    storage = Storage()
 
     def __init__(self):
         self.name = None
         self._callbacks = ()
         self.configure()
+
+        for command in self.commands:
+            command.feature = self
 
     def find_matching_callback(self, message: Message) -> \
             Optional[functools.partial]:
