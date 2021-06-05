@@ -94,6 +94,7 @@ class BaseCommand(AbstractCommand, ABC):
     trail = tuple()
     ordered = False
     help_string = None
+    feature = None
 
     class InputStringParser:
         """
@@ -118,8 +119,7 @@ class BaseCommand(AbstractCommand, ABC):
 
     def __repr__(self):
         return f"{self.__class__.__name__}(lead={self.lead}, " \
-               f"trail={self.trail}, ordered={self.ordered}, " \
-               f"help_string={self.help_string})"
+               f"trail={self.trail}, ordered={self.ordered})"
 
     def matches(self, message: Message) -> bool:
         """
