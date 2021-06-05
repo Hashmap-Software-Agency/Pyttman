@@ -74,6 +74,9 @@ def run(argv=None):
         app_name = options.args.pop()
         terraformer = TerraFormer(app_name=app_name)
         terraformer.terraform()
+    elif command == "run":
+        app_name = options.args.pop()
+        print("you want me to run", app_name)
     else:
         from pyttman import __version__
         print(f"\nPyttman CLI, version {__version__}")
