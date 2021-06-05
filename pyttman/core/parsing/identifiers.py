@@ -32,40 +32,47 @@ class Identifier:
     max_length = None
 
     def __init__(self):
-        self.matches: bool = False
-        self.matching_string = None
         try:
             self.patterns = tuple([re.compile(pat) for pat in self.patterns])
         except Exception as e:
             raise AttributeError("Identifier pattern could not compile") from e
 
     def __repr__(self):
-        return f"{self.__class__.__name__}(" \
-               f"patterns={self.patterns}, " \
-               f"matches={self.matches}, " \
-               f"matching_string={self.matching_string})"
+        return f"{self.__class__.__name__}(patterns={self.patterns})"
+
+    def _assert_length_requirement(self, value: str) -> bool:
+        """
+        Assert the element identified complies
+        with min_length and max_length fields
+        :param value: str, value to me examined
+        :return: bool, complies with both min_value and
+                 max_value or not. if min_value and/or
+                 max_value is omitted, they are considered
+                 compliant in all situations, bypassing any
+                 length of strings.
+        """
+        return ((len(value) > self.min_length
+                 if self.min_length is not None else True) and
+                (len(value) < self.max_length
+                 if self.max_length is not None else True))
 
     def get_matching_string(self, message: Message) -> Optional[str]:
         """
         Evaluates if any element in the content of
         a Message object matches with its pattern.
 
-        :return bool: One of the patterns defined in
-        self.patterns matched a string in Message.content
+        :return str: Element in message.content which matched
+        the pattern assigned
         """
+
         identified_elem = None
 
         for pattern in self.patterns:
             for elem in message.content:
                 if re.match(pattern, elem):
-                    identified_elem = elem
-                    break
-
-        if self.min_length is not None or self.max_length is not None:
-
-
-            if identified_elem
-        return None
+                    if self._assert_length_requirement(elem):
+                        identified_elem = elem
+        return identified_elem
 
 
 class CellPhoneNumberIdentifier(Identifier):
