@@ -138,7 +138,8 @@ class ValueParser(Parser):
         If suffix or prefix are alone, their first encountered value is set as the
         ultimate value.
         """
-        if (self.suffixes and self.prefixes) and not self.identifier and (prefix_value == suffix_value):
+        if (self.suffixes and self.prefixes) and not \
+                self.identifier and (prefix_value == suffix_value):
             self.value = prefix_value
         elif (self.identifier and self.prefixes) or (self.identifier and self.suffixes):
             self.value = identifier_value
