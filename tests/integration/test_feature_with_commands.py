@@ -1,8 +1,25 @@
 from unittest import TestCase
 
+import pyttman
+from example_project.example_app import settings
+from pyttman.core.parsing.routing import LinearSearchFirstMatchingRouter
+
+pyttman.load_settings(settings)
+
 from pyttman.core.communication.command import Command
 from pyttman.core.communication.models.containers import Message, Reply
 from pyttman.core.parsing import parsers, identifiers
+from pyttman import Feature
+
+
+##############################
+#       M O C K U P S        #
+##############################
+
+
+class MockContact:
+    def __init__(self, **kwargs):
+        [setattr(self, k, v) for k, v in kwargs.items()]
 
 
 class UpdateContactInfo(Command):
@@ -19,8 +36,12 @@ class UpdateContactInfo(Command):
 
     def respond(self, message: Message) -> Reply:
         name = self.input_strings["name"]
-        number = self.input_strings["number"]
-        return Reply(f"Updated {name}'s number to {number}")
+        new_number = self.input_strings["number"]
+
+        contact = self.feature.storage.get("contacts").get(name)
+        contact.number = new_number
+
+        return Reply(f"Updated {name}'s number to {new_number}")
 
 
 class GetContactInfo(Command):
@@ -35,28 +56,27 @@ class GetContactInfo(Command):
         return Reply(f"Getting contact information for {name}")
 
 
+class ContactFeature(Feature):
+    commands = (UpdateContactInfo(), GetContactInfo())
+
+    def configure(self):
+        self.storage.put("contacts", {"John": MockContact(name="John", number=1234567891)})
+
+
+##############################
+#         T E S T S          #
+##############################
+
+
 class TestValueParser(TestCase):
-    def setUp(self) -> None:
-        self.update_phone_number = UpdateContactInfo()
 
     def test_update_contact(self):
         update_contact_message = Message("register 1112222442 as new number for John")
-        if self.update_phone_number.matches(update_contact_message):
-
-            print(self.update_phone_number.process(update_contact_message).as_str())
-
-            self.assertEqual("1112222442",
-                             self.update_phone_number.input_strings.get("number_by_identifier"))
-
-            print(self.update_phone_number.input_strings)
-
-            self.assertEqual({'name': 'John', 'number': '1112222442', 'number_by_identifier': '1112222442'},
-                             self.update_phone_number.input_strings)
-            self.assertEqual("1112222442", self.update_phone_number.input_strings.get("number"))
-            self.assertEqual("Updated John's number to 1112222442",
-                             self.update_phone_number.process(update_contact_message).as_str())
-
-            print(self.update_phone_number.generate_help())
+        contact_feature = ContactFeature()
+        for command in contact_feature.commands:
+            if command.matches(message=update_contact_message):
+                response = command.process(message=update_contact_message)
+                print(response)
 
 
 class TestPositionalParser(TestCase):
