@@ -23,7 +23,7 @@ class AbstractCommand(abc.ABC):
         pass
 
     @abc.abstractmethod
-    def respond(self, messsage: Message) -> Reply:
+    def respond(self, message: Message) -> Reply:
         """
         Subclasses overload this method to respond
         to a given command upon a match.
@@ -244,6 +244,6 @@ class BaseCommand(AbstractCommand, ABC):
 
 
 class Command(BaseCommand):
-    def respond(self, messsage: Message) -> Reply:
+    def respond(self, message: Message) -> Reply:
         raise NotImplementedError("The 'respond' method must be "
                                   "defined when subclassing Command")
