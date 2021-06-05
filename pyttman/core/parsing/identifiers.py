@@ -28,6 +28,8 @@ class Identifier:
     at runtime.
     """
     patterns = (r"^.*$",)
+    min_length = None
+    max_length = None
 
     def __init__(self):
         self.matches: bool = False
@@ -51,11 +53,18 @@ class Identifier:
         :return bool: One of the patterns defined in
         self.patterns matched a string in Message.content
         """
+        identified_elem = None
+
         for pattern in self.patterns:
             for elem in message.content:
                 if re.match(pattern, elem):
-                    self.matching_string = elem
-                    return elem
+                    identified_elem = elem
+                    break
+
+        if self.min_length is not None or self.max_length is not None:
+
+
+            if identified_elem
         return None
 
 
