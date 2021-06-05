@@ -224,24 +224,30 @@ class BaseCommand(AbstractCommand, ABC):
         :param message: Message object
         :return: Reply, logic defined in the 'respond' method
         """
-        for parser_name in dir(self.InputStringParser):
-            parser_object = getattr(self.InputStringParser, parser_name)
+        for name, parser in self._get_input_string_parser_fields():
+            # Let the ValueParser search for matching strings and set its value
+            parser.parse_message(message)
 
-            # Put the value of the ValueParser behind its name in the
-            # input_strings dict, if found
-            if not parser_name.startswith("__") and not callable(parser_object) \
-                    and isinstance(parser_object, Parser):
+            # Set query string values to None if none found
+            if parser.value:
+                self.input_strings[name] = parser.value
+            else:
+                self.input_strings[name] = None
+        return self.respond(message=message)
 
-                # Let the ValueParser search for matching strings and set its value
-                parser_object.parse_message(message)
+    def _get_input_string_parser_fields(self) -> Dict[str, Parser]:
+        """
+        Returns a dict with all name:parser in the inner class
+        'InputStringParser'
+        :return: dict[str, Parser]
+        """
+        name_parser_map = {}
+        for field_name in dir(self.InputStringParser):
+            parser_object = getattr(self.InputStringParser, field_name)
 
-                # Set query string values to None if none found
-                if parser_object.value:
-                    self.input_strings[parser_name] = parser_object.value
-                else:
-                    self.input_strings[parser_name] = None
-        return self.respond(messsage=message)
-
+            if not field_name.startswith("__") and isinstance(parser_object, Parser):
+                name_parser_map[field_name] = parser_object
+        return name_parser_map
 
 class Command(BaseCommand):
     def respond(self, message: Message) -> Reply:
