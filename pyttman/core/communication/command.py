@@ -8,6 +8,7 @@ functions and methods.
 import abc
 from abc import ABC
 from itertools import zip_longest
+from typing import List
 
 from pyttman.core.communication.models.containers import Message, Reply
 from pyttman.core.parsing.parsers import Parser
@@ -49,12 +50,12 @@ class AbstractCommand(abc.ABC):
         pass
 
     @abc.abstractmethod
-    def truncate(self, message: Message):
+    def truncated(self, message: Message) -> List[str]:
         """
         Truncates all strings which occurs in
         lead and trail.
         :param message: Pyttman.Message
-        :return: None
+        :return: list, truncated
         """
         pass
 
