@@ -3,6 +3,7 @@ This module defines the base class for the Storage API
 in Pyttman.
 """
 import abc
+from abc import ABC
 from collections import UserDict
 from typing import Any
 
@@ -44,7 +45,7 @@ class AbstractStorage(UserDict, abc.ABC):
         pass
 
 
-class Storage(AbstractStorage):
+class BaseStorage(AbstractStorage, ABC):
     """
     Base Storage class for cache based storage in
     the Pyttman framework.
@@ -97,6 +98,8 @@ class Storage(AbstractStorage):
         """
         return self.data.get(key)
 
+
+class Storage(BaseStorage):
     def dump(self):
         """
         Dump the storage to set backend type.
