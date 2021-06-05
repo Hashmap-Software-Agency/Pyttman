@@ -224,24 +224,26 @@ class BaseCommand(AbstractCommand, ABC):
         :param message: Message object
         :return: Reply, logic defined in the 'respond' method
         """
-        for query_string_name in dir(self.InputStringParser):
-            query_string_obj = getattr(self.InputStringParser, query_string_name)
+        for parser_name in dir(self.InputStringParser):
+            parser_object = getattr(self.InputStringParser, parser_name)
 
-            # Put the value of the ValueParser behind its name in the input_strings dict, if found
-            if not query_string_name.startswith("__") and not callable(query_string_obj) \
-                    and isinstance(query_string_obj, Parser):
+            # Put the value of the ValueParser behind its name in the
+            # input_strings dict, if found
+            if not parser_name.startswith("__") and not callable(parser_object) \
+                    and isinstance(parser_object, Parser):
 
                 # Let the ValueParser search for matching strings and set its value
-                query_string_obj.parse_message(message)
+                parser_object.parse_message(message)
 
                 # Set query string values to None if none found
-                if query_string_obj.value:
-                    self.input_strings[query_string_name] = query_string_obj.value
+                if parser_object.value:
+                    self.input_strings[parser_name] = parser_object.value
                 else:
-                    self.input_strings[query_string_name] = None
+                    self.input_strings[parser_name] = None
         return self.respond(messsage=message)
 
 
 class Command(BaseCommand):
     def respond(self, messsage: Message) -> Reply:
-        raise NotImplementedError
+        raise NotImplementedError("The 'respond' method must be "
+                                  "defined when subclassing Command")
