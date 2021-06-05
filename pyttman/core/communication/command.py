@@ -8,7 +8,7 @@ functions and methods.
 import abc
 from abc import ABC
 from itertools import zip_longest
-from typing import List
+from typing import List, Dict
 
 from pyttman.core.communication.models.containers import Message, Reply
 from pyttman.core.parsing.parsers import Parser
@@ -211,6 +211,10 @@ class BaseCommand(AbstractCommand, ABC):
             help_string = f"\n* Help for command '{self.__class__.__name__}'\n" \
                           f"\n\t> Description:\n\t\t{self.description}\n" \
                           f"\n\t> Syntax:\n\t\t{'|'.join(self.lead)} {'|'.join(self.trail)}\n"
+            if input_strings := list(self._get_input_string_parser_fields().keys()):
+                help_string += f"\n\t> Information expected from the user:" \
+                               f"\n\t\t{', '.join(input_strings)}\n"
+
             if self.example:
                 help_string += f"\n\t> Example:\n\t\t'{self.example}'\n"
         else:
@@ -224,7 +228,7 @@ class BaseCommand(AbstractCommand, ABC):
         :param message: Message object
         :return: Reply, logic defined in the 'respond' method
         """
-        for name, parser in self._get_input_string_parser_fields():
+        for name, parser in self._get_input_string_parser_fields().items():
             # Let the ValueParser search for matching strings and set its value
             parser.parse_message(message)
 
@@ -248,6 +252,7 @@ class BaseCommand(AbstractCommand, ABC):
             if not field_name.startswith("__") and isinstance(parser_object, Parser):
                 name_parser_map[field_name] = parser_object
         return name_parser_map
+
 
 class Command(BaseCommand):
     def respond(self, message: Message) -> Reply:
