@@ -76,7 +76,7 @@ class Identifier:
 
 
 class CellPhoneNumberIdentifier(Identifier):
-    """ Identifies whether a string is similar to a datetime """
+    """ Identifies whether a string is similar to a cell number """
     patterns = (r"^(\d{3}.\d{4}.\d{3})|(\d{10})|(\d{3}.\d{3}.\d{4})$",)
 
 
