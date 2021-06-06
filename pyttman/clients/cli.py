@@ -1,4 +1,3 @@
-import pyttman
 from pyttman.clients.base import BaseClient
 from pyttman.core.communication.models.containers import Message
 

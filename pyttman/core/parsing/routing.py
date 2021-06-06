@@ -1,7 +1,6 @@
 import abc
 import random
-from concurrent.futures import ProcessPoolExecutor
-from typing import Optional, List
+from typing import List
 
 from pyttman import settings
 from pyttman.core.communication.command import Command
