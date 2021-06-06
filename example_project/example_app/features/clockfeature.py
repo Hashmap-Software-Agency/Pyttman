@@ -11,6 +11,7 @@ class SetTimeFormat(Command):
     description = "Sets the format of datetime outputs"
     lead = ("set",)
     trail = ("datetime", "format",)
+    example = "Set the datetime format to %m-%d-%y::%H:%M"
 
     class InputStringParser:
         datetime_format = parsers.ValueParser(identifier=DateTimeFormatIdentifier)
@@ -28,6 +29,7 @@ class GetTime(Command):
     description = "Returns the current time"
     lead = ("what",)
     trail = ("time",)
+    example = "What time is it?"
 
     def respond(self, message: Message) -> Reply:
         timestr = datetime.now().strftime(self.input_strings.get("datetime_format"))
