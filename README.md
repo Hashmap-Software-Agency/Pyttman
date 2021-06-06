@@ -1,5 +1,7 @@
 # Pyttman 
-#### The virtual assistant framework made for developers with ideas
+![Logo image](.github/cover.png)
+## The virtual assistant framework made for developers with ideas
+
 
 Pyttman is a framework for developing virtual assistants, chatbots or other language driven applications. 
 It houses base classes and ready-to-use classes, both for making powerful custom features, or using the 
