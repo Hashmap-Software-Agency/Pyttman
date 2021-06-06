@@ -5,6 +5,8 @@
 import os
 from pathlib import Path
 
+from example_project.example_app.features.clockfeature import ClockFeature
+
 CHOSEN_LANGUAGE = "en-us"
 
 # Create a new file for each time your app starts, or append the most recent one.
@@ -31,8 +33,7 @@ DEFAULT_RESPONSES = {
     }
 }
 
-FEATURES = ['features.clockfeature.ClockFeature',
-            'features.schedulingfeature.SchedulingFeature']
+FEATURES = [ClockFeature()]
 
 APP_BASE_DIR = Path(os.path.dirname(os.path.realpath(__file__)))
 

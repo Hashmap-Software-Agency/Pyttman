@@ -16,19 +16,12 @@ class SetTimeFormat(Command):
         datetime_format = parsers.ValueParser(identifier=DateTimeFormatIdentifier)
 
     def respond(self, message: Message) -> Reply:
+        # Check the input_strings dict, populated by the InputStringParser
         if datetime_format := self.input_strings.get("datetime_format"):
+
+            # Accessing the Feature-scope Storage object
+            self.feature.storage.put("datetime_format", datetime_format)
             return Reply(f"Set datetime format to: {datetime_format}")
-
-
-class GetLastItem(Command):
-    lead = ("last",)
-
-    class InputStringParser:
-        last_word = parsers.PositionalParser()
-
-    def respond(self, message: Message) -> Reply:
-        return Reply(f"The last value was: "
-                     f"{self.input_strings.get('last_word')}")
 
 
 class GetTime(Command):
@@ -46,4 +39,7 @@ class ClockFeature(Feature):
     A basic, simple feature which
     answers what time it is.
     """
-    commands = (GetTime, SetTimeFormat)
+    commands = (GetTime(), SetTimeFormat())
+
+    def configure(self):
+        self.storage.put("datetime_format", "%y-%m-%d - %H:%M")
