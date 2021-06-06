@@ -32,8 +32,8 @@ class GetTime(Command):
     example = "What time is it?"
 
     def respond(self, message: Message) -> Reply:
-        timestr = datetime.now().strftime(self.input_strings.get("datetime_format"))
-        return Reply(f"The time is currently {timestr}")
+        time_format = self.feature.storage.get("datetime_format")
+        return Reply(f"The time is currently {datetime.now().strftime(time_format)}")
 
 
 class ClockFeature(Feature):
