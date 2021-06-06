@@ -43,6 +43,10 @@ class TerraFormer:
         with open(settings_file_path, "a", encoding="utf-8") as settings_file:
             settings_file.write(f"\nAPP_NAME = \"{self.app_name}\"\n")
         print(f"{datetime.now()} - done.")
+        print("\n To start your new app, develop Features and "
+              "then use pyttman-cli to start it. Test it with "
+              "the 'pyttman-cli dev' command to get a CLI shell "
+              "for chatting with your app while developing.")
 
     def get_info(self):
         return f"Extraction dir: {self.extraction_dir}, " \
