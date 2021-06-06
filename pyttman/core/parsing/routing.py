@@ -65,7 +65,6 @@ class LinearSearchFirstMatchingRouter(AbstractMessageRouter):
         matching_commands = self.get_matching_command(message)
 
         if not matching_commands:
-            print(matching_commands)
             language = settings.CHOSEN_LANGUAGE
             default_responses = settings.DEFAULT_RESPONSES[language]["NoResponse"]
             return Reply(random.choice(default_responses))
