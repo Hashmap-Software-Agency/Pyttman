@@ -1,6 +1,6 @@
 from importlib import import_module
 from pathlib import Path
-
+import sys
 from pyttman.clients.cli import CliClient
 
 
@@ -10,10 +10,11 @@ class Runner:
     the app settings.py file.
     """
     def __init__(self, app_name: str):
+        sys.path.insert(0, '')
         self.app_catalog = Path.cwd() / Path(app_name)
         self.client = None
         try:
-            self.app_settings = import_module(f"{self.app_catalog}.settings")
+            self.app_settings = import_module(f"{app_name}.settings")
         except ModuleNotFoundError:
             raise ModuleNotFoundError("Pyttman cannot find the settings file for an app called "
                                       f"'{app_name}' in the current directory. Remember to run "
