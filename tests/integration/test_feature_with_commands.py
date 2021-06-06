@@ -2,7 +2,6 @@ from unittest import TestCase
 
 import pyttman
 from example_project.example_app import settings
-from pyttman.core.parsing.routing import LinearSearchFirstMatchingRouter
 
 pyttman.load_settings(settings)
 
