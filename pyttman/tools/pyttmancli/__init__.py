@@ -37,4 +37,6 @@ def run(argv=None):
         print(f"\nPyttman CLI, version {__version__}")
         print(f"\nSupported commands:\n * newapp [<app name>] - "
               "Start a new app project. Creates files and "
-              "directories in the current directory")
+              "directories in the current directory\n * Run "
+              "[<app name>] - Starts running the app with the "
+              "configured client from settings")
