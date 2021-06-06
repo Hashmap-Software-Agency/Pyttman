@@ -27,9 +27,8 @@ def run(argv=None):
         app_name = options.args.pop()
         terraformer = TerraFormer(app_name=app_name)
         terraformer.terraform()
-    elif command == "run":
+    elif command == "dev":
         app_name = options.args.pop()
-        print("you want me to run", app_name)
         runner = Runner(app_name)
         runner.run()
     else:
@@ -37,6 +36,6 @@ def run(argv=None):
         print(f"\nPyttman CLI, version {__version__}")
         print(f"\nSupported commands:\n * newapp [<app name>] - "
               "Start a new app project. Creates files and "
-              "directories in the current directory\n * Run "
-              "[<app name>] - Starts running the app with the "
-              "configured client from settings")
+              "directories in the current directory\n * dev "
+              "[<app name>] - Starts running the app with a "
+              "CLI client for development purposes\n\n")
