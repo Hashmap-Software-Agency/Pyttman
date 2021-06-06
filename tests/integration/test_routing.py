@@ -51,7 +51,7 @@ class GetContactInfo(Command):
 
 
 class ContactFeature(Feature):
-    commands = (UpdateContactInfo, GetContactInfo)
+    commands = (UpdateContactInfo(), GetContactInfo())
 
     def configure(self):
         self.storage.put("contacts",
@@ -64,4 +64,5 @@ class TestLinearSearchFirstMatchingRouter(TestCase):
         contact_feature = ContactFeature()
         router = LinearSearchFirstMatchingRouter()
         router.features = (contact_feature,)
-        print(router.get_reply(message=update_contact_message))
+        self.assertEqual(router.get_reply(message=update_contact_message).as_list(),
+                         ['Updated', "John's", 'number', 'to', '1112222442'])
