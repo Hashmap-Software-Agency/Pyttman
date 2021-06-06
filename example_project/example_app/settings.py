@@ -11,30 +11,31 @@ CHOSEN_LANGUAGE = "en-us"
 APPEND_LOG_FILES = True
 
 DEFAULT_RESPONSES = {
-	"en-us": {
-		"NoResponse": [
-			"Not sure about that one",
-			"I was not expecting anything less",
-			"I have no clue",
-			"Your guess is as good as mine!",
-			"No idea about that one",
-			"I'm sorry, I don't know what you mean"
-		]
-	},
-	"sv-se": {
-		"NoResponse": [
-			"Jag har inget bra svar på det faktiskt",
-			"Ingen aning!",
-			"Hmm... hänger inte riktigt med där",
-			"Ursäkta, jag uppfattade inte?"
-		]
-	}
+    "en-us": {
+        "NoResponse": [
+            "Not sure about that one",
+            "I was not expecting anything less",
+            "I have no clue",
+            "Your guess is as good as mine!",
+            "No idea about that one",
+            "I'm sorry, I don't know what you mean"
+        ]
+    },
+    "sv-se": {
+        "NoResponse": [
+            "Jag har inget bra svar på det faktiskt",
+            "Ingen aning!",
+            "Hmm... hänger inte riktigt med där",
+            "Ursäkta, jag uppfattade inte?"
+        ]
+    }
 }
 
+FEATURES = ['features.clockfeature.ClockFeature',
+            'features.schedulingfeature.SchedulingFeature']
 
 APP_BASE_DIR = Path(os.path.dirname(os.path.realpath(__file__)))
 
 LOG_FILE_DIR = APP_BASE_DIR / Path("logs")
 
 APP_NAME = "pyttman-example-app"
-
