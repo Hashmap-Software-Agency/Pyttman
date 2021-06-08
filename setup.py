@@ -11,7 +11,7 @@ README = (HERE / "README.md").read_text()
 # This call to setup() does all the work
 setup(
     name="Pyttman",
-    version="1.0.3",
+    version="1.0.4",
     description="The virtual assistant framework made for developers with ideas",
     long_description=README,
     long_description_content_type="text/markdown",
@@ -29,7 +29,7 @@ setup(
         "Operating System :: OS Independent",
     ],
     python_requires=">=3.9",
-    packages=find_packages(),
+    packages=find_packages(exclude=["*.tests", "*.tests.*", "tests.*", "tests"]),
     include_package_data=True,
     data_files=[('', ['pyttman/core/terraform_template/project_template.7z'])],
     install_requires=[

@@ -35,15 +35,15 @@ class TerraFormer:
             self.source = source
 
     def terraform(self):
-        print(f"{datetime.now()} - Creating project '{self.app_name}'...")
+        print(f"\n\t{datetime.now()} - Creating project '{self.app_name}'...")
         shutil.register_unpack_format('7zip', ['.7z'], unpack_7zarchive)
         shutil.unpack_archive(self.source, self.extraction_dir)
         settings_file_path = Path(self.extraction_dir) / Path("settings.py")
 
         with open(settings_file_path, "a", encoding="utf-8") as settings_file:
             settings_file.write(f"\nAPP_NAME = \"{self.app_name}\"\n")
-        print(f"{datetime.now()} - done.")
-        print("\n To start your new app, develop Features and "
+        print(f"\t{datetime.now()} - done.")
+        print("\nTip! To start your new app, develop Features and "
               "then use pyttman-cli to start it. Test it with "
               "the 'pyttman-cli dev' command to get a CLI shell "
               "for chatting with your app while developing.")
