@@ -16,8 +16,6 @@ from pyttman.core.parsing.parsers import Parser
 
 class AbstractCommand(abc.ABC):
 
-    IGNORED_CHARS = '?=)(/&%¤#"!,.-;:_^*`´><|'
-
     @abc.abstractmethod
     def __repr__(self):
         pass
@@ -155,29 +153,28 @@ class BaseCommand(AbstractCommand, ABC):
 
         match_trail = False
 
-        lowered = [i.lower().strip(Command.IGNORED_CHARS)
-                   for i in message.content]
+        sanitized = message.as_list(sanitized=True)
 
-        if not (match_lead := [i for i in self.lead if i in lowered]):
+        if not (match_lead := [i for i in self.lead if i in sanitized]):
             return False
-        elif self.ordered and not self._assert_ordered(lowered):
+        elif self.ordered and not self._assert_ordered(sanitized):
             return False
 
         if self.trail:
             latest_lead_occurence, latest_trail_occurence = 0, 0
 
-            if not (match_trail := [i for i in self.trail if i in lowered]):
+            if not (match_trail := [i for i in self.trail if i in sanitized]):
                 return False
 
             for lead, trail in zip_longest(match_lead, match_trail):
                 try:
-                    _index = lowered.index(lead)
+                    _index = sanitized.index(lead)
                     if _index > latest_lead_occurence:
                         latest_lead_occurence = _index
                 except ValueError:
                     pass
                 try:
-                    _index = lowered.index(trail)
+                    _index = sanitized.index(trail)
                     if _index > latest_trail_occurence:
                         latest_trail_occurence = _index
                 except ValueError:
