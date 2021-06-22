@@ -18,11 +18,11 @@ class Runner:
         except ModuleNotFoundError:
             raise ModuleNotFoundError("Pyttman cannot find the settings "
                                       f"file for an app called '{app_name}' "
-                                      f"in the current directory. Remember to run "
-                                      f"pyttman-cli run <appname> in the parent "
+                                      f"in the current directory. Remember to run_client "
+                                      f"pyttman-cli run_client <appname> in the parent "
                                       f"folder of your app.")
 
-    def run(self):
+    def run_client(self):
 
         import pyttman
         pyttman.load_settings(self.app_settings)
@@ -32,5 +32,5 @@ class Runner:
         router = LinearSearchFirstMatchingRouter()
         router.features = self.app_settings.FEATURES
 
-        self.client = CliClient(router)  # Todo - parse from settings
-        self.client.run()
+        self.client = self.app_settings.client # CliClient(router)  # Todo - parse from settings
+        self.client.run_client()

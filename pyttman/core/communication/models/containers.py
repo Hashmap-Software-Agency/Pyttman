@@ -9,6 +9,7 @@ class Message:
         self.sender = None
         self.author = "anonymous"
         self.created = datetime.now()
+        self.client = None
         self._content = content
 
         for k, v in kwargs.items():

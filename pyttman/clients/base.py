@@ -11,5 +11,5 @@ class BaseClient(abc.ABC):
         self.router = router
 
     @abc.abstractmethod
-    def run(self):
+    def run_client(self):
         pass

@@ -21,7 +21,7 @@ class schedule:
 
     Works as a decorator using the
     'method' method as @Schedule.method,
-    or by calling Schedule.run() withr
+    or by calling Schedule.run_client() withr
     provided args.
     """
     id_job_map: Dict[int, Job] = {}
@@ -76,12 +76,12 @@ class schedule:
 
         """
         async_warn = "\nThe callable '{0}' is asynchronous but the 'async_loop' "        \
-                     "argument was omitted.\nThis will cause this job to run in a "      \
+                     "argument was omitted.\nThis will cause this job to run_client in a "      \
                      "new loop created for it by Pyttman. For most use cases this "      \
                      "is fine, but it may cause unwanted behavior since it may "         \
                      "interfere with other loops and coroutines in your application, "   \
                      "0causing the call stack between them to fail.\nIf your scheduled " \
-                     "job doesn't run as desired, try passing the loop in which the "    \
+                     "job doesn't run_client as desired, try passing the loop in which the "    \
                      "other coroutines are scheduled in."
 
         return_self = False

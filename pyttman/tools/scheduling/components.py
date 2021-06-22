@@ -60,7 +60,7 @@ class TimeTrigger:
                            Useful for scenarios when a datetime
                            object is created outside by the creator
                            for a specific day and time when the job
-                           is to be run.
+                           is to be run_client.
         """
         self.amount_of_runs = 0
         self.next_trigger: datetime = datetime.now()
@@ -133,7 +133,7 @@ class TimeTrigger:
         Reset itself to a future point in time,
         based on the rules provided at instantiation.
 
-        If for example it is configured to run
+        If for example it is configured to run_client
         every day, the next day in line will
         be assigned to the datetime object in
         self.next_trigger.
@@ -167,7 +167,7 @@ class Job(Thread):
     thread, thus leaving any function that it's
     calling non-blocking.
 
-    The Job can run both async and sync functions
+    The Job can run_client both async and sync functions
     both as the main callable and recipients.
 
     Users can provide which loop to schedule an async task
@@ -213,7 +213,7 @@ class Job(Thread):
                f"error={f'{type(self.error).__name__}({self.error})' if self.error else None}" \
                f")"
 
-    def run(self) -> None:
+    def run_client(self) -> None:
         """
         Thread overloaded method
         Await the TimeTrigger object to fire on
@@ -234,7 +234,7 @@ class Job(Thread):
             if self.trigger.is_pulled():
                 try:
                     # Evaluate whether main callable and/or recipient is async
-                    # Run it with async.run if no loop is defined, otherwise add
+                    # Run it with async.run_client if no loop is defined, otherwise add
                     # it to existing loop as a created task
                     if self.is_async:
                         if not self.async_loop:
