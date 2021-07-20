@@ -131,14 +131,14 @@ P7zR
 
       Although the Lesser General Public License is Less protective of the
     users' freedom, it does ensure that the user of a program that is
-    linked with the Library has the freedom and the wherewithal to run_client
+    linked with the Library has the freedom and the wherewithal to run
     that program using a modified version of the Library.
 
       The precise terms and conditions for copying, distribution and
     modification follow.  Pay close attention to the difference between a
     "work based on the library" and a "work that uses the library".  The
     former contains code derived from the library, whereas the latter must
-    be combined with the library in order to run_client.
+    be combined with the library in order to run.
     
                       GNU LESSER GENERAL PUBLIC LICENSE
        TERMS AND CONDITIONS FOR COPYING, DISTRIBUTION AND MODIFICATION
@@ -324,7 +324,7 @@ P7zR
         to use the modified definitions.)
 
         b) Use a suitable shared library mechanism for linking with the
-        Library.  A suitable mechanism is one that (1) uses at run_client time a
+        Library.  A suitable mechanism is one that (1) uses at run time a
         copy of the library already present on the user's computer system,
         rather than copying library functions into the executable, and (2)
         will operate properly with a modified version of the library, if
