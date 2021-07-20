@@ -11,7 +11,8 @@ from pyttman.core.callback import Callback
 from pyttman.core.features import Feature
 from pyttman.core.internals import load_settings
 
-__version__ = '1.0.3'
+__version__ = '1.1.4'
+
 
 # Set by the user in each projects' main.py file, imported locally
 settings = None
