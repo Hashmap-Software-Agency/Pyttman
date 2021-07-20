@@ -135,19 +135,3 @@ def scheduledmethod(func):
                              "But fear not - Check out the 'schedule.method' "
                              "decorator to use the built-in scheduler in the "
                              "framework!")
-
-    # noinspection PyUnreachableCode
-    @functools.wraps(func)
-    def scheduled_method_wrapper(*args, **kwargs):
-        try:
-            channel = kwargs['channel']
-        except KeyError:
-            return func(*args, **kwargs)
-        else:
-            kwargs.pop('channel')
-            return {
-                'result': func(*args, **kwargs),
-                'channel': channel
-            }
-
-    return scheduled_method_wrapper
