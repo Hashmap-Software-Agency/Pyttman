@@ -1,5 +1,6 @@
 import sys
 import functools
+import pyttman
 
 """
 Details:
@@ -14,7 +15,7 @@ Details:
 
 
 # noinspection PyPep8Naming
-class Logger:
+class PyttmanLogger:
     """
     Wrapper class designed to work as a method
     decorator, making logging of output and caught
@@ -26,7 +27,7 @@ class Logger:
 
     __verify_complete (method):
         Internal use only. Used upon importing the package
-        in __init__.py, to ensure the Logger class has a 
+        in __init__.py, to ensure the PyttmanLogger class has a
         dedicated `logger` instance to work with.
 
     loggedmethod (decorator method):
@@ -53,11 +54,9 @@ class Logger:
 
     @staticmethod
     def __verify_config_complete():
-        if Logger.LOG_INSTANCE is None:
-            sys.stderr.write('pyttman -- logging error: '
-                             'Cannot log, no log set.\r\n')
-            sys.stderr.write('Configure an instance of logger, and'
-                             ' pass it to Logger.set_logger()\r\n.')
+        if pyttman.logger.LOG_INSTANCE is None:
+            raise RuntimeError('Internal Pyttman Error: '
+                               'No Logger instance set.\r\n')
 
     @staticmethod
     def loggedmethod(func):
@@ -78,14 +77,16 @@ class Logger:
             :returns:
                 Output from executed function in parameter func
             """
+            PyttmanLogger.__verify_config_complete()
+
             try:
                 results = func(*args, **kwargs)
-                Logger.LOG_INSTANCE.debug(
+                pyttman.logger.LOG_INSTANCE.debug(
                     f'Ran method "{func.__name__}" in {func.__module__} '
                     f'with ARGS: {args} & KWARGS: {kwargs} & RETURN: {results}')
                 return results
             except Exception as e:
-                Logger.LOG_INSTANCE.error(
+                pyttman.logger.LOG_INSTANCE.error(
                     f'Exception occured in {func.__name__}: {e}')
                 raise e
         return inner
@@ -99,17 +100,14 @@ class Logger:
         :returns:
             arbitrary
         """
-        log_levels = {'info': lambda _message: Logger.LOG_INSTANCE.info(_message),
-                      'debug': lambda _message: Logger.LOG_INSTANCE.debug(_message),
-                      'error': lambda _message: Logger.LOG_INSTANCE.error(_message)}
+        PyttmanLogger.__verify_config_complete()
+        log_levels = {'info': lambda _message: pyttman.logger.LOG_INSTANCE.info(_message),
+                      'debug': lambda _message: pyttman.logger.LOG_INSTANCE.debug(_message),
+                      'error': lambda _message: pyttman.logger.LOG_INSTANCE.error(_message)}
         try:
             log_levels[level](message)
         except KeyError:
             log_levels['debug'](message)
-
-    @staticmethod
-    def set_logger(logging):
-        Logger.LOG_INSTANCE = logging
 
 
 # Deprecated since 1.3.1

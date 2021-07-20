@@ -7,7 +7,7 @@ from typing import Tuple
 
 import pyttman
 from pyttman.core.communication.models.containers import Message
-from pyttman.core.decorators import Logger
+from pyttman.core.decorators import PyttmanLogger
 from pyttman.core.internals import _cim
 from pyttman.core.interpretation import Interpretation
 from pyttman.core.features import Feature
@@ -87,7 +87,7 @@ class CommandProcessor:
         finally:
             if errors_occurred:
                 err_message = str(traceback.format_exc())
-                Logger.log(err_message, "error")
+                PyttmanLogger.log(err_message, "error")
                 return Interpretation(error=message,
                                       response=lambda: f'Oops! An internal error occurred. '
                                                        f'This occurrence has been logged.',
