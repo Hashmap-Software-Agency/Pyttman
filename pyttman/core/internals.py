@@ -27,7 +27,7 @@ def is_dst(timezone: str):
     """
     method for returning a bool whether or not a timezone
     currently is in daylight savings time, useful for servers
-    that run_client systems outside of the user timezone.
+    that run systems outside of the user timezone.
     :param timezone:
         string, timezone to give pytz for the dst query.
         look up available timezones at this url:
