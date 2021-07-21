@@ -83,3 +83,27 @@ def _generate_name(name):
             new_name += " "
         new_name += c
     return new_name
+
+
+def _generate_error_entry(message: MessageMixin, exc: BaseException) -> Reply:
+    """
+    Creates a log entry for critical errors with a UUID bound
+    to the log file entry, explaining the error. For the front
+    end clients, a Reply object is returned to provide for
+    end users who otherwise would experience a chatbot who
+    didn't reply back at all.
+    :param message: MessageMixin
+    :param exc: Exception
+    :return: Reply
+    """
+    error_id = uuid.uuid4()
+    warnings.warn(f"{datetime.now()} - A critical error occurred in the "
+                  f"application logic. See logs for details. Error id: {error_id}")
+
+    pyttman.logger.log(level="error",
+                       message=f"CRICITAL ERROR: ERROR ID={error_id} - "
+                               f"The error was caught while processing "
+                               f"message: '{message}'. Error message: '{exc}'")
+
+    return Reply(f"{pyttman.settings.FATAL_EXCEPTION_AUTO_REPLY} - "
+                 f"Error id: {error_id}")
