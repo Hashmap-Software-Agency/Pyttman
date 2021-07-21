@@ -48,7 +48,17 @@ class AbstractCommand(abc.ABC):
         pass
 
     @abc.abstractmethod
-    def truncated(self, message: Message) -> List[str]:
+    def _assert_ordered(self, message: list) -> bool:
+        """
+        Tells whether the Messgae content complies
+        with the configuration of 'lead' and 'trail',
+        thus meaning that all words defined in 'lead'
+        and 'trail' shall occur in the same order in
+        the message form the user, as they do in the
+        'lead' and 'trail' tuples.
+        :param message: Message object, from client
+        :return: bool, message is ordered or not
+        """
         """
         Truncates all strings which occurs in
         lead and trail.
