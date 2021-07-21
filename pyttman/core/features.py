@@ -1,9 +1,12 @@
 import functools
+import inspect
 from abc import ABC, abstractmethod
-from typing import Optional, Any, Tuple
+from typing import Optional, Any, Tuple, List
 
 from pyttman.core.callback import Callback
-from pyttman.core.communication.command import Message
+from pyttman.core.communication.command import Command
+from pyttman.core.communication.models.containers import MessageMixin
+from pyttman.core.internals import _generate_name
 from pyttman.core.storage.basestorage import Storage
 
 """
@@ -40,7 +43,7 @@ class FeatureABC(ABC):
     """
 
     @abstractmethod
-    def find_matching_callback(self, message: Message) -> bool:
+    def find_matching_callback(self, message: MessageMixin) -> bool:
         """
         Designed to be called upon for returning a
         matching Callback instance which returned
@@ -160,3 +163,31 @@ class Feature(FeatureABC):
         except TypeError:
             callbacks = (callbacks,)
         self._callbacks = callbacks
+
+    def __validate_and_initialize_commands(self):
+        """
+        Assert that the tuple contains references to
+        Command subclasses and nothing else.
+        """
+        _initialized_commmand_classes = []
+        try:
+            iter(self.commands)
+            if not isinstance(self.commands, Tuple):
+                raise TypeError
+        except TypeError:
+            raise TypeError(f"The 'commands' property must be tuple, got {type(self.commands)}'.")
+        else:
+            for command_class in self.commands:
+                if not inspect.isclass(command_class) or not issubclass(command_class, Command):
+                    raise TypeError(f"Command '{command_class}' is not defined correctly. "
+                                    f"Commands must be class references, and must inherit "
+                                    "from the 'Command' base class.\nBe sure to only mention "
+                                    "the name of the class, and not instantiate it when "
+                                    "defining the 'commands' property in your feature class.\n"
+                                    "Hint: Change '(FooCommand(), BarCommand())' to "
+                                    "'(FooCommand, BarCommand).")
+                _initialized_command = command_class()
+                _initialized_command.feature = self
+                _initialized_commmand_classes.append(_initialized_command)
+
+        self.commands = tuple(_initialized_commmand_classes)
