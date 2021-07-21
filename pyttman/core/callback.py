@@ -104,15 +104,15 @@ class Callback:
                    for i in message.content]
 
         if not (match_lead := [i for i in self._lead if i in lowered]):
-            return None
+            return False
         elif self._ordered and not self._assert_ordered(lowered):
-            return None
+            return False
 
         if self._trail:
             latest_lead_occurence, latest_trail_occurence = 0, 0
 
             if not (match_trail := [i for i in self._trail if i in lowered]):
-                return None
+                return False
 
             for lead, trail in zip_longest(match_lead, match_trail):
                 try:
