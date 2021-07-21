@@ -109,3 +109,10 @@ class Message(MessageMixin):
     class without extending any functionality.
     """
     pass
+
+class Reply(MessageMixin):
+    """
+    The Reply object is expected to be  returned
+    from all Command subclasses.
+    """
+    pass
