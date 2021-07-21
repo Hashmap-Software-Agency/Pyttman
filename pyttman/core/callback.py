@@ -1,5 +1,6 @@
 from itertools import zip_longest
-from pyttman.core.communication.command import Message
+
+from pyttman.core.communication.models.containers import MessageMixin
 
 """
 Details:
@@ -61,7 +62,7 @@ class Callback:
         return f"Callback Object(lead: {self._lead}, " \
                f"trail: {self._trail}, func: {self._func})"
 
-    def matches(self, message: Message) -> bool:
+    def matches(self, message: MessageMixin) -> bool:
         """
         Boolean indicator to whether the callback
         matches a given message, without returning
@@ -92,7 +93,7 @@ class Callback:
         exits with False.
 
         :param message:
-            pyttman.Message
+            pyttman.MessageMixin
         :returns:
             Bool, True if self matches command
         """
