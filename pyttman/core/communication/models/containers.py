@@ -103,5 +103,9 @@ class MessageMixin:
             return content.split()
 
 
-class Reply(Message):
+class Message(MessageMixin):
+    """
+    Standard implementation of the MessageMixin
+    class without extending any functionality.
+    """
     pass
