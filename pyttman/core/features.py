@@ -67,8 +67,9 @@ class FeatureABC(ABC):
         pass
 
     @abstractmethod
-    def _get_callback(self, message: Message) -> Callback:
+    def _get_callback(self, message: MessageMixin) -> Callback:
         """
+        << DEPRECATED >>
         Returns the method (function object) bound to a
         Callback object, if eligible. This method
         should be overloaded if a different return behavior

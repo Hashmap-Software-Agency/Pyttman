@@ -52,6 +52,11 @@ class Callback:
         self.trail = trail
         self.ordered = ordered
 
+        # Deprecated since 1.0.3, in favor of Class based commands.
+        warnings.warn("Deprecation Warning: The Callback object is "
+                      "deprecated since 1.0.3 in favor of class based "
+                      "commands.")
+
     def __repr__(self):
         return f"Callback Object(lead: {self._lead}, " \
                f"trail: {self._trail}, func: {self._func})"
