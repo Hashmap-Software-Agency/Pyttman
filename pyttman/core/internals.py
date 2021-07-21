@@ -60,17 +60,23 @@ def load_settings(settings):
     app_name = pyttman.settings.APP_NAME
     if pyttman.settings.APPEND_LOG_FILES:
         file_name = Path(f"{app_name}.log")
-    else:
-        file_name = Path(f"{app_name}-{datetime.now().strftime('%y%m%d-%H-%M-%S')}.log")
+def _generate_name(name):
+    """
+    Generates a user-friendly name out of
+    Command or Feature class names, by
+    inserting spaces in camel cased names
+    as well as truncating 'Command' and 'Feature'
+    in the names.
+    :param name: string, name of a class.
+                 hint: Command or Feature subclass
+    :return: str, 'SetTimeCommand' -> 'Set Time'
+    """
+    new_name = ""
+    for i in ("Feature", "feature", "Command", "command"):
+        name = name.replace(i, "")
 
-    log_file_name = Path(pyttman.settings.LOG_FILE_DIR) / file_name
-    logging_handle = logging.FileHandler(filename=log_file_name, encoding="utf-8",
-                                         mode="a+" if pyttman.settings.APPEND_LOG_FILES else "w")
-
-    logging_handle.setFormatter(logging.Formatter("%(asctime)s:%(levelname)"
-                                                  "s:%(name)s: %(message)s"))
-    _logger = logging.getLogger("Pyttman logger")
-    _logger.setLevel(logging.DEBUG)
-    _logger.addHandler(logging_handle)
-    pyttman.logger.set_logger(_logger)
-    pyttman.logger.log(f" -- App {app_name} started: {datetime.now()} -- ")
+    for i, c in enumerate(name):
+        if i > 0 and c.isupper():
+            new_name += " "
+        new_name += c
+    return new_name

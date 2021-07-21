@@ -123,6 +123,7 @@ class BaseCommand(AbstractCommand, ABC):
                                  f"containing strings for parsing to work "
                                  f"correctly")
         self.help_string = self.generate_help()
+        self.name = _generate_name(self.__class__.__name__)
         self.input_strings = {}
 
     def __repr__(self):
