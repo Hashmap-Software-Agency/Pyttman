@@ -1,7 +1,7 @@
 import re
-from typing import Optional
+from typing import Optional, Union
 
-from pyttman.core.communication.models.containers import Message
+from pyttman.core.communication.models.containers import MessageMixin
 
 
 class Identifier:
@@ -30,12 +30,14 @@ class Identifier:
     patterns = (r"^.*$",)
     min_length = None
     max_length = None
+    start_index = 0
 
-    def __init__(self):
+    def __init__(self, **kwargs):
         try:
             self.patterns = tuple([re.compile(pat) for pat in self.patterns])
         except Exception as e:
             raise AttributeError("Identifier pattern could not compile") from e
+        [setattr(self, k, v) for k, v in kwargs.items()]
 
     def __repr__(self):
         return f"{self.__class__.__name__}(patterns={self.patterns})"
@@ -56,18 +58,22 @@ class Identifier:
                 (len(value) < self.max_length
                  if self.max_length is not None else True))
 
-    def get_matching_string(self, message: Message) -> Optional[str]:
+    def get_matching_string(self, message: MessageMixin) -> Union[str, None]:
         """
         Evaluates if any element in the content of
         a Message object matches with its pattern.
 
         :return str: Element in message.content which matched
-        the pattern assigned
+                     the pattern assigned, or None if none found
         """
         for pattern in self.patterns:
-            for elem in message.content:
-                if re.match(pattern, elem) and self._assert_length_requirement(elem):
-                    return elem
+            try:
+                for elem in message.content[self.start_index:]:
+                    if re.match(pattern, elem) and self._assert_length_requirement(elem):
+                        return elem
+            except IndexError:
+                return None
+        return None
 
 
 class CellPhoneNumberIdentifier(Identifier):
