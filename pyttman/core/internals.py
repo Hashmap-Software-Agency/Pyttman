@@ -54,15 +54,15 @@ class _cim:
     err: str = "Pyttman ERROR"
 
 
-def load_settings(settings):
-    pyttman.settings = settings
-    if pyttman.settings is None:
-        raise NotImplementedError("Import settings in your project "
-                                  "and assign pyttman.settings = settings "
-                                  "before calling this function")
-    app_name = pyttman.settings.APP_NAME
-    if pyttman.settings.APPEND_LOG_FILES:
-        file_name = Path(f"{app_name}.log")
+def load_settings(*args):
+    raise DeprecationWarning("The function 'load_settings' is deprecated "
+                             "deprecated as of version 1.1.4. Instead of "
+                             "manually loading settings in your main.py, "
+                             "consider creating a project with pyttman-cli "
+                             "and use the clients provided in the framework, "
+                             "or create your own by subclassing BaseClient.")
+
+
 def _generate_name(name):
     """
     Generates a user-friendly name out of
