@@ -1,9 +1,18 @@
+import logging
 import os
 import shutil
 from datetime import datetime
+from importlib import import_module
 from pathlib import Path
+from typing import List
 
 from py7zr import unpack_7zarchive
+
+import pyttman
+from pyttman import Feature
+from pyttman.core.parsing.routing import AbstractMessageRouter
+from pyttman.tools.pyttmancli import Runner
+from tests.integration.testing_project import settings
 
 
 class TerraFormer:
@@ -51,3 +60,145 @@ class TerraFormer:
     def get_info(self):
         return f"Extraction dir: {self.extraction_dir}, " \
                f"Source: {self.source}"
+
+
+def bootstrap_environment(project_path: str = None) -> List:
+    """
+    Bootstraps the framework with modules and configurations
+    read from the settings.py found in the current path.
+
+    Configuration for the logger, the clients used and
+    Features are parsed, asserted and wrapped in Runner objects
+    for the actual app starter to simply call 'run' on.
+
+    :return: List of Runner objects, with ready-to-start clients
+    """
+    if project_path is None:
+        project_path = ""
+    runners = []
+
+    # First, find the settings.py. It should reside in the current directory
+    # provided that the user is currently positioned in the app catalog for
+    # their Pyttman project.
+    try:
+        import_module(f"{project_path}.settings")
+    except ImportError:
+        raise ImportError("No 'settings.py' module found. Make sure you are "
+                          "executing the command from within your Pyttman app "
+                          "directory (where the settings.py file is located).")
+
+    if settings is not None:
+        pyttman.settings = settings
+        pyttman.is_configured = True
+    else:
+        raise NotImplementedError("Pyttman is improperly configured - settings "
+                                  "module for app not found. ")
+
+    # Configure the logger instance for pyttman.logger
+    app_name = pyttman.settings.APP_NAME
+    if pyttman.settings.APPEND_LOG_FILES:
+        file_name = Path(f"{app_name}.log")
+    else:
+        file_name = Path(f"{app_name}-{datetime.now().strftime('%y%m%d-%H-%M-%S')}.log")
+
+    log_file_name = Path(pyttman.settings.LOG_FILE_DIR) / file_name
+    logging_handle = logging.FileHandler(filename=log_file_name, encoding="utf-8",
+                                         mode="a+" if pyttman.settings.APPEND_LOG_FILES else "w")
+    logging_handle.setFormatter(logging.Formatter("%(asctime)s:%(levelname)"
+                                                  "s:%(name)s: %(message)s"))
+    _logger = logging.getLogger("Pyttman logger")
+    _logger.setLevel(logging.DEBUG)
+    _logger.addHandler(logging_handle)
+
+    # Set the configured instance of logger to the pyttman.PyttmanLogger object
+    pyttman.logger.LOG_INSTANCE = _logger
+
+    # Import the router defined in MESSAGE_ROUTER in settings.py
+    message_router_config = settings.MESSAGE_ROUTER.get("ROUTER_CLASS").split(".")
+    message_router_class_name = message_router_config.pop()
+    message_router_module = ".".join(message_router_config)
+    message_router_module = import_module(message_router_module)
+
+    if not (message_router_class := getattr(message_router_module,
+                                            message_router_class_name)):
+        raise ImportError(f"Pyttman could not find the router "
+                          f"'{message_router_class_name} in "
+                          f"{message_router_class_name}. "
+                          f"Verify the MESSAGE_ROUTER setting in settings.py.")
+
+    # Retrieve the help keyword from settings
+    if not (help_keyword := settings.MESSAGE_ROUTER.get("HELP_KEYWORD")):
+        raise AttributeError("'HELP_KEYWORD' not defined in settings.py. "
+                             "Please define a word for the automatic "
+                             "help page generation to trigger on in your "
+                             "app whenever it is present as the first occurring "
+                             "string in a message.\nExample: 'HELP_KEYWORD' = 'help'")
+
+    # Retrieve command-unknown-responses from settings
+    if not (command_unknown_responses := settings.MESSAGE_ROUTER.
+            get("COMMAND_UNKNOWN_RESPONSES")):
+        raise ValueError("There are no responses provided for when "
+                         "no commands match a query. Define these in "
+                         "MESSAGE_ROUTER['COMMAND_UNKNOWN_RESPONSES'] as "
+                         "a list of strings")
+
+    # Import the client classes defined in CLIENTS in settings.py
+    if not len(settings.CLIENTS):
+        raise ValueError("At least one Client is required for Pyttman to "
+                         "start your app in Client mode. Define a Client "
+                         "in settings.py. Refer to the documentation for "
+                         "examples.")
+
+    # Set the features of the router to the features from settings.py
+    feature_objects_set = set()
+    for feature in settings.FEATURES:
+        assert not isinstance(feature, Feature), f"The feature '{feature}' is " \
+                                                 f"instantiated. Please redefine " \
+                                                 f"this feature as only the reference " \
+                                                 f"to the class, as shown in the docs. "
+        try:
+            feature_module_config = feature.split(".")
+            feature_class_name = feature_module_config.pop()
+            feature_module_name = ".".join(feature_module_config)
+            feature_module = import_module(feature_module_name)
+            feature_class = getattr(feature_module, feature_class_name)
+        except Exception as e:
+            raise ImportError(f"Pyttman could not import feature {feature}. "
+                              f"Verify that the import path is correct and "
+                              f"relative from the app directory.") from e
+
+        # Instantiate the feature class and traverse over its commands. Validate.
+        feature_object = feature_class()
+        feature_objects_set.add(feature_object)
+
+    assert len(feature_objects_set), "No features were provided in setttings.py"
+
+    # Start the clients defined in settings.CLIENTS in separate threads
+    for i, config in enumerate(settings.CLIENTS):
+        try:
+            module_config = config.pop("module").split(".")
+            client_class_name = module_config.pop()
+            module_name = ".".join(module_config)
+
+            module = import_module(module_name)
+            client_class = getattr(module, client_class_name)
+        except Exception as e:
+            raise NotImplementedError(f"Cannot use client at position {i}"
+                                      f" due to incorrect config. Check "
+                                      f"the following error and correct "
+                                      f"any syntax error in settings.py:"
+                                      f"\n{e}") from e
+
+        # The router was found - instantiate it and provide the APP_NAME from settings
+        message_router: AbstractMessageRouter = message_router_class(
+            features=list(feature_objects_set),
+            command_unknonw_responses=command_unknown_responses,
+            help_keyword=help_keyword)
+
+        # Provide the client with message_router and runner with client
+        client = client_class(message_router=message_router, **config)
+        runners.append(Runner(settings.APP_NAME, client))
+
+        # Create a log entry for app start
+        pyttman.logger.log(f" -- App {app_name} started: {datetime.now()} -- ")
+    return runners
