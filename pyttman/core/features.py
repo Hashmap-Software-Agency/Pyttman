@@ -122,7 +122,7 @@ class Feature(FeatureABC):
         [setattr(self, k, v) for k, v in kwargs]
 
         if self.commands is not None:
-            self.__validate_and_initialize_commands()
+            self.__validate_commands()
         else:
             raise AttributeError(f"Feature {self.__class__.__name__} "
                                  f"has no commands. Provide at least "
@@ -164,7 +164,7 @@ class Feature(FeatureABC):
             callbacks = (callbacks,)
         self._callbacks = callbacks
 
-    def __validate_and_initialize_commands(self):
+    def __validate_commands(self):
         """
         Assert that the tuple contains references to
         Command subclasses and nothing else.
@@ -186,8 +186,10 @@ class Feature(FeatureABC):
                                     "defining the 'commands' property in your feature class.\n"
                                     "Hint: Change '(FooCommand(), BarCommand())' to "
                                     "'(FooCommand, BarCommand).")
-                _initialized_command = command_class()
-                _initialized_command.feature = self
-                _initialized_commmand_classes.append(_initialized_command)
 
-        self.commands = tuple(_initialized_commmand_classes)
+                # Validate the EntityParser by calling constructor
+                try:
+                    command_class().EntityParser()
+                except Exception as e:
+                    raise AttributeError("An error occurred with the EntityParser "
+                                         f"in command {command_class}: {e}")
