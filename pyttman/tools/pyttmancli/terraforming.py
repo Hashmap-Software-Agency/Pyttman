@@ -10,6 +10,7 @@ from py7zr import unpack_7zarchive
 
 import pyttman
 from pyttman import Feature
+from pyttman.clients.builtin.cli import CliClient
 from pyttman.core.parsing.routing import AbstractMessageRouter
 from pyttman.tools.pyttmancli import Runner
 from tests.integration.testing_project import settings
