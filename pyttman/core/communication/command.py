@@ -274,17 +274,27 @@ class BaseCommand(AbstractCommand, ABC):
         return list(as_set)
 
     def generate_help(self) -> list:
+        input_string_parser_fields = self.EntityParser().get_parsers()
         if not self.help_string:
-            help_string = f"\n\nHelp section for command '{self.name}'\n" \
-                          f"\n\t> Description:\n\t\t{self.description}\n" \
-                          f"\n\t> Syntax:\n\t\t[{'|'.join(self.lead)}] "
+            help_string = f"\n\n> Help section for command '{self.name}'\n" \
+                          f"\n\t> Description:\n\t\t{self.description}" \
+                          f"\n\t> Syntax:\n\t\t[{'|'.join(self.lead)}]"
             if self.trail:
                 help_string += f"[{'|'.join(self.trail)}]\n"
 
-            if input_strings := list(self._get_input_string_parser_fields().keys()):
-                help_string += f"\n\t> Information expected from the user: " \
-                               f"\n\t\t{', '.join(input_strings)}\n"
-                # TODO - Display choices, it it's a ChoiceParser
+            if input_string_parser_fields:
+                help_string += f"\n\t> Entities (information you can provide) :"
+                for field_name, parser in input_string_parser_fields.items():
+                    help_string += f"\n\t\t * {field_name}"
+                    if isinstance(parser, ChoiceParser):
+                        help_string += f" - Valid choices: {parser.choices}"
+                help_string += "\n"
+
+            if parsers := list(input_string_parser_fields.values()):
+                for parser in parsers:
+                    if isinstance(parser, ChoiceParser):
+                        help_string += ""
+
             if self.example:
                 help_string += f"\n\t> Example:\n\t\t'{self.example}'\n"
         else:
