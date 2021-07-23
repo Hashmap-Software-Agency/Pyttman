@@ -1,5 +1,4 @@
 import functools
-
 import inspect
 import warnings
 from datetime import datetime
@@ -8,7 +7,6 @@ from typing import Dict, Generator, Any, Callable, Tuple
 
 from multidict import MultiDict
 
-from pyttman.core.decorators import Logger
 from pyttman.tools.scheduling.components import Job, TimeTrigger
 
 
@@ -112,7 +110,6 @@ class schedule:
                   return_self=return_self)
 
         # Map job in schedule and start it
-        Logger.log(f"Scheduler created job {job}", level="info")
         schedule.name_job_map.add(job.func_name, job)
 
         # Start the job, or add it to unstarted for later starts
