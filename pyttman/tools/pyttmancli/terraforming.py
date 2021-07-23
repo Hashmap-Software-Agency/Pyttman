@@ -13,7 +13,6 @@ from pyttman import Feature
 from pyttman.clients.builtin.cli import CliClient
 from pyttman.core.parsing.routing import AbstractMessageRouter
 from pyttman.tools.pyttmancli import Runner
-from tests.integration.testing_project import settings
 
 
 class TerraFormer:
@@ -82,7 +81,7 @@ def bootstrap_environment(project_path: str = None) -> List:
     # provided that the user is currently positioned in the app catalog for
     # their Pyttman project.
     try:
-        import_module(f"{project_path}.settings")
+        settings = import_module(f"{project_path}.settings")
     except ImportError:
         raise ImportError("No 'settings.py' module found. Make sure you are "
                           "executing the command from within your Pyttman app "
