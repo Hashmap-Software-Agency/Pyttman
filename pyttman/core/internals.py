@@ -1,4 +1,5 @@
 import logging
+import traceback
 import uuid
 import warnings
 from dataclasses import dataclass
@@ -97,9 +98,9 @@ def _generate_error_entry(message: MessageMixin, exc: BaseException) -> Reply:
     :return: Reply
     """
     error_id = uuid.uuid4()
+    traceback.print_exc()
     warnings.warn(f"{datetime.now()} - A critical error occurred in the "
-                  f"application logic. See logs for details. Error id: {error_id}")
-
+                  f"application logic. Error id: {error_id}")
     pyttman.logger.log(level="error",
                        message=f"CRICITAL ERROR: ERROR ID={error_id} - "
                                f"The error was caught while processing "
