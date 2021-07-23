@@ -179,6 +179,17 @@ def bootstrap_environment(project_path: str = None,
 
     assert len(feature_objects_set), "No features were provided in setttings.py"
 
+    # Instantiate router and provide the APP_NAME from settings
+    message_router: AbstractMessageRouter = message_router_class(
+        features=list(feature_objects_set),
+        command_unknonw_responses=command_unknown_responses,
+        help_keyword=help_keyword)
+
+    # If devmode is active, return only one CliClient in a runner.
+    if devmode:
+        client = CliClient(message_router=message_router)
+        return [Runner(settings.APP_NAME, client)]
+
     # Start the clients defined in settings.CLIENTS in separate threads
     for i, config in enumerate(settings.CLIENTS):
         try:
@@ -194,12 +205,6 @@ def bootstrap_environment(project_path: str = None,
                                       f"the following error and correct "
                                       f"any syntax error in settings.py:"
                                       f"\n{e}") from e
-
-        # The router was found - instantiate it and provide the APP_NAME from settings
-        message_router: AbstractMessageRouter = message_router_class(
-            features=list(feature_objects_set),
-            command_unknonw_responses=command_unknown_responses,
-            help_keyword=help_keyword)
 
         # Provide the client with message_router and runner with client
         client = client_class(message_router=message_router, **config)
