@@ -11,8 +11,9 @@
     commands which may be a value provider for a command.
 """
 import abc
+from abc import ABC
 from itertools import zip_longest
-from typing import Tuple, Any, Type
+from typing import Tuple, Any, Type, Collection, Dict
 
 from pyttman.core.communication.models.containers import MessageMixin
 from pyttman.core.parsing.identifiers import Identifier
@@ -27,34 +28,38 @@ class AbstractParser(abc.ABC):
 
     @abc.abstractmethod
     def parse_message(self, message: MessageMixin, memoization: dict) -> None:
+        """
+        Subclasses override this method, defining the
+        logic for parsing the message contents and
+        identifying the value of interest for each
+        field in the EntityParser class in which
+        these classes are created in as fields.
+        """
         pass
 
 
-class Parser(AbstractParser):
+class Parser(AbstractParser, ABC):
     """
     Base class for the Parser API in Pyttman.
     The various parsers in Pyttman inherit from this
     base class.
     Subclass this class when creating a custom Parser.
+
+    field identifier:
+        An optional Identifier class can be supplied as an Identifier.
+        The Identifier's job is finding strings in a message which
+        matches its own patterns.
     """
+    identifier: Identifier = None
+    exclude: Tuple = ()
 
     def __init__(self, **kwargs):
+        if hasattr(self, "value"):
+            raise AttributeError("The field 'value' is reserved for internal use. "
+                                 "Please choose a different name for the field.")
         self.value = None
         for k, v in kwargs.items():
             setattr(self, k, v)
-
-    def parse_message(self, message: MessageMixin, memoization: dict) -> None:
-        """
-        Subclasses override this method, defining the
-        logic for parsing the message contents and
-        identifying the value of interest for each
-        field in the InputStringParser class in which
-        these classes are created in as fields.
-        """
-        raise NotImplementedError("This parser class is not designed for direct use. "
-                                  "See the available Parser classes to use, or subclass "
-                                  "this class and write your own parse_message method "
-                                  "for customized behavior.")
 
     def reset(self) -> None:
         """
@@ -62,6 +67,51 @@ class Parser(AbstractParser):
         :return: None
         """
         self.value = None
+
+    def get_parsers(self) -> Dict:
+        """
+        Returns a collection of fields on the instance of
+        type Parser.
+        :return: Tuple, instances of Parser.
+        """
+        parser_fields = {}
+
+        for field_name in dir(self):
+            field_value = getattr(self, field_name)
+            if not field_name.startswith("__") and issubclass(field_value.__class__,
+                                                              AbstractParser):
+                parser_fields[field_name] = field_value
+        return parser_fields
+
+
+class EntityParserBase(Parser):
+    """
+    The EntityParser class is designed to be used inside
+    Command classes, as an internal class.
+
+    The EntityParser will, with it's defined fields,
+    aid in identifying Entities (extracted information
+    from user messages) and keep the entity values in
+    the field variables themselves.
+    """
+
+    def parse_message(self, message: MessageMixin, memoization: dict = None) -> None:
+        """
+        Traverse over all fields which are Parser subclasses.
+        Have them identify their values according to their
+        constraints and conditions, and store them in a
+        dictionary, returned at the end of parsing.
+        :param message: MessageMixin subclass object to be parsed.
+        :param memoization:
+        :return:
+        """
+        self.value = {}
+        for field_name, parser_object in self.get_parsers().items():
+            parser_object.parse_message(message, memoization=memoization)
+            if parser_object.value not in self.exclude:
+                self.value[field_name] = parser_object.value
+            else:
+                self.value[field_name] = None
 
 
 class ValueParser(Parser):
@@ -99,11 +149,7 @@ class ValueParser(Parser):
 
     example: `arrival_time = ValueParser(suffixes=("arrival", "arrive", "arrives", "arrives"))`
               would return "20:44" on message "flight 34392 arrives 20:44"
-
-
     """
-    identifier = None
-
     def __init__(self, prefixes: Tuple = None,
                  suffixes: Tuple = None,
                  identifier: Type[Identifier] = None,

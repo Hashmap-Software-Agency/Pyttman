@@ -5,17 +5,13 @@ set of rules on how natural language relates to
 functions and methods.
 """
 import abc
-import sys
-import uuid
-import warnings
 from abc import ABC
 from itertools import zip_longest
 from typing import List, Dict, Tuple
 
-import pyttman
 from pyttman.core.communication.models.containers import MessageMixin, Reply
 from pyttman.core.internals import _generate_name, _generate_error_entry
-from pyttman.core.parsing.parsers import Parser
+from pyttman.core.parsing.parsers import Parser, ChoiceParser, EntityParserBase
 
 
 class AbstractCommand(abc.ABC):
@@ -96,28 +92,69 @@ class BaseCommand(AbstractCommand, ABC):
     Base class for a Command, containing configuration
     on which criterias are set for a message to match
     it, as well as methods to make understanding and
-    retreiving data from a MessageMixin easier.
+    retreiving data from a message easier.
 
-    Defining the Response internal class provides a
-    class based way of handling how to respond to a
-    MessageMixin. The user can interact with the internal
-    methods such as
+    The Command class is similar to an endpoint method
+    in MVC, where it will recieve a Message objects
+    upon a matching route given by the MessageRouter.
+
+    :field lead:
+        Define single strings or a sequence of strings in
+        the 'lead' tuple, to define which words shall
+        occur in the message for it to match on the
+        Command instance. Selection is  'any of'.
+
+    :field trail:
+        Optional: define the 'trail' tuple.
+        Similar to the 'lead' tuple - define a single, or
+        a sequence of strings which will dictate which
+        messages matches the Command. All strings defined
+        in the 'trail' tuple must occur AFTER all strings
+        defined in 'lead', for the command to match.
+        This is useful to steer things such as 'search'
+        as a lead keyword, in to the right command for
+        the right 'search'. You may have one command
+        for 'search for movies' and another for
+        'search for the best coffee', in your app.
+
+    :field ordered:
+        Remember that all strings in 'lead' and 'trail'
+        are 'any of'? That also means that Pyttman will not
+        consider their order of appearence left- to right
+        in the message compared to your lead and trail
+        tuples. This can be set however with the 'ordered'
+        parameter, to True. This will require that all
+        strings defined in lead and trail, ocurr in the
+        same order as you have defined them
+
+    :field help_string:
+        An optional help string which will override the
+        auto-generated string that Pyttman builds for
+        the user at run time.
+
+    :field description:
+        A human friendly piece of text to describe
+        what your command does.
+
+    :field example:
+        Provide your users with an example of how
+        a message for this command could look.
     """
-    description = "Unavailable"
-    example = None
-    lead = tuple()
-    trail = tuple()
-    ordered = False
-    help_string = None
+    description: str = "Unavailable"
+    example: str = None
+    lead: Tuple[str] = tuple()
+    trail: Tuple[str] = tuple()
+    ordered: bool = False
+    help_string: str = None
     feature = None
 
-    class InputStringParser:
+    class EntityParser(EntityParserBase):
         """
         Optional inner class to configure query strings
         in recieved messages which matches a Command.
 
         The identified values are stored in the
-        'input_strings' dict, and are also available
+        'entities' dict, and are also available
         in the variable which the ValueParser is assigned
         to under the 'value' field.
 
@@ -137,17 +174,16 @@ class BaseCommand(AbstractCommand, ABC):
         has to occur after the first name, with the "prefixes"
         argument, and using the first name as that condition.
         """
-        exclude: Tuple[str] = tuple()
         pass
 
-    def __init__(self):
+    def __init__(self, **kwargs):
         if not isinstance(self.lead, tuple) or not isinstance(self.trail, tuple):
             raise AttributeError(f"'lead' and 'trail' fields must me tuples "
                                  f"containing strings for parsing to work "
                                  f"correctly")
-        self.help_string = None
+        [setattr(self, k, v) for k, v in kwargs.items()]
         self.name = _generate_name(self.__class__.__name__)
-        self.input_strings = {}
+        self.entities = {}
 
     def __repr__(self):
         return f"{self.__class__.__name__}(lead={self.lead}, " \
@@ -262,21 +298,9 @@ class BaseCommand(AbstractCommand, ABC):
         :param message: MessageMixin object
         :return: Reply, logic defined in the 'respond' method
         """
-        parsers = self._get_input_string_parser_fields()
-
-        # Let the ValueParsers search for matching strings and set its value
-        for name, parser in parsers.items():
-            parser.parse_message(message, memoization=self.input_strings)
-            if parser.value not in self.InputStringParser.exclude:
-                self.input_strings[name] = parser.value
-            else:
-                self.input_strings[name] = None
-
-        # Reset the parsers' values now that parsing is done,
-        # not to interfere with next upcoming messages.
-        # Also clear input_strings, as it will interfere with
-        # memoization otherwise.
-        [i.reset() for i in parsers.values()]
+        entity_parser = self.EntityParser()
+        entity_parser.parse_message(message, memoization=self.entities)
+        self.entities = entity_parser.value
 
         try:
             reply: Reply = self.respond(message=message)
@@ -285,24 +309,11 @@ class BaseCommand(AbstractCommand, ABC):
 
         if not reply or not isinstance(reply, Reply):
             raise ValueError(f"Improperly configured Command class: "
+                             f"{self.__class__.__name__}."
                              f"respond method returned '{type(reply)}', "
                              f"expected Reply object")
-        self.input_strings.clear()
+        self.entities.clear()
         return reply
-
-    def _get_input_string_parser_fields(self) -> Dict[str, Parser]:
-        """
-        Returns a dict with all name:parser in the inner class
-        'InputStringParser'
-        :return: dict[str, Parser]
-        """
-        name_parser_map = {}
-        for field_name in dir(self.InputStringParser):
-            parser_object = getattr(self.InputStringParser, field_name)
-
-            if not field_name.startswith("__") and isinstance(parser_object, Parser):
-                name_parser_map[field_name] = parser_object
-        return name_parser_map
 
 
 class Command(BaseCommand):
