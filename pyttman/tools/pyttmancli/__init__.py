@@ -1,8 +1,10 @@
-import sys
 import argparse
+import concurrent
+import sys
+from datetime import datetime
 
 from pyttman.tools.pyttmancli.executor import Runner
-from pyttman.tools.pyttmancli.terraforming import TerraFormer
+from pyttman.tools.pyttmancli.terraforming import TerraFormer, bootstrap_environment
 
 
 def run(argv=None):
@@ -22,15 +24,23 @@ def run(argv=None):
         command = None
 
     options, args = argparser.parse_known_args(argv[2:])
+    app_name = options.args.pop()
 
     if command == "newapp":
-        app_name = options.args.pop()
         terraformer = TerraFormer(app_name=app_name)
         terraformer.terraform()
     elif command == "dev":
-        app_name = options.args.pop()
-        runner = Runner(app_name)
-        runner.run()
+        runners = bootstrap_environment(devmode=True)
+        runners.pop().run()
+    elif command == "runclients":
+        runners = bootstrap_environment()
+        # Put the client runtime in a separate processes for concurrent clients
+        with concurrent.futures.ThreadPoolExecutor(
+                thread_name_prefix="pyttman-client-thread-") as exc:
+            for runner in runners:
+                print(f" {datetime.now()} --> Starting client '"
+                      f"{runner.client.__class__.__name__}'...")
+                exc.submit(runner.run)
     else:
         from pyttman import __version__
         print(f"\nPyttman CLI, version {__version__}")
@@ -38,4 +48,7 @@ def run(argv=None):
               "Start a new app project. Creates files and "
               "directories in the current directory\n * dev "
               "[<app name>] - Starts running the app with a "
-              "CLI client for development purposes\n\n")
+              "CLI client for development purposes\n"
+              "* runclients - Starts your app with all clients "
+              "defined in the CLIENTS list, in parallel. This is "
+              "the standard production mode for Pyttman apps.\n")
