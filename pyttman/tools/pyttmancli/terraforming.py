@@ -62,7 +62,8 @@ class TerraFormer:
                f"Source: {self.source}"
 
 
-def bootstrap_environment(project_path: str = None) -> List:
+def bootstrap_environment(project_path: str = None,
+                          devmode: bool = False) -> List:
     """
     Bootstraps the framework with modules and configurations
     read from the settings.py found in the current path.
@@ -71,6 +72,11 @@ def bootstrap_environment(project_path: str = None) -> List:
     Features are parsed, asserted and wrapped in Runner objects
     for the actual app starter to simply call 'run' on.
 
+    :param project_path: path to the project at app root level.
+                         (same as settings.py). This parameter is
+                         NOT needed if invoked where the settings
+                         module for the app is located.
+    :param devmode: Provides only one runner with the CliClient in.
     :return: List of Runner objects, with ready-to-start clients
     """
     if project_path is None:
