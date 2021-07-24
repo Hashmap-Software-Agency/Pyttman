@@ -1,5 +1,4 @@
 import functools
-
 import inspect
 import warnings
 from datetime import datetime
@@ -8,7 +7,6 @@ from typing import Dict, Generator, Any, Callable, Tuple
 
 from multidict import MultiDict
 
-from pyttman.core.decorators import Logger
 from pyttman.tools.scheduling.components import Job, TimeTrigger
 
 
@@ -80,7 +78,7 @@ class schedule:
                      "new loop created for it by Pyttman. For most use cases this "      \
                      "is fine, but it may cause unwanted behavior since it may "         \
                      "interfere with other loops and coroutines in your application, "   \
-                     "0causing the call stack between them to fail.\nIf your scheduled " \
+                     "causing problems during runtime.\nIf your scheduled " \
                      "job doesn't run as desired, try passing the loop in which the "    \
                      "other coroutines are scheduled in."
 
@@ -112,13 +110,12 @@ class schedule:
                   return_self=return_self)
 
         # Map job in schedule and start it
-        Logger.log(f"Scheduler created job {job}", level="info")
         schedule.name_job_map.add(job.func_name, job)
-        schedule.id_job_map[job.native_id] = job
 
         # Start the job, or add it to unstarted for later starts
         if start_now:
             job.start()
+            schedule.id_job_map[job.native_id] = job
         return job
 
     @staticmethod
@@ -217,11 +214,13 @@ class schedule:
                       if i.running is False])
 
     @staticmethod
-    def start_job(name: str) -> bool:
+    def start_job(name: str) -> None:
         """
         Start the scheudling of a given method,
         if a Job with the name is found
         @param name: Name of the job to start (may start multiple)
-        @return: bool, jobs were or were not started
+        @return: None
         """
-        return bool([job.start() for job in list(schedule.get_jobs(name))])
+        for job in schedule.get_jobs(job_name=name):
+            job.start()
+            schedule.id_job_map[job.native_id] = job

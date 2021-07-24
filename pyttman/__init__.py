@@ -2,20 +2,22 @@ from pyttman.tools.apihandles import RestApiHandle
 from pyttman.tools.scheduling.schedule import schedule
 
 from pyttman.tools.pollcache import PollCache
-from pyttman.core.commandprocessor import CommandProcessor
+from pyttman.core.parsing.commandprocessor import CommandProcessor
 from pyttman.core.interpretation import Interpretation
-from pyttman.core.decorators import Logger as logger
+from pyttman.core.decorators import PyttmanLogger
 from pyttman.core.decorators import scheduledmethod
 from pyttman.core.internals import _cim, is_dst
 from pyttman.core.callback import Callback
-from pyttman.core.bases import Feature
-from pyttman.models.message import Message
+from pyttman.core.features import Feature
 from pyttman.core.internals import load_settings
 
-__version__ = '1.0.1'
+__version__ = '1.1.4'
+
 
 # Set by the user in each projects' main.py file, imported locally
 settings = None
+is_configured = False
+logger = PyttmanLogger
 
 """
 I love you
