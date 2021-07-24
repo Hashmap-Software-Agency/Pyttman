@@ -80,7 +80,7 @@ class BaseStorage(AbstractStorage, ABC):
     def put(self, key: Any, item: Any):
         """
         Store an object in the Storage object, equivalent to
-        `my_dict["
+        `my_dict[key] = value"
         :param key: Any, key for the stored object
         :param item: Any, the actual object to store
         :return: None

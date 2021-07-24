@@ -1,5 +1,4 @@
 import functools
-
 import inspect
 import warnings
 from datetime import datetime
@@ -8,7 +7,6 @@ from typing import Dict, Generator, Any, Callable, Tuple
 
 from multidict import MultiDict
 
-from pyttman.core.decorators import Logger
 from pyttman.tools.scheduling.components import Job, TimeTrigger
 
 
@@ -80,7 +78,7 @@ class schedule:
                      "new loop created for it by Pyttman. For most use cases this "      \
                      "is fine, but it may cause unwanted behavior since it may "         \
                      "interfere with other loops and coroutines in your application, "   \
-                     "0causing the call stack between them to fail.\nIf your scheduled " \
+                     "causing problems during runtime.\nIf your scheduled " \
                      "job doesn't run as desired, try passing the loop in which the "    \
                      "other coroutines are scheduled in."
 
@@ -112,7 +110,6 @@ class schedule:
                   return_self=return_self)
 
         # Map job in schedule and start it
-        Logger.log(f"Scheduler created job {job}", level="info")
         schedule.name_job_map.add(job.func_name, job)
 
         # Start the job, or add it to unstarted for later starts

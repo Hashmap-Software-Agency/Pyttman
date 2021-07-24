@@ -1,4 +1,3 @@
-
 """
 File containing base classes related to binding
 strings and sequences to logic, for defining a
@@ -8,10 +7,11 @@ functions and methods.
 import abc
 from abc import ABC
 from itertools import zip_longest
-from typing import List, Dict
+from typing import List, Dict, Tuple
 
-from pyttman.core.communication.models.containers import Message, Reply
-from pyttman.core.parsing.parsers import Parser
+from pyttman.core.communication.models.containers import MessageMixin, Reply
+from pyttman.core.internals import _generate_name, _generate_error_entry
+from pyttman.core.parsing.parsers import Parser, ChoiceParser, EntityParserBase
 
 
 class AbstractCommand(abc.ABC):
@@ -21,7 +21,7 @@ class AbstractCommand(abc.ABC):
         pass
 
     @abc.abstractmethod
-    def respond(self, message: Message) -> Reply:
+    def respond(self, message: MessageMixin) -> Reply:
         """
         Subclasses overload this method to respond
         to a given command upon a match.
@@ -36,24 +36,37 @@ class AbstractCommand(abc.ABC):
         pass
 
     @abc.abstractmethod
-    def matches(self, message: Message) -> bool:
+    def matches(self, message: MessageMixin) -> bool:
         """
-        Determine whether a Message matches a
+        Determine whether a MessageMixin matches a
         command instance. The 'lead' and 'trail'
         fields are traversed over and sought
         for matching strings.
-        :param message: pyttman.Message object
+        :param message: pyttman.MessageMixin object
         :return: bool, command matches or not
         """
         pass
 
     @abc.abstractmethod
-    def truncated(self, message: Message) -> List[str]:
+    def _assert_ordered(self, message: list) -> bool:
+        """
+        Tells whether the Messgae content complies
+        with the configuration of 'lead' and 'trail',
+        thus meaning that all words defined in 'lead'
+        and 'trail' shall occur in the same order in
+        the message form the user, as they do in the
+        'lead' and 'trail' tuples.
+        :param message: Message object, from client
+        :return: bool, message is ordered or not
+        """
+
+    @abc.abstractmethod
+    def truncate_message(self, message: MessageMixin) -> List[str]:
         """
         Truncates all strings which occurs in
         lead and trail.
-        :param message: Pyttman.Message
-        :return: list, truncated
+        :param message: Pyttman.MessageMixin
+        :return: list, truncate_message
         """
         pass
 
@@ -79,49 +92,106 @@ class BaseCommand(AbstractCommand, ABC):
     Base class for a Command, containing configuration
     on which criterias are set for a message to match
     it, as well as methods to make understanding and
-    retreiving data from a Message easier.
+    retreiving data from a message easier.
 
-    Defining the Response internal class provides a
-    class based way of handling how to respond to a
-    Message. The user can interact with the internal
-    methods such as
+    The Command class is similar to an endpoint method
+    in MVC, where it will recieve a Message objects
+    upon a matching route given by the MessageRouter.
+
+    :field lead:
+        Define single strings or a sequence of strings in
+        the 'lead' tuple, to define which words shall
+        occur in the message for it to match on the
+        Command instance. Selection is  'any of'.
+
+    :field trail:
+        Optional: define the 'trail' tuple.
+        Similar to the 'lead' tuple - define a single, or
+        a sequence of strings which will dictate which
+        messages matches the Command. All strings defined
+        in the 'trail' tuple must occur AFTER all strings
+        defined in 'lead', for the command to match.
+        This is useful to steer things such as 'search'
+        as a lead keyword, in to the right command for
+        the right 'search'. You may have one command
+        for 'search for movies' and another for
+        'search for the best coffee', in your app.
+
+    :field ordered:
+        Remember that all strings in 'lead' and 'trail'
+        are 'any of'? That also means that Pyttman will not
+        consider their order of appearence left- to right
+        in the message compared to your lead and trail
+        tuples. This can be set however with the 'ordered'
+        parameter, to True. This will require that all
+        strings defined in lead and trail, ocurr in the
+        same order as you have defined them
+
+    :field help_string:
+        An optional help string which will override the
+        auto-generated string that Pyttman builds for
+        the user at run time.
+
+    :field description:
+        A human friendly piece of text to describe
+        what your command does.
+
+    :field example:
+        Provide your users with an example of how
+        a message for this command could look.
     """
-    description = "Unavailable"
-    example = None
-    lead = tuple()
-    trail = tuple()
-    ordered = False
-    help_string = None
+    description: str = "Unavailable"
+    example: str = None
+    lead: Tuple[str] = tuple()
+    trail: Tuple[str] = tuple()
+    ordered: bool = False
+    help_string: str = None
     feature = None
 
-    class InputStringParser:
+    class EntityParser(EntityParserBase):
         """
         Optional inner class to configure query strings
         in recieved messages which matches a Command.
 
         The identified values are stored in the
-        'input_strings' dict.
+        'entities' dict, and are also available
+        in the variable which the ValueParser is assigned
+        to under the 'value' field.
 
         Class variables dictate the name of the key
         in which an identified value is placed under.
+
+        > example:
+            first_name = ValueParser(identifier=NameIdentifier)
+            last_name = ValueParser(identifier=NameIdentifier,
+                                    prefixes=(firstname,))
+
+        In a given message based on the command:
+            "My name is John Doe, what's yours?"
+        .. the inut_strings field in the Command would look like:
+            `{"first_name": "John", "last_name": "doe"}`
+        .. This is because we specified that the last name
+        has to occur after the first name, with the "prefixes"
+        argument, and using the first name as that condition.
         """
         pass
 
-    def __init__(self):
+    def __init__(self, **kwargs):
         if not isinstance(self.lead, tuple) or not isinstance(self.trail, tuple):
             raise AttributeError(f"'lead' and 'trail' fields must me tuples "
                                  f"containing strings for parsing to work "
                                  f"correctly")
-        self.help_string = self.generate_help()
-        self.input_strings = {}
+        [setattr(self, k, v) for k, v in kwargs.items()]
+        self.name = _generate_name(self.__class__.__name__)
+        self.entities = {}
 
     def __repr__(self):
         return f"{self.__class__.__name__}(lead={self.lead}, " \
                f"trail={self.trail}, ordered={self.ordered})"
 
-    def matches(self, message: Message) -> bool:
+    def matches(self, message: MessageMixin) -> bool:
         """
-        Boolean indicator to whether the callback
+        Boolean indicator to whether the command
         matches a given message, without returning
         the function itself as with the .Parse method.
 
@@ -146,7 +216,7 @@ class BaseCommand(AbstractCommand, ABC):
         exits with False.
 
         :param message:
-            pyttman.Message
+            pyttman.MessageMixin
         :returns:
             Bool, True if self matches command
         """
@@ -197,61 +267,66 @@ class BaseCommand(AbstractCommand, ABC):
                 break
         return ordered_trail and ordered_lead
 
-    def truncated(self, message: Message):
-        as_set = set([i.lower() for i in message.content])
+    def truncate_message(self, message: MessageMixin):
+        as_set = set(message.lowered_content())
         as_set -= set(self.lead)
         as_set -= set(self.trail)
         return list(as_set)
 
-    def generate_help(self) -> str:
+    def generate_help(self) -> list:
+        input_string_parser_fields = self.EntityParser().get_parsers()
         if not self.help_string:
-            help_string = f"\n* Help for command '{self.__class__.__name__}'\n" \
-                          f"\n\t> Description:\n\t\t{self.description}\n" \
-                          f"\n\t> Syntax:\n\t\t{'|'.join(self.lead)} {'|'.join(self.trail)}\n"
-            if input_strings := list(self._get_input_string_parser_fields().keys()):
-                help_string += f"\n\t> Information expected from the user:" \
-                               f"\n\t\t{', '.join(input_strings)}\n"
+            help_string = f"\n\n> Help section for command '{self.name}'\n" \
+                          f"\n\t> Description:\n\t\t{self.description}" \
+                          f"\n\t> Syntax:\n\t\t[{'|'.join(self.lead)}]"
+            if self.trail:
+                help_string += f"[{'|'.join(self.trail)}]\n"
+
+            if input_string_parser_fields:
+                help_string += f"\n\t> Entities (information you can provide) :"
+                for field_name, parser in input_string_parser_fields.items():
+                    help_string += f"\n\t\t * {field_name}"
+                    if isinstance(parser, ChoiceParser):
+                        help_string += f" - Valid choices: {parser.choices}"
+                help_string += "\n"
+
+            if parsers := list(input_string_parser_fields.values()):
+                for parser in parsers:
+                    if isinstance(parser, ChoiceParser):
+                        help_string += ""
 
             if self.example:
                 help_string += f"\n\t> Example:\n\t\t'{self.example}'\n"
         else:
             help_string = self.help_string
-        return f"{'-' * 50}{help_string}\n{'-' * 50}"
+        return help_string.splitlines(keepends=True)
 
-    def process(self, message: Message) -> Reply:
+    def process(self, message: MessageMixin) -> Reply:
         """
         Iterate over all ValueParser objects and the name
         of the field it's allocated as.
-        :param message: Message object
+        :param message: MessageMixin object
         :return: Reply, logic defined in the 'respond' method
         """
-        for name, parser in self._get_input_string_parser_fields().items():
-            # Let the ValueParser search for matching strings and set its value
-            parser.parse_message(message)
+        entity_parser = self.EntityParser()
+        entity_parser.parse_message(message, memoization=self.entities)
+        self.entities = entity_parser.value
 
-            # Set query string values to None if none found
-            if parser.value:
-                self.input_strings[name] = parser.value
-            else:
-                self.input_strings[name] = None
-        return self.respond(message=message)
+        try:
+            reply: Reply = self.respond(message=message)
+        except Exception as e:
+            reply = _generate_error_entry(message, e)
 
-    def _get_input_string_parser_fields(self) -> Dict[str, Parser]:
-        """
-        Returns a dict with all name:parser in the inner class
-        'InputStringParser'
-        :return: dict[str, Parser]
-        """
-        name_parser_map = {}
-        for field_name in dir(self.InputStringParser):
-            parser_object = getattr(self.InputStringParser, field_name)
-
-            if not field_name.startswith("__") and isinstance(parser_object, Parser):
-                name_parser_map[field_name] = parser_object
-        return name_parser_map
+        if not reply or not isinstance(reply, Reply):
+            raise ValueError(f"Improperly configured Command class: "
+                             f"{self.__class__.__name__}."
+                             f"respond method returned '{type(reply)}', "
+                             f"expected Reply object")
+        self.entities.clear()
+        return reply
 
 
 class Command(BaseCommand):
-    def respond(self, message: Message) -> Reply:
+    def respond(self, message: MessageMixin) -> Reply:
         raise NotImplementedError("The 'respond' method must be "
                                   "defined when subclassing Command")

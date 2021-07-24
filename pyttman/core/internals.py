@@ -1,4 +1,7 @@
 import logging
+import traceback
+import uuid
+import warnings
 from dataclasses import dataclass
 from datetime import datetime
 from pathlib import Path
@@ -6,6 +9,7 @@ from pathlib import Path
 import pytz
 
 import pyttman
+from pyttman.core.communication.models.containers import MessageMixin, Reply
 
 """
 Details:
@@ -51,26 +55,56 @@ class _cim:
     err: str = "Pyttman ERROR"
 
 
-def load_settings(settings):
-    pyttman.settings = settings
-    if pyttman.settings is None:
-        raise NotImplementedError("Import settings in your project "
-                                  "and assign pyttman.settings = settings "
-                                  "before calling this function")
-    app_name = pyttman.settings.APP_NAME
-    if pyttman.settings.APPEND_LOG_FILES:
-        file_name = Path(f"{app_name}.log")
-    else:
-        file_name = Path(f"{app_name}-{datetime.now().strftime('%y%m%d-%H-%M-%S')}.log")
+def load_settings(*args):
+    raise DeprecationWarning("The function 'load_settings' is deprecated "
+                             "deprecated as of version 1.1.4. Instead of "
+                             "manually loading settings in your main.py, "
+                             "consider creating a project with pyttman-cli "
+                             "and use the clients provided in the framework, "
+                             "or create your own by subclassing BaseClient.")
 
-    log_file_name = Path(pyttman.settings.LOG_FILE_DIR) / file_name
-    logging_handle = logging.FileHandler(filename=log_file_name, encoding="utf-8",
-                                         mode="a+" if pyttman.settings.APPEND_LOG_FILES else "w")
 
-    logging_handle.setFormatter(logging.Formatter("%(asctime)s:%(levelname)"
-                                                  "s:%(name)s: %(message)s"))
-    _logger = logging.getLogger("Pyttman logger")
-    _logger.setLevel(logging.DEBUG)
-    _logger.addHandler(logging_handle)
-    pyttman.logger.set_logger(_logger)
-    pyttman.logger.log(f" -- App {app_name} started: {datetime.now()} -- ")
+def _generate_name(name):
+    """
+    Generates a user-friendly name out of
+    Command or Feature class names, by
+    inserting spaces in camel cased names
+    as well as truncating 'Command' and 'Feature'
+    in the names.
+    :param name: string, name of a class.
+                 hint: Command or Feature subclass
+    :return: str, 'SetTimeCommand' -> 'Set Time'
+    """
+    new_name = ""
+    for i in ("Feature", "feature", "Command", "command"):
+        name = name.replace(i, "")
+
+    for i, c in enumerate(name):
+        if i > 0 and c.isupper():
+            new_name += " "
+        new_name += c
+    return new_name
+
+
+def _generate_error_entry(message: MessageMixin, exc: BaseException) -> Reply:
+    """
+    Creates a log entry for critical errors with a UUID bound
+    to the log file entry, explaining the error. For the front
+    end clients, a Reply object is returned to provide for
+    end users who otherwise would experience a chatbot who
+    didn't reply back at all.
+    :param message: MessageMixin
+    :param exc: Exception
+    :return: Reply
+    """
+    error_id = uuid.uuid4()
+    traceback.print_exc()
+    warnings.warn(f"{datetime.now()} - A critical error occurred in the "
+                  f"application logic. Error id: {error_id}")
+    pyttman.logger.log(level="error",
+                       message=f"CRICITAL ERROR: ERROR ID={error_id} - "
+                               f"The error was caught while processing "
+                               f"message: '{message}'. Error message: '{exc}'")
+
+    return Reply(f"{pyttman.settings.FATAL_EXCEPTION_AUTO_REPLY} - "
+                 f"Error id: {error_id}")
