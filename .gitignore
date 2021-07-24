@@ -131,3 +131,4 @@ dmypy.json
 # Editor
 .idea
 /tests/
+pyttman/tests/
