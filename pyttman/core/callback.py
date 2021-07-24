@@ -1,5 +1,7 @@
+import warnings
 from itertools import zip_longest
-from pyttman.core.communication.command import Message
+
+from pyttman.core.communication.models.containers import MessageMixin
 
 """
 Details:
@@ -52,11 +54,16 @@ class Callback:
         self.trail = trail
         self.ordered = ordered
 
+        # Deprecated since 1.0.3, in favor of Class based commands.
+        warnings.warn("Deprecation Warning: The Callback object is "
+                      "deprecated since 1.0.3 in favor of class based "
+                      "commands.")
+
     def __repr__(self):
         return f"Callback Object(lead: {self._lead}, " \
                f"trail: {self._trail}, func: {self._func})"
 
-    def matches(self, message: Message) -> bool:
+    def matches(self, message: MessageMixin) -> bool:
         """
         Boolean indicator to whether the callback
         matches a given message, without returning
@@ -87,7 +94,7 @@ class Callback:
         exits with False.
 
         :param message:
-            pyttman.Message
+            pyttman.MessageMixin
         :returns:
             Bool, True if self matches command
         """
@@ -98,15 +105,15 @@ class Callback:
                    for i in message.content]
 
         if not (match_lead := [i for i in self._lead if i in lowered]):
-            return None
+            return False
         elif self._ordered and not self._assert_ordered(lowered):
-            return None
+            return False
 
         if self._trail:
             latest_lead_occurence, latest_trail_occurence = 0, 0
 
             if not (match_trail := [i for i in self._trail if i in lowered]):
-                return None
+                return False
 
             for lead, trail in zip_longest(match_lead, match_trail):
                 try:

@@ -6,8 +6,8 @@ import traceback
 from typing import Tuple
 
 import pyttman
-from pyttman.core.communication.models.containers import Message
-from pyttman.core.decorators import Logger
+from pyttman.core.communication.models.containers import MessageMixin
+from pyttman.core.decorators import PyttmanLogger
 from pyttman.core.internals import _cim
 from pyttman.core.interpretation import Interpretation
 from pyttman.core.features import Feature
@@ -68,9 +68,9 @@ class CommandProcessor:
         else:
             self._features = features
 
-    def process(self, message: Message) -> Interpretation:
+    def process(self, message: MessageMixin) -> Interpretation:
         """
-        Splits content field on the Message object, for processing
+        Splits content field on the MessageMixin object, for processing
         in _interpret.
         """
         errors_occurred = False
@@ -87,13 +87,13 @@ class CommandProcessor:
         finally:
             if errors_occurred:
                 err_message = str(traceback.format_exc())
-                Logger.log(err_message, "error")
+                PyttmanLogger.log(err_message, "error")
                 return Interpretation(error=message,
                                       response=lambda: f'Oops! An internal error occurred. '
                                                        f'This occurrence has been logged.',
                                       original_message=tuple(message.content))
 
-    def _interpret(self, message: Message) -> Interpretation:
+    def _interpret(self, message: MessageMixin) -> Interpretation:
         """
         Identify the pronouns in the given message. Try to 
         match the pronouns aganst the mapped pronouns property
