@@ -150,11 +150,8 @@ class ValueParser(Parser):
     example: `arrival_time = ValueParser(suffixes=("arrival", "arrive", "arrives", "arrives"))`
               would return "20:44" on message "flight 34392 arrives 20:44"
     """
-    def __init__(self, prefixes: Tuple = None,
-                 suffixes: Tuple = None,
-                 identifier: Type[Identifier] = None,
-                 span: int = 0,
-                 **kwargs):
+    def __init__(self, prefixes: Tuple = None, suffixes: Tuple = None,
+                 identifier: Type[Identifier] = None, span: int = 0, **kwargs):
         super().__init__(**kwargs)
 
         if prefixes is None:
