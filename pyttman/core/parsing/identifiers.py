@@ -97,6 +97,6 @@ class IntegerIdentifier(Identifier):
     patterns = (r"[0-9]+",)
 
 
-class NameIdentifier(Identifier):
+class CapitalizedIdentifier(Identifier):
     """ identifies names by looking for capitalized strings """
     patterns = (r"^([A-Z][a-z]*)$",)

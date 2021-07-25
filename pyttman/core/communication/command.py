@@ -162,8 +162,8 @@ class BaseCommand(AbstractCommand, ABC):
         in which an identified value is placed under.
 
         > example:
-            first_name = ValueParser(identifier=NameIdentifier)
-            last_name = ValueParser(identifier=NameIdentifier,
+            first_name = ValueParser(identifier=CapitalizedIdentifier)
+            last_name = ValueParser(identifier=CapitalizedIdentifier,
                                     prefixes=(firstname,))
 
         In a given message based on the command:
