@@ -11,9 +11,7 @@ class CliClient(BaseClient):
     def run_client(self):
         print(f"\nPyttman v.{pyttman.__version__} - "
               f"Command-line interface client\nStart chatting"
-              f" with your app below!\n\nTo see available "
-              f"features and commands, type "
-              f"'{pyttman.settings.MESSAGE_ROUTER['HELP_KEYWORD']}'")
+              f" with your app below!\n\n")
         while True:
             message = Message(input("-> "), client=self)
             print(self.message_router.get_reply(message).as_str())
