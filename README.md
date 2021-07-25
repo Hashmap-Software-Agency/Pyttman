@@ -19,7 +19,7 @@ It is inspired by [Django](https://www.djangoproject.com) in a few design aspect
 
 ### A few bullet points are:
 
-* Bundled with client classes already written and integrated with the framework, so you can focus on building your app and have it online on Discord with 0 lines of code*.
+* Bundled with client classes already written and integrated with the framework, so you can focus on building your app and have it online on Discord with the ready-made DiscordClient.
 
 * Develop your app once and chat with it on muliple platforms simultaneously by using multiple Client configurations in `settings.py`.
 
