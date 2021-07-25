@@ -65,5 +65,5 @@ On behalf of the Pyttman dev team, thank you to all developers who worked on the
 * Pyttman uses [MultiDict](https://github.com/aio-libs/multidict) in its scheduler API 
 * Pyttman uses [pytz](https://pythonhosted.org/pytz/) for timezones
 * Pyttman uses [requests](https://docs.python-requests.org/en/master/) in tools offering easier API integration
-* Pyttman uses [discord.py](https://github.com/Rapptz/discord.py) when adding support for native development of apps integrated with the [Discord]([Discord | Your Place to Talk and Hang Out](https://discord.com/)) platform. discord.Client and discord.Message are subclassed. 
+* Pyttman uses [discord.py](https://github.com/Rapptz/discord.py) when adding support for native development of apps integrated with the [Discord](https://discord.com/) platform. discord.Client and discord.Message are subclassed. 
 
