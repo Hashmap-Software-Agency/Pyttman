@@ -13,7 +13,7 @@
 import abc
 from abc import ABC
 from itertools import zip_longest
-from typing import Tuple, Any, Type, Collection, Dict
+from typing import Tuple, Any, Type, Collection, Dict, Optional
 
 from pyttman.core.communication.models.containers import MessageMixin
 from pyttman.core.parsing.identifiers import Identifier
@@ -303,17 +303,23 @@ class ValueParser(Parser):
         # If the span property is set to greater than 0, walk further in
         # message.content and also include elements as far as the span
         # property designates.
-
+        # If an identifier is used, it also has to approve of the string
+        # for each span iteration as the walk in the message progresses.
+        # If an Identifier is does not comply with a tring, the walk is
+        # cancelled.
         if self.value is not None and self.span:
-            walk_start = message.content.index(self.value)
+            current_index = message.content.index(self.value)
             for i in range(1, self.span):
                 try:
-                    # Make sure the identifier, if configured,
-                    # approves of the following elements in span
-                    if self.identifier and not self.identifier(start_index=walk_start + i) \
-                            .get_matching_string(message):
-                        continue
-                    self.value += f" {message.content[walk_start + i]}"
+                    current_index += 1
+                    if self.identifier:
+                        elem = self.identifier(start_index=current_index).get_matching_string(message)
+                        if elem is None or message.content.index(elem) != current_index:
+                            break
+                        else:
+                            self.value += f" {elem}"
+                    else:
+                        self.value += f" {message.content[current_index]}"
 
                 # There are not enough elements in message.content to walk as far as
                 # the span property requests. Abort.
@@ -397,5 +403,7 @@ class ChoiceParser(Parser):
         for i in value:
             if not isinstance(i, str):
                 raise ValueError("All values in the 'choices' property must me 'str'")
+            elif len(i.split()) > 1:
+                raise ValueError(f"Spaces in Choices is not supported at this time: '{i}'")
             _values.append(i.lower().strip())
         self._choices = tuple(_values)
