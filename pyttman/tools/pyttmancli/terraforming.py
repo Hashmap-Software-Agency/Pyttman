@@ -175,9 +175,15 @@ def bootstrap_environment(project_path: str = None,
 
         # Instantiate the feature class and traverse over its commands. Validate.
         feature_object = feature_class()
+        assert issubclass(feature_class, Feature), f"'{feature_object.__class__.__name__}' " \
+                                                   f"is not a subclass of 'Feature'. " \
+                                                   f"Check your FEATURES list in " \
+                                                   f"settings.py and verify that " \
+                                                   f"all classes defined are Feature" \
+                                                   f"subclasses."
         feature_objects_set.add(feature_object)
 
-    assert len(feature_objects_set), "No features were provided in setttings.py"
+    assert len(feature_objects_set), "No features were provided in settings.py"
 
     # Instantiate router and provide the APP_NAME from settings
     message_router: AbstractMessageRouter = message_router_class(
