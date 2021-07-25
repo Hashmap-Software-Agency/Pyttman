@@ -322,7 +322,12 @@ class BaseCommand(AbstractCommand, ABC):
                              f"{self.__class__.__name__}."
                              f"respond method returned '{type(reply)}', "
                              f"expected Reply object")
+
         self.entities.clear()
+        for parser_name in entity_parser.get_parsers():
+            parser = getattr(entity_parser, parser_name)
+            parser.reset()
+            print(parser.value)
         return reply
 
 

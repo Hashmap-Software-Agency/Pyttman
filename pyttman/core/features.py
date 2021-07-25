@@ -169,7 +169,6 @@ class Feature(FeatureABC):
         Assert that the tuple contains references to
         Command subclasses and nothing else.
         """
-        _initialized_commmand_classes = []
         try:
             iter(self.commands)
             if not isinstance(self.commands, Tuple):
