@@ -1,6 +1,7 @@
 import logging
 import os
 import shutil
+import traceback
 from datetime import datetime
 from importlib import import_module
 from pathlib import Path
@@ -162,16 +163,12 @@ def bootstrap_environment(project_path: str = None,
                                                  f"instantiated. Please redefine " \
                                                  f"this feature as only the reference " \
                                                  f"to the class, as shown in the docs. "
-        try:
-            feature_module_config = feature.split(".")
-            feature_class_name = feature_module_config.pop()
-            feature_module_name = ".".join(feature_module_config)
-            feature_module = import_module(feature_module_name)
-            feature_class = getattr(feature_module, feature_class_name)
-        except Exception as e:
-            raise ImportError(f"Pyttman could not import feature {feature}. "
-                              f"Verify that the import path is correct and "
-                              f"relative from the app directory.") from e
+
+        feature_module_config = feature.split(".")
+        feature_class_name = feature_module_config.pop()
+        feature_module_name = ".".join(feature_module_config)
+        feature_module = import_module(feature_module_name)
+        feature_class = getattr(feature_module, feature_class_name)
 
         # Instantiate the feature class and traverse over its commands. Validate.
         feature_object = feature_class()
