@@ -323,11 +323,11 @@ class BaseCommand(AbstractCommand, ABC):
                              f"respond method returned '{type(reply)}', "
                              f"expected Reply object")
 
+        # Purge entities values and all parser instances from their local values
         self.entities.clear()
         for parser_name in entity_parser.get_parsers():
             parser = getattr(entity_parser, parser_name)
             parser.reset()
-            print(parser.value)
         return reply
 
 
