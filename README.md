@@ -49,6 +49,8 @@ It's very easy to get started with Pyttman.
 3. Start a project using the command `pyttman-cli newapp <app_name>`
 4. You now have a template Pyttman app. Run it with the shell client using `pyttman-cli dev <app_name>`, or add clients to `settings.py` and have your digital assistant app up in seconds.
 5. Consult the documentation for guidance on how to use Pyttman to its full potential by integrating your app with a chat service or your own website.
+
+> Documentation is on the board right now and is being written as quickly as possible. In the mean time, if you just can't wait - check out this template [example app](https://github.com/dotchetter/Pyttman-example-app) on how to get an idea of how to start using Pyttman.
    
 
 
