@@ -1,3 +1,4 @@
+import sys
 import logging
 import os
 import shutil
@@ -63,8 +64,7 @@ class TerraFormer:
                f"Source: {self.source}"
 
 
-def bootstrap_environment(project_path: str = None,
-                          devmode: bool = False) -> List:
+def bootstrap_environment(module: str = None, devmode: bool = False) -> List:
     """
     Bootstraps the framework with modules and configurations
     read from the settings.py found in the current path.
@@ -73,22 +73,21 @@ def bootstrap_environment(project_path: str = None,
     Features are parsed, asserted and wrapped in Runner objects
     for the actual app starter to simply call 'run' on.
 
-    :param project_path: path to the project at app root level.
-                         (same as settings.py). This parameter is
-                         NOT needed if invoked where the settings
-                         module for the app is located.
+    :param module: Module in which the app source is located
     :param devmode: Provides only one runner with the CliClient in.
     :return: List of Runner objects, with ready-to-start clients
     """
-    if project_path is None:
-        project_path = ""
+
     runners = []
+
+    # This enables relative imports
+    sys.path.insert(0, Path.cwd().as_posix())
 
     # First, find the settings.py. It should reside in the current directory
     # provided that the user is currently positioned in the app catalog for
     # their Pyttman project.
     try:
-        settings = import_module(f"{project_path}.settings")
+        settings = import_module(f"{module}.settings")
     except ImportError:
         raise ImportError("No 'settings.py' module found. Make sure you are "
                           "executing the command from within your Pyttman app "

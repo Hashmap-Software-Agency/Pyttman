@@ -1,8 +1,6 @@
 from pathlib import Path
 from setuptools import setup, find_packages
 
-# The directory containing this file
-from pyttman import settings
 
 HERE = Path(__file__).parent
 
@@ -13,7 +11,7 @@ README = (HERE / "README.md").read_text()
 # This call to setup() does all the work
 setup(
     name="Pyttman",
-    version=settings.__version__,
+    version="1.1.4",
     description="The virtual assistant framework made for developers with ideas",
     long_description=README,
     long_description_content_type="text/markdown",
