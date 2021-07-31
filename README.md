@@ -7,13 +7,12 @@ Pyttman is a framework for developing digital assistants, chatbots or other lang
 It is inspired by [Django](https://www.djangoproject.com) in a few design aspects and the developer experience, and aspires to offer a similar ease of use but for chatbots / digital assistants.
 
 
-> *My goal with Pyttman is to enable developers as little friction and complexity as possible when they set out to develop chat bots, digital assistants or otherwise natural-languate-powered apps.* 
+> *The goal with Pyttman is to enable developers as little friction and complexity as possible when they set out to develop chat bots, digital assistants or otherwise natural-languate-powered apps.* 
 >
 > *They should not have to bother with the nasty complexity of parsing text and figuring out how to integrate with different plattforms and keeping apps follow a design pattern.* 
 >
-> *I want to bring them the power to focus on building digital assistant apps and let Pyttman take care of the boring parts.*
->
-> */Simon Olofsson, creator of the Pyttman Project*
+> *We strive to bring them the power to focus on building digital assistant apps and let Pyttman take care of the boring parts.*
+
 
 
 
