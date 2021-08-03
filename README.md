@@ -4,7 +4,7 @@
 
 Welcome to Pyttman's GitHub repo!
 
-Please check out our [Wiki](https://github.com/dotchetter/Pyttman/wiki) for everything related to Pyttman. There you will find help with [installation](https://github.com/dotchetter/Pyttman/wiki/Installation), quickstart guide and API documentation.
+Check out the Pyttman [Wiki](https://github.com/dotchetter/Pyttman/wiki) for everything related to Pyttman. There you will find help with [installation](https://github.com/dotchetter/Pyttman/wiki/Installation), quickstart guide and API documentation.
 
 ### Contributions
 
