@@ -16,11 +16,17 @@ class MessageMixin:
     inheritance when a Message-like class is developed
     for supporting a 3rd party library / API.
     """
+
     def __init__(self, content=None, **kwargs):
         self.author = "anonymous"
         self.created = datetime.now()
         self.client = None
         self.content = content
+
+        try:
+            self.content_with_format = str(content).splitlines(keepends=True)
+        except ValueError:
+            self.content_with_format = None
 
         for k, v in kwargs.items():
             setattr(self, k, v)
@@ -84,7 +90,8 @@ class MessageMixin:
         """
         if sanitized:
             return " ".join(self.sanitized_content())
-
+        elif self.content_with_format is not None:
+            return str().join(self.content_with_format)
         return " ".join(self.content)
 
     def as_list(self, sanitized: bool = False) -> List:
