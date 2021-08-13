@@ -1,3 +1,4 @@
+import warnings
 from importlib import import_module
 from pathlib import Path
 import sys
@@ -36,4 +37,7 @@ class Runner:
         using pyttman-cli.
         :return: None
         """
-        self.client.run_client()
+        try:
+            self.client.run_client()
+        except Exception as e:
+            warnings.warn(str(e))
