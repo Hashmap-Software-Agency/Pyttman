@@ -116,3 +116,30 @@ class Reply(MessageMixin):
     from all Command subclasses.
     """
     pass
+class ReplyStream(Queue):
+    """
+    The ReplyStream class offers a simple interface for app developers
+    to return a collection of Reply objects in their app.
+    Each item put in a ReplyStream will be sent as an individual
+    Reply object.
+
+    It's useful for situations where the response for the app can
+    be a collection of items, where platforms have message
+    length restrictions or are otherwise cumbersome to format
+    as one single big Reply.
+
+    The ReplyStream is a subclass of Queue and typecasts every element
+    output from the 'get' method as a Reply object.
+    """
+
+    def __init__(self, collection: Iterable = None):
+        super().__init__()
+        if collection is not None:
+            map(self._put, collection)
+
+    def get(self, block=True, timeout=None):
+        """
+        Remove and return an item from the ReplyStream.
+        """
+        element = self._get()
+        return Reply(element) if not isinstance(element, Reply) else element
