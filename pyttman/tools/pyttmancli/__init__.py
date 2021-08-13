@@ -37,13 +37,20 @@ def run(argv=None):
         runners = bootstrap_environment(devmode=True, module=app_name)
         runners.pop().run()
     elif command == "runclients":
-        runners = bootstrap_environment(module=app_name)
+        print(f" {datetime.now()} --> Bootstrapping environment for app '{app_name}'...", end=" ")
+        try:
+            runners = bootstrap_environment(module=app_name)
+        except Exception as e:
+            print(f"failed - {e}")
+        else:
+            print(f"success")
+
         # Put the client runtime in a separate processes for concurrent clients
         with concurrent.futures.ThreadPoolExecutor(
                 thread_name_prefix="pyttman-client-thread-") as exc:
             for runner in runners:
-                print(f" {datetime.now()} --> Starting client '"
-                      f"{runner.client.__class__.__name__}'...")
+                print(f" {datetime.now()} ---> Starting client '"
+                      f"{runner.client.__class__.__name__}'")
                 exc.submit(runner.run)
     else:
         from pyttman import __version__
