@@ -2,12 +2,12 @@ import abc
 import random
 import warnings
 from types import ModuleType
-from typing import List
+from typing import List, Union
 
 import pyttman
 from pyttman import Feature
 from pyttman.core.communication.command import Command
-from pyttman.core.communication.models.containers import MessageMixin, Reply
+from pyttman.core.communication.models.containers import MessageMixin, Reply, ReplyStream
 from pyttman.core.internals import _generate_error_entry
 
 
@@ -106,7 +106,7 @@ class FirstMatchingRouter(AbstractMessageRouter):
                 # else:
                 #  TODO - Return help chapter for feature
         try:
-            reply: Reply = chosen_command.process(message=message)
+            reply: Union[Reply, ReplyStream] = chosen_command.process(message=message)
         except Exception as e:
             reply: Reply = _generate_error_entry(message, e)
         return reply
