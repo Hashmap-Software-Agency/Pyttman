@@ -1,10 +1,39 @@
 # Pyttman Changelog
 
-### v 1.1.4
+
+
+# v 1.1.5
 
 
 
-# Native client support for community plattforms		
+### 🤗 New features
+
+* #### Return multiple Reply objects from a Command
+
+  The new `ReplyStream` Queue-like object offers you the ability to return **multiple** response messages in a single object from Commands. 
+
+  The `ReplyStream` will wrap your strings or other objects as `Reply` objects if compatible, and the client will post each of these elements as separate messages in the client. 
+  
+
+* The `pyttman.schedule.method` api method no longer requires the use of the `async_loop` argument if the function to be scheduled is asynchronous, but rather acquires the running loop through `asyncio.get_running_loop()`. If no running loop is identified, it will automatically run the asynchronous function using `asyncio.run`. 
+
+
+
+### 🐛 Splatted bugs and corrected issues 
+
+* Fixes an [issue](https://github.com/dotchetter/Pyttman/issues/30) where line separations in `Reply` objects were not present when the data was displayed in applications such as DIscord or the Cli client terminal shell. These are now present.
+  
+* Fixes an [issue](https://github.com/dotchetter/Pyttman/issues/24) where clients could not communicate any errors upon startup. These are now showed through user warnings.
+
+------
+
+
+
+# v 1.1.4
+
+
+
+## Native client support for community plattforms		
 
 > **This feature is one of the flagship-features of this release.**  
 
@@ -77,7 +106,7 @@ CLIENTS = [
 
 
 
-# EntityParser API
+## EntityParser API
 
 > **This feature is one of the flagship-features of this release.**  
 
@@ -147,7 +176,7 @@ In short - it enables you to develop Commands and Features which extract informa
 
 
 
-# Storage API
+## Storage API
 
 * Feature-level implicit encapsulation, dict-like storage in all `Command` classes. 
 
@@ -193,7 +222,7 @@ In short - it enables you to develop Commands and Features which extract informa
 
   
 
-# Improved settings module
+## Improved settings module
 
 * Improved versatility with configuration for default replies vastly improved and other similar settings
 
@@ -203,12 +232,12 @@ In short - it enables you to develop Commands and Features which extract informa
 
 
 
-# Routing
+## Routing
 
 MessageRouters improved, now instantiating Command classes each time to prevent memory leaks in local preferences in Command objects outside of the Storage API.
 
 
 
-# Licenses
+## Licenses
 
 This release includes discord.py, and it's license is mentioned in the README.MD and LICENSE of the Pyttman project, [here](https://github.com/dotchetter/pyttman)
