@@ -1,3 +1,4 @@
+import asyncio
 import functools
 import inspect
 import warnings
@@ -74,13 +75,8 @@ class schedule:
 
         """
         async_warn = "\nThe callable '{0}' is asynchronous but the 'async_loop' "        \
-                     "argument was omitted.\nThis will cause this job to run in a "      \
-                     "new loop created for it by Pyttman. For most use cases this "      \
-                     "is fine, but it may cause unwanted behavior since it may "         \
-                     "interfere with other loops and coroutines in your application, "   \
-                     "causing problems during runtime.\nIf your scheduled " \
-                     "job doesn't run as desired, try passing the loop in which the "    \
-                     "other coroutines are scheduled in."
+                     "argument was omitted, and no async loop is running.\n"             \
+                     "This will cause the job to be executed through 'asyncio.run().'\n" \
 
         return_self = False
 
@@ -93,16 +89,21 @@ class schedule:
             recipient = schedule.schedule_default_catcher
             return_self = True
 
-        is_async = inspect.iscoroutinefunction(func)
-        if is_async or inspect.iscoroutinefunction(recipient):
+        func_is_async = inspect.iscoroutinefunction(func)
+        recipient_is_async = inspect.iscoroutinefunction(recipient)
+        if func_is_async or recipient_is_async:
             if async_loop is None:
-                warnings.warn(async_warn.format(func))
+                try:
+                    async_loop = asyncio.get_running_loop()
+                # No loop is running, and none was provided.
+                except RuntimeError:
+                    warnings.warn(async_warn.format(func))
 
         if inspect.iscoroutinefunction(recipient) and async_loop is None:
             warnings.warn(async_warn.format(recipient))
 
         job = Job(func=functools.partial(func, **kwargs),
-                  is_async=is_async,
+                  is_async=func_is_async,
                   trigger=trigger,
                   recipient=recipient,
                   func_name=repr(func),
