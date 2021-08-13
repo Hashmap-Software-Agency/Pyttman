@@ -117,12 +117,15 @@ class Message(MessageMixin):
     """
     pass
 
+
 class Reply(MessageMixin):
     """
     The Reply object is expected to be  returned
     from all Command subclasses.
     """
     pass
+
+
 class ReplyStream(Queue):
     """
     The ReplyStream class offers a simple interface for app developers
