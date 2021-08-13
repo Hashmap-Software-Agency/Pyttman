@@ -52,14 +52,15 @@
 #      LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 #      OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 #      SOFTWARE.
+import asyncio
 import warnings
 from datetime import datetime
 
 import discord
-
+from typing import Union
 from pyttman.clients.builtin.base import BaseClient
 from pyttman.clients.community.discord.misc import DiscordMessage
-from pyttman.core.communication.models.containers import Reply
+from pyttman.core.communication.models.containers import Reply, ReplyStream
 from pyttman.core.internals import _generate_error_entry
 
 
@@ -151,11 +152,17 @@ class DiscordClient(discord.Client, BaseClient):
 
         # Get the reply from the application logic developed by the user and send it in
         # the channel from the original message
-        reply: Reply = self.message_router.get_reply(discord_message)
+        reply: Union[Reply, ReplyStream] = self.message_router.get_reply(discord_message)
         try:
-            await discord_message.channel.send(reply.as_str())
+            if isinstance(reply, ReplyStream):
+                while reply.qsize():
+                    await discord_message.channel.send(reply.get().as_str())
+                    await asyncio.sleep(0.01)
+            else:
+                await discord_message.channel.send(reply.as_str())
         except Exception as e:
-            await discord_message.channel.send(_generate_error_entry(discord_message, e).as_str())
+            await discord_message.channel.send(
+                _generate_error_entry(discord_message, e).as_str())
 
     def run_client(self):
         if not self.token or not self.guild:

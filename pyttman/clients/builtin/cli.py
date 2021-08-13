@@ -1,6 +1,7 @@
 import pyttman
+from typing import Union
 from pyttman.clients.builtin.base import BaseClient
-from pyttman.core.communication.models.containers import Message, Reply
+from pyttman.core.communication.models.containers import Message, Reply, ReplyStream
 
 
 class CliClient(BaseClient):
@@ -10,11 +11,20 @@ class CliClient(BaseClient):
     """
     def run_client(self):
         print(f"\nPyttman v.{pyttman.__version__} - "
-              f"Command-line interface client\nStart chatting"
-              f" with your app below!\n\n")
+              f"Command-line interface client\n"
+              f"->> {pyttman.settings.APP_NAME} is online! Start chatting"
+              f" with your app below.\n")
+
         while True:
-            message = Message(input("-> "), client=self)
-            print(self.message_router.get_reply(message).as_str())
+            message = Message(input("You: "), client=self)
+            reply: Union[Reply, ReplyStream] = self.message_router.get_reply(message)
+
+            if isinstance(reply, ReplyStream):
+                while reply.qsize():
+                    print(f"{pyttman.settings.APP_NAME}:", reply.get().as_str())
+            elif isinstance(reply, Reply):
+                print(f"{pyttman.settings.APP_NAME}:", reply.as_str())
+            print()
 
     @staticmethod
     def publish(reply: Reply):

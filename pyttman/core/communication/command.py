@@ -7,9 +7,9 @@ functions and methods.
 import abc
 from abc import ABC
 from itertools import zip_longest
-from typing import List, Dict, Tuple
+from typing import List, Dict, Tuple, Union
 
-from pyttman.core.communication.models.containers import MessageMixin, Reply
+from pyttman.core.communication.models.containers import MessageMixin, Reply, ReplyStream
 from pyttman.core.internals import _generate_name, _generate_error_entry
 from pyttman.core.parsing.parsers import Parser, ChoiceParser, EntityParserBase
 
@@ -21,7 +21,7 @@ class AbstractCommand(abc.ABC):
         pass
 
     @abc.abstractmethod
-    def respond(self, message: MessageMixin) -> Reply:
+    def respond(self, message: MessageMixin) -> Union[Reply, ReplyStream]:
         """
         Subclasses overload this method to respond
         to a given command upon a match.
@@ -299,9 +299,9 @@ class BaseCommand(AbstractCommand, ABC):
                 help_string += f"\n\t> Example:\n\t\t'{self.example}'\n"
         else:
             help_string = self.help_string
-        return help_string.splitlines(keepends=True)
+        return help_string
 
-    def process(self, message: MessageMixin) -> Reply:
+    def process(self, message: MessageMixin) -> Union[Reply, ReplyStream]:
         """
         Iterate over all ValueParser objects and the name
         of the field it's allocated as.
@@ -313,15 +313,15 @@ class BaseCommand(AbstractCommand, ABC):
         self.entities = entity_parser.value
 
         try:
-            reply: Reply = self.respond(message=message)
+            reply: Union[Reply, ReplyStream] = self.respond(message=message)
         except Exception as e:
             reply = _generate_error_entry(message, e)
 
-        if not reply or not isinstance(reply, Reply):
+        if not reply or not isinstance(reply, Reply) and not isinstance(reply, ReplyStream):
             raise ValueError(f"Improperly configured Command class: "
                              f"{self.__class__.__name__}."
                              f"respond method returned '{type(reply)}', "
-                             f"expected Reply object")
+                             f"expected Reply or ReplyStream")
 
         # Purge entities values and all parser instances from their local values
         self.entities.clear()
@@ -332,6 +332,6 @@ class BaseCommand(AbstractCommand, ABC):
 
 
 class Command(BaseCommand):
-    def respond(self, message: MessageMixin) -> Reply:
+    def respond(self, message: MessageMixin) -> Union[Reply, ReplyStream]:
         raise NotImplementedError("The 'respond' method must be "
                                   "defined when subclassing Command")
