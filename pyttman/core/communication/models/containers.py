@@ -19,7 +19,6 @@ class MessageMixin:
     inheritance when a Message-like class is developed
     for supporting a 3rd party library / API.
     """
-
     def __init__(self, content=None, **kwargs):
         self.author = "anonymous"
         self.created = datetime.now()
@@ -120,14 +119,12 @@ class Message(MessageMixin):
     """
     pass
 
-
 class Reply(MessageMixin):
     """
     The Reply object is expected to be  returned
     from all Command subclasses.
     """
     pass
-
 
 class ReplyStream(Queue):
     """
@@ -136,7 +133,6 @@ class ReplyStream(Queue):
     Reply objects are to be returned to the
     user. 
     """
-
     def __init__(self, collection: Iterable = None):
         super().__init__()
         if collection is not None:
