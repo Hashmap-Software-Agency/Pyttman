@@ -131,24 +131,25 @@ class Reply(MessageMixin):
 
 class ReplyStream(Queue):
     """
-    The ReplyStream class offers a simple
-    interface for app developers to return a
-    collection of Reply objects in their app.
-    Each item put in a ReplyStream will be
-    sent as an individual Reply object.
-
-    It's useful for situations where the response
-    for the app can be a collection of items,
-    where platforms have message length restrictions
-    or are otherwise cumbersome to format as one
-    single big Reply. The ReplyStream subclasses
-    SimpleQueue and is therefore FIFO.
+    The ReplyStream class can be used instead of
+    the Reply class, whenever a collection of
+    Reply objects are to be returned to the
+    user. The ReplyStream subclasses SimpleQueue
+    and is therefore FIFO.
     """
 
     def __init__(self, collection: Iterable = None):
         super().__init__()
         if collection is not None:
-            map(self._put, collection)
+            if isinstance(collection, str):
+                self.put(collection)
+            else:
+                try:
+                    iter(collection)
+                except:
+                    raise AttributeError("'collection' must be iterable")
+                else:
+                    [self.put(i) for i in collection]
 
     def get(self, block=True, timeout=None):
         """
