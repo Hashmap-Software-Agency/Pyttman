@@ -134,8 +134,7 @@ class ReplyStream(Queue):
     The ReplyStream class can be used instead of
     the Reply class, whenever a collection of
     Reply objects are to be returned to the
-    user. The ReplyStream subclasses SimpleQueue
-    and is therefore FIFO.
+    user. 
     """
 
     def __init__(self, collection: Iterable = None):
