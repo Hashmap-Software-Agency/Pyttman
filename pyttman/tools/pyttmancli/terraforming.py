@@ -155,10 +155,10 @@ def bootstrap_environment(module: str = None, devmode: bool = False) -> List:
                          "in settings.py. Refer to the documentation for "
                          "examples.")
 
-    # Set the features of the router to the features from settings.py
-    feature_objects_set = set()
-    for feature in settings.FEATURES:
-        assert not isinstance(feature, Feature), f"The feature '{feature}' is " \
+    # Set the abilities of the router to the abilities from settings.py
+    ability_objects_set = set()
+    for ability in settings.ABILITIES:
+        assert not isinstance(ability, Ability), f"The ability '{ability}' is " \
                                                  f"instantiated. Please redefine " \
                                                  f"this ability as only the reference " \
                                                  f"to the class, as shown in the docs. "
