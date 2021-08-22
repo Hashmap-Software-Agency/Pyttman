@@ -75,7 +75,7 @@ class BaseStorage(AbstractStorage, ABC):
             return self.data[item]
         except KeyError as e:
             raise KeyError("Pyttman.Storage: No item stored "
-                           "under key which matches '{item}'")
+                           f"under key which matches '{item}'")
 
     def put(self, key: Any, item: Any):
         """
