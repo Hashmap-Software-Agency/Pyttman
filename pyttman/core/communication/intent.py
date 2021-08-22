@@ -299,6 +299,8 @@ class BaseIntent(AbstractIntent, ABC):
         :param message: MessageMixin object
         :return: Reply, logic defined in the 'respond' method
         """
+        joined_patterns = self.lead + self.trail
+        message.truncate(collection=joined_patterns, case_sensitive=False)
         self._entity_parser.parse_message(message, memoization=self.entities)
         self.entities = self._entity_parser.value
 
