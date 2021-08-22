@@ -3,12 +3,12 @@
     through out the Pyttman framework.
 
     Parsers are seen interacting with the
-    Command class as a configuration class
+    Intent class as a configuration class
     to both identify which command matches
     a message, but also in ValueParser
     classes to add functionality for Command
     classes to identify values behind querystring
-    commands which may be a value provider for a command.
+    intents which may be a value provider for a command.
 """
 import abc
 from abc import ABC
@@ -87,7 +87,7 @@ class Parser(AbstractParser, ABC):
 class EntityParserBase(Parser):
     """
     The EntityParser class is designed to be used inside
-    Command classes, as an internal class.
+    Intent classes, as an internal class.
 
     The EntityParser will, with it's defined fields,
     aid in identifying Entities (extracted information
@@ -117,7 +117,7 @@ class EntityParserBase(Parser):
 class ValueParser(Parser):
     """
     Configuration class designed to be defined
-    in a Command. The ValueParser aids in identifying
+    in a Intent. The ValueParser aids in identifying
     values provided by users in natural language.
 
     You can provide the ValueParser with a collection
@@ -161,7 +161,7 @@ class ValueParser(Parser):
 
         self.prefixes = prefixes
         self.suffixes = suffixes
-        self.identifier = identifier
+        self.identifier: Type[Identifier] = identifier
         self.span = span
 
         # Validate that the object was constructed properly
@@ -358,6 +358,9 @@ class ChoiceParser(Parser):
     """
     The Choice Parser simplifies identifying a value
     in a message which matches a set of choices.
+
+    A ChoiceParser is similar to an Enum in the way
+    it constricts the valid options.
 
     An example is a virtual assistant who can order
     pizza. Since the menu is known, we can add the

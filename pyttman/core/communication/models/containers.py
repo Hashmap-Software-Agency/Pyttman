@@ -122,7 +122,7 @@ class Message(MessageMixin):
 class Reply(MessageMixin):
     """
     The Reply object is expected to be  returned
-    from all Command subclasses.
+    from all Intent subclasses.
     """
     pass
 

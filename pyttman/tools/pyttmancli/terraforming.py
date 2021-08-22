@@ -144,7 +144,7 @@ def bootstrap_environment(module: str = None, devmode: bool = False) -> List:
     if not (command_unknown_responses := settings.MESSAGE_ROUTER.
             get("COMMAND_UNKNOWN_RESPONSES")):
         raise ValueError("There are no responses provided for when "
-                         "no commands match a query. Define these in "
+                         "no intents match a query. Define these in "
                          "MESSAGE_ROUTER['COMMAND_UNKNOWN_RESPONSES'] as "
                          "a list of strings")
 

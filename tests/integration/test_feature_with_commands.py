@@ -18,7 +18,7 @@ class TestValueParser(TestCase):
     def test_update_contact(self):
         update_contact_message = Message("register 1112222442 as new number for John")
         contact_feature = ContactFeature()
-        for command in contact_feature.commands:
+        for command in contact_feature.intents:
             if command.matches(message=update_contact_message):
                 response = command.process(message=update_contact_message)
                 print(response)

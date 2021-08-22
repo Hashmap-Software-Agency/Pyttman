@@ -1,7 +1,7 @@
 from unittest import TestCase
 
 import pyttman
-import pyttman.core.communication.command
+import pyttman.core.communication.intent
 import pyttman.core.communication.models.containers
 
 

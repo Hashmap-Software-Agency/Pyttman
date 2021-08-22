@@ -73,7 +73,7 @@ class Ability(AbilityABC):
     The Ability is an encapsulating class which
     holds Intent subclasses in its 'intents' tuple.
 
-    It provides an encapsulating scope for Commands
+    It provides an encapsulating scope for Intents
     which shares Storage object. Since this data may
     be sensitive and irrelevant for other functionality
     in the app, this encapsulation provides comfort and
@@ -96,7 +96,7 @@ class Ability(AbilityABC):
         [setattr(self, k, v) for k, v in kwargs]
 
         if self.intents is not None:
-            self.__validate_commands()
+            self.__validate_intents()
         else:
             raise AttributeError(f"Ability {self.__class__.__name__} "
                                  f"has no intents. Provide at least "
@@ -137,8 +137,7 @@ class Ability(AbilityABC):
         except TypeError:
             callbacks = (callbacks,)
         self._callbacks = callbacks
-
-    def __validate_commands(self):
+    def __validate_intents(self):
         """
         Assert that the tuple contains references to
         Intent subclasses and nothing else.
