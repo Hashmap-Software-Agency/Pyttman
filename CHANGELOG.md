@@ -154,7 +154,7 @@ class PlayMusic(Command):
         return Reply(self.entities)
 
 
-class MusicFeature(Feature):
+class MusicFeature(Ability):
     commands = (PlayMusic,)
 
 
@@ -178,9 +178,9 @@ In short - it enables you to develop Commands and Features which extract informa
 
 ## Storage API
 
-* Feature-level implicit encapsulation, dict-like storage in all `Command` classes. 
+* Ability-level implicit encapsulation, dict-like storage in all `Command` classes. 
 
-  The Storage API offers a `Storage` object accessible in all `Command` subclasses by accessing  the `self.feature.storage` property.  Your other Commands which are defined in the same `Feature` will access the same storage object which allows for an easy and safe way to store and share data between commands. 
+  The Storage API offers a `Storage` object accessible in all `Command` subclasses by accessing  the `self.feature.storage` property.  Your other Commands which are defined in the same `Ability` will access the same storage object which allows for an easy and safe way to store and share data between commands. 
 
   
 
@@ -199,7 +199,7 @@ In short - it enables you to develop Commands and Features which extract informa
   	foo = self.feature.storage.get("foo")
   	print(foo)
   	
-  class FooBarFeature(Feature):
+  class FooBarFeature(Ability):
   	commands = (FooCommand, BarCommand)
   
   ```
@@ -210,7 +210,7 @@ In short - it enables you to develop Commands and Features which extract informa
 
   
 
-  The Storage object is encapsulated by the scope of a `Feature` in which the command is listed in. This means that `Command` classes operate on the same `Storage` object as the other `Command` classes in the same `Feature`, but commands outside of the Feature cannot interfere with the data in that storage object. 
+  The Storage object is encapsulated by the scope of a `Ability` in which the command is listed in. This means that `Command` classes operate on the same `Storage` object as the other `Command` classes in the same `Ability`, but commands outside of the Ability cannot interfere with the data in that storage object. 
 
   
 

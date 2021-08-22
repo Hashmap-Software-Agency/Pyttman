@@ -4,42 +4,16 @@ from abc import ABC, abstractmethod
 from typing import Optional, Any, Tuple, List
 
 from pyttman.core.callback import Callback
-from pyttman.core.communication.command import Command
+from pyttman.core.communication.intent import Intent
 from pyttman.core.communication.models.containers import MessageMixin
 from pyttman.core.internals import _generate_name
 from pyttman.core.storage.basestorage import Storage
 
-"""
-Details:
-    2020-06-21
-    
-    pyttman framework baseclass source file
 
-Module details:
-    
-    This file contains abstract and base classes for 
-    the framework called pyttman. 
-
-    In order for a developer to integrate their software
-    with a way to bind certain actions and methods in their
-    code, the developer needs a way to follow a set of routines
-    that guarantees a seamless integration with the front end
-    of the application. This framework provides base classes
-    to inherit from with a strict set of rules and methods
-    already provided to make it easier for the application 
-    to scale, as well as letting developers easily integrate
-    their software to the front end with their own interfaces.
-
-    To read instructions and see examples how to use this 
-    framework with your application - please read the full
-    documentation which can be found in the wiki on GitHub
-"""
-
-
-class FeatureABC(ABC):
+class AbilityABC(ABC):
     """ 
     Represent the template for a complete and 
-    ready-to-use feature. 
+    ready-to-use ability.
     """
 
     @abstractmethod
@@ -57,9 +31,9 @@ class FeatureABC(ABC):
     def configure(self):
         """
         Hook method which runs during the construction
-        of a Feature.
+        of a Ability.
         Configure things such as callback bindings (legacy),
-        set up the Storage object with data for your commands
+        set up the Storage object with data for your intents
         to use, make external calls to a server,
         and other settings. A way to abstract the
         need to overload __init__ and just configure
@@ -92,27 +66,27 @@ class FeatureABC(ABC):
         pass
 
 
-class Feature(FeatureABC):
+class Ability(AbilityABC):
     """
-    Base class for features.
+    Base class for an Ability.
 
-    The Feature is an encapsulating class which
-    holds Command subclasses in its 'commands' tuple.
+    The Ability is an encapsulating class which
+    holds Intent subclasses in its 'intents' tuple.
 
     It provides an encapsulating scope for Commands
     which shares Storage object. Since this data may
     be sensitive and irrelevant for other functionality
     in the app, this encapsulation provides comfort and
-    security for the Command endpoints not to access or
+    security for the Intent endpoints not to access or
     destroy data which they're not meant to.
 
-    The Feature class can be configured when used, to
+    The Ability class can be configured when used, to
     set up objects in the Storage object, or any other
     code that needs to run before the app starts - can
     be put in or called by the 'configure' method
     """
     description = "Unavailable"
-    commands: Tuple = None
+    intents: Tuple = None
 
     def __init__(self, **kwargs):
         self.storage = Storage()
@@ -121,12 +95,12 @@ class Feature(FeatureABC):
         self.configure()
         [setattr(self, k, v) for k, v in kwargs]
 
-        if self.commands is not None:
+        if self.intents is not None:
             self.__validate_commands()
         else:
-            raise AttributeError(f"Feature {self.__class__.__name__} "
-                                 f"has no commands. Provide at least "
-                                 f"one Command class in the 'commands' "
+            raise AttributeError(f"Ability {self.__class__.__name__} "
+                                 f"has no intents. Provide at least "
+                                 f"one Intent class in the 'intents' "
                                  f"property tuple.")
 
     def find_matching_callback(self, message: MessageMixin) -> \
@@ -137,7 +111,7 @@ class Feature(FeatureABC):
         return None
 
     def __repr__(self):
-        return f'Feature({type(self).__name__})'
+        return f'Ability({type(self).__name__})'
 
     def configure(self):
         pass
@@ -167,28 +141,28 @@ class Feature(FeatureABC):
     def __validate_commands(self):
         """
         Assert that the tuple contains references to
-        Command subclasses and nothing else.
+        Intent subclasses and nothing else.
         """
         try:
-            iter(self.commands)
-            if not isinstance(self.commands, Tuple):
+            iter(self.intents)
+            if not isinstance(self.intents, Tuple):
                 raise TypeError
         except TypeError:
-            raise TypeError(f"The 'commands' property must be tuple, got {type(self.commands)}'.")
+            raise TypeError(f"The 'intents' property must be tuple, got {type(self.intents)}'.")
         else:
-            for command_class in self.commands:
-                if not inspect.isclass(command_class) or not issubclass(command_class, Command):
-                    raise TypeError(f"Command '{command_class}' is not defined correctly. "
-                                    f"Commands must be class references, and must inherit "
-                                    "from the 'Command' base class.\nBe sure to only mention "
+            for intent_class in self.intents:
+                if not inspect.isclass(intent_class) or not issubclass(intent_class, Intent):
+                    raise TypeError(f"Intent '{intent_class}' is not defined correctly. "
+                                    f"Intents must be class references, and must inherit "
+                                    "from the 'Intent' base class.\nBe sure to only mention "
                                     "the name of the class, and not instantiate it when "
-                                    "defining the 'commands' property in your feature class.\n"
-                                    "Hint: Change '(FooCommand(), BarCommand())' to "
-                                    "'(FooCommand, BarCommand).")
+                                    "defining the 'intents' property in your Ability class.\n"
+                                    "Hint: Change '(FooIntent(), BarIntent())' to "
+                                    "'(FooIntent, BarIntent).")
 
                 # Validate the EntityParser by calling constructor
                 try:
-                    command_class().EntityParser()
+                    intent_class().EntityParser()
                 except Exception as e:
                     raise AttributeError("An error occurred with the EntityParser "
-                                         f"in command {command_class}: {e}")
+                                         f"in command {intent_class}: {e}")

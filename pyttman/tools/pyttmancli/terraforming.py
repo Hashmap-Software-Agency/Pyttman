@@ -11,7 +11,7 @@ from typing import List
 from py7zr import unpack_7zarchive
 
 import pyttman
-from pyttman import Feature
+from pyttman import Ability
 from pyttman.clients.builtin.cli import CliClient
 from pyttman.core.parsing.routing import AbstractMessageRouter
 from pyttman.tools.pyttmancli import Runner
@@ -160,31 +160,32 @@ def bootstrap_environment(module: str = None, devmode: bool = False) -> List:
     for feature in settings.FEATURES:
         assert not isinstance(feature, Feature), f"The feature '{feature}' is " \
                                                  f"instantiated. Please redefine " \
-                                                 f"this feature as only the reference " \
+                                                 f"this ability as only the reference " \
                                                  f"to the class, as shown in the docs. "
 
-        feature_module_config = feature.split(".")
-        feature_class_name = feature_module_config.pop()
-        feature_module_name = ".".join(feature_module_config)
-        feature_module = import_module(feature_module_name)
-        feature_class = getattr(feature_module, feature_class_name)
+        ability_module_config = ability.split(".")
+        ability_class_name = ability_module_config.pop()
+        ability_module_name = ".".join(ability_module_config)
+        ability_module = import_module(ability_module_name)
+        ability_class = getattr(ability_module, ability_class_name)
 
-        # Instantiate the feature class and traverse over its commands. Validate.
-        feature_object = feature_class()
-        assert issubclass(feature_class, Feature), f"'{feature_object.__class__.__name__}' " \
-                                                   f"is not a subclass of 'Feature'. " \
-                                                   f"Check your FEATURES list in " \
+        # Instantiate the ability class and traverse over its intents. Validate.
+        feature_object = ability_class()
+        assert issubclass(ability_class, Ability), f"'{feature_object.__class__.__name__}' " \
+                                                   f"is not a subclass of 'Ability'. " \
+                                                   f"Check your ABILITIES list in " \
                                                    f"settings.py and verify that " \
-                                                   f"all classes defined are Feature" \
+                                                   f"all classes defined are Ability" \
                                                    f"subclasses."
-        feature_objects_set.add(feature_object)
+        ability_objects_set.add(feature_object)
 
-    assert len(feature_objects_set), "No features were provided in settings.py"
+    assert len(ability_objects_set), "No Ability classes were provided the " \
+                                     "ABILITIES list in settings.py"
 
     # Instantiate router and provide the APP_NAME from settings
     message_router: AbstractMessageRouter = message_router_class(
-        features=list(feature_objects_set),
-        command_unknonw_responses=command_unknown_responses,
+        abilities=list(ability_objects_set),
+        intent_unknown_responses=command_unknown_responses,
         help_keyword=help_keyword)
 
     # If devmode is active, return only one CliClient in a runner.

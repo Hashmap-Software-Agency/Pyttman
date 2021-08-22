@@ -8,13 +8,13 @@ Details:
 Module details:
     
     the Interpretation object represents the final
-    output from a Feature delay the processing is 
+    output from a Ability delay the processing is
     done. It will be instantiated and attribute
     set by the CommandProcessor object, and contain
     data about the identified pronouns, name of the
-    Feature instance that processed the message,
+    Ability instance that processed the message,
     definition and memory address (__repr__) of the
-    method that was returned by the Feature (callback),
+    method that was returned by the Ability (callback),
     any errors caught while executing the callback.
 """
 
@@ -37,7 +37,7 @@ class Interpretation:
     a tuple, split by space.
 
     response: The callable object that was returned
-    from the Feature.
+    from the Ability.
 
     error: Any exception that was caught upon parsing
     the message. 

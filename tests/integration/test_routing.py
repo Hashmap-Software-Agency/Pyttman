@@ -14,6 +14,6 @@ class TestLinearSearchFirstMatchingRouter(TestCase):
         update_contact_message = Message("register 1112222442 as new number for John")
         contact_feature = ContactFeature()
         router = FirstMatchingRouter()
-        router.features = (contact_feature,)
+        router.abilities = (contact_feature,)
         self.assertEqual(router.get_reply(message=update_contact_message).as_list(),
                          ['Updated', "John's", 'number', 'to', '1112222442'])

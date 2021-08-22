@@ -67,16 +67,16 @@ def load_settings(*args):
 def _generate_name(name):
     """
     Generates a user-friendly name out of
-    Command or Feature class names, by
+    Command or Ability class names, by
     inserting spaces in camel cased names
-    as well as truncating 'Command' and 'Feature'
+    as well as truncating 'Command' and 'Ability'
     in the names.
     :param name: string, name of a class.
-                 hint: Command or Feature subclass
+                 hint: Command or Ability subclass
     :return: str, 'SetTimeCommand' -> 'Set Time'
     """
     new_name = ""
-    for i in ("Feature", "feature", "Command", "command"):
+    for i in ("Ability", "feature", "Command", "command"):
         name = name.replace(i, "")
 
     for i, c in enumerate(name):

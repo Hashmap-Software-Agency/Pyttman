@@ -9,6 +9,7 @@ from pyttman.core.decorators import scheduledmethod
 from pyttman.core.internals import _cim, is_dst
 from pyttman.core.callback import Callback
 from pyttman.core.features import Feature
+from pyttman.core.ability import Ability
 from pyttman.core.internals import load_settings
 
 __version__ = '1.1.4'

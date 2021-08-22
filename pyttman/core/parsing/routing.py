@@ -5,8 +5,8 @@ from types import ModuleType
 from typing import List, Union
 
 import pyttman
-from pyttman import Feature
 from pyttman.core.communication.command import Command
+from pyttman import Ability
 from pyttman.core.communication.models.containers import MessageMixin, Reply, ReplyStream
 from pyttman.core.internals import _generate_error_entry
 
@@ -20,7 +20,7 @@ class AbstractMessageRouter(abc.ABC):
 
     It acts as the first instance when relaying
     an incoming message from a front end client,
-    passing the message to the correct feature.
+    passing the message to the correct Ability.
 
     Users should rarely encounter this class as
     it's being used outside the scope of apps
@@ -31,8 +31,9 @@ class AbstractMessageRouter(abc.ABC):
 
     def __init__(self, features: List[Feature],
                  command_unknonw_responses: List[str],
+    def __init__(self, abilities: List[Ability],
                  help_keyword: str, **kwargs):
-        self.features = features
+        self.abilities = abilities
         self.help_keyword = help_keyword
         self.command_unknown_responses = command_unknonw_responses
         [setattr(self, k, v) for k, v in kwargs.items()]
@@ -67,7 +68,7 @@ class FirstMatchingRouter(AbstractMessageRouter):
     """
     Iterates over commands linearly.
     No calculation performed when routing messages and
-    multiple features matches a Message - the first one
+    multiple abilities matches a Message - the first one
     in order is chosen.
     """
 

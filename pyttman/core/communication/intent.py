@@ -14,7 +14,7 @@ from pyttman.core.internals import _generate_name, _generate_error_entry
 from pyttman.core.parsing.parsers import Parser, ChoiceParser, EntityParserBase
 
 
-class AbstractCommand(abc.ABC):
+class AbstractIntent(abc.ABC):
 
     @abc.abstractmethod
     def __repr__(self):
@@ -24,9 +24,9 @@ class AbstractCommand(abc.ABC):
     def respond(self, message: MessageMixin) -> Union[Reply, ReplyStream]:
         """
         Subclasses overload this method to respond
-        to a given command upon a match.
+        to a given Intent upon a match.
 
-        The Command class is meant to be stateless.
+        The Intent class is meant to be stateless.
         For replies that require context such as
         cache or other things related to other
         data, the use of a Caching backend is
@@ -39,11 +39,11 @@ class AbstractCommand(abc.ABC):
     def matches(self, message: MessageMixin) -> bool:
         """
         Determine whether a MessageMixin matches a
-        command instance. The 'lead' and 'trail'
+        Intent instance. The 'lead' and 'trail'
         fields are traversed over and sought
         for matching strings.
         :param message: pyttman.MessageMixin object
-        :return: bool, command matches or not
+        :return: bool, Intent matches or not
         """
         pass
 
@@ -74,9 +74,9 @@ class AbstractCommand(abc.ABC):
     def generate_help(self):
         """
         Generates a descriptive help_string message based
-        on the docstring for the Command class the
+        on the docstring for the Intent class the
         subclass has defined, as well as including
-        the syntax for the command using the lead
+        the syntax for the Intent using the lead
         and trail fields.
 
         if the help_string is already defined, this
@@ -87,14 +87,14 @@ class AbstractCommand(abc.ABC):
         pass
 
 
-class BaseCommand(AbstractCommand, ABC):
+class BaseIntent(AbstractIntent, ABC):
     """
-    Base class for a Command, containing configuration
+    Base class for a Intent, containing configuration
     on which criterias are set for a message to match
     it, as well as methods to make understanding and
     retreiving data from a message easier.
 
-    The Command class is similar to an endpoint method
+    The Intent class is similar to an endpoint method
     in MVC, where it will recieve a Message objects
     upon a matching route given by the MessageRouter.
 
@@ -102,18 +102,18 @@ class BaseCommand(AbstractCommand, ABC):
         Define single strings or a sequence of strings in
         the 'lead' tuple, to define which words shall
         occur in the message for it to match on the
-        Command instance. Selection is  'any of'.
+        Intent instance. Selection is  'any of'.
 
     :field trail:
         Optional: define the 'trail' tuple.
         Similar to the 'lead' tuple - define a single, or
         a sequence of strings which will dictate which
-        messages matches the Command. All strings defined
+        messages matches the Intent. All strings defined
         in the 'trail' tuple must occur AFTER all strings
-        defined in 'lead', for the command to match.
+        defined in 'lead', for the Intent to match.
         This is useful to steer things such as 'search'
-        as a lead keyword, in to the right command for
-        the right 'search'. You may have one command
+        as a lead keyword, in to the right Intent for
+        the right 'search'. You may have one Intent
         for 'search for movies' and another for
         'search for the best coffee', in your app.
 
@@ -134,11 +134,11 @@ class BaseCommand(AbstractCommand, ABC):
 
     :field description:
         A human friendly piece of text to describe
-        what your command does.
+        what your Intent does.
 
     :field example:
         Provide your users with an example of how
-        a message for this command could look.
+        a message for this Intent could look.
     """
     description: str = "Unavailable"
     example: str = None
@@ -151,7 +151,7 @@ class BaseCommand(AbstractCommand, ABC):
     class EntityParser(EntityParserBase):
         """
         Optional inner class to configure query strings
-        in recieved messages which matches a Command.
+        in recieved messages which matches a Intent.
 
         The identified values are stored in the
         'entities' dict, and are also available
@@ -166,9 +166,9 @@ class BaseCommand(AbstractCommand, ABC):
             last_name = ValueParser(identifier=CapitalizedIdentifier,
                                     prefixes=(firstname,))
 
-        In a given message based on the command:
+        In a given message based on the Intent:
             "My name is John Doe, what's yours?"
-        .. the inut_strings field in the Command would look like:
+        .. the inut_strings field in the Intent would look like:
             `{"first_name": "John", "last_name": "doe"}`
         .. This is because we specified that the last name
         has to occur after the first name, with the "prefixes"
@@ -184,6 +184,11 @@ class BaseCommand(AbstractCommand, ABC):
         [setattr(self, k, v) for k, v in kwargs.items()]
         self.name = _generate_name(self.__class__.__name__)
         self.entities = {}
+        self.lead = tuple([i.lower() for i in self.lead])
+        self.trail = tuple([i.lower() for i in self.trail])
+
+        self._entity_parser = self.EntityParser()
+        self._entity_parser.exclude = self._entity_parser.exclude + self.lead + self.trail
 
     def __repr__(self):
         return f"{self.__class__.__name__}(lead={self.lead}, " \
@@ -191,7 +196,7 @@ class BaseCommand(AbstractCommand, ABC):
 
     def matches(self, message: MessageMixin) -> bool:
         """
-        Boolean indicator to whether the command
+        Boolean indicator to whether the Intent
         matches a given message, without returning
         the function itself as with the .Parse method.
 
@@ -218,7 +223,7 @@ class BaseCommand(AbstractCommand, ABC):
         :param message:
             pyttman.MessageMixin
         :returns:
-            Bool, True if self matches command
+            Bool, True if self matches Intent
         """
 
         match_trail = False
@@ -273,10 +278,10 @@ class BaseCommand(AbstractCommand, ABC):
         as_set -= set(self.trail)
         return list(as_set)
 
-    def generate_help(self) -> list:
-        input_string_parser_fields = self.EntityParser().get_parsers()
+    def generate_help(self) -> str:
+        input_string_parser_fields = self._entity_parser.get_parsers()
         if not self.help_string:
-            help_string = f"\n\n> Help section for command '{self.name}'\n" \
+            help_string = f"\n\n> Help section for Intent '{self.name}'\n" \
                           f"\n\t> Description:\n\t\t{self.description}" \
                           f"\n\t> Syntax:\n\t\t[{'|'.join(self.lead)}]"
             if self.trail:
@@ -308,9 +313,8 @@ class BaseCommand(AbstractCommand, ABC):
         :param message: MessageMixin object
         :return: Reply, logic defined in the 'respond' method
         """
-        entity_parser = self.EntityParser()
-        entity_parser.parse_message(message, memoization=self.entities)
-        self.entities = entity_parser.value
+        self._entity_parser.parse_message(message, memoization=self.entities)
+        self.entities = self._entity_parser.value
 
         try:
             reply: Union[Reply, ReplyStream] = self.respond(message=message)
@@ -318,20 +322,20 @@ class BaseCommand(AbstractCommand, ABC):
             reply = _generate_error_entry(message, e)
 
         if not reply or not isinstance(reply, Reply) and not isinstance(reply, ReplyStream):
-            raise ValueError(f"Improperly configured Command class: "
+            raise ValueError(f"Improperly configured Intent class: "
                              f"{self.__class__.__name__}."
                              f"respond method returned '{type(reply)}', "
                              f"expected Reply or ReplyStream")
 
         # Purge entities values and all parser instances from their local values
         self.entities.clear()
-        for parser_name in entity_parser.get_parsers():
-            parser = getattr(entity_parser, parser_name)
+        for parser_name in self._entity_parser.get_parsers():
+            parser = getattr(self._entity_parser, parser_name)
             parser.reset()
         return reply
 
 
-class Command(BaseCommand):
+class Intent(BaseIntent):
     def respond(self, message: MessageMixin) -> Union[Reply, ReplyStream]:
         raise NotImplementedError("The 'respond' method must be "
-                                  "defined when subclassing Command")
+                                  "defined when subclassing Intent")
