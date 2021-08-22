@@ -7,11 +7,12 @@ functions and methods.
 import abc
 from abc import ABC
 from itertools import zip_longest
-from typing import List, Dict, Tuple, Union
+from typing import Tuple, Union
 
 from pyttman.core.communication.models.containers import MessageMixin, Reply, ReplyStream
 from pyttman.core.internals import _generate_name, _generate_error_entry
-from pyttman.core.parsing.parsers import Parser, ChoiceParser, EntityParserBase
+from pyttman.core.parsing.parsers import ChoiceParser, EntityParserBase
+from pyttman.core.storage.basestorage import Storage
 
 
 class AbstractIntent(abc.ABC):
@@ -52,7 +53,7 @@ class AbstractIntent(abc.ABC):
     @abc.abstractmethod
     def _assert_ordered(self, message: list) -> bool:
         """
-        Tells whether the Messgae content complies
+        Tells whether the Message content complies
         with the configuration of 'lead' and 'trail',
         thus meaning that all words defined in 'lead'
         and 'trail' shall occur in the same order in
@@ -139,7 +140,7 @@ class BaseIntent(AbstractIntent, ABC):
     trail: Tuple[str] = tuple()
     ordered: bool = False
     help_string: str = None
-    feature = None
+    storage: Storage = None
 
     class EntityParser(EntityParserBase):
         """
