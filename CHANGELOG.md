@@ -6,14 +6,34 @@
 
 
 
-### 🤗 New features
+### 🤗 New features and changes
+* The `Feature` class is renamed to `Ability` for better semantic similarity to the general standard of terminology.
+  > Note! This is a **breaking** change.
 
-* #### Return multiple Reply objects from a Command
 
-  The new `ReplyStream` Queue-like object offers you the ability to return **multiple** response messages in a single object from Commands. 
+* The 'Command' class is renamed to `Intent` for better semantic similarity to the general standard of terminology.
+  > Note! This is a **breaking** change.
 
-  The `ReplyStream` will wrap your strings or other objects as `Reply` objects if compatible, and the client will post each of these elements as separate messages in the client. 
-  
+
+* The reference to `Feature` in `Intent` classes (previously `Command` classes) - is removed. 
+  this means that the `Storage` object previously accessed through `self.feature.storage` can no longer be accessed this
+  way. Instead, the `Ability` is no longer referenced inside `Intent` classes for cleaner OOP relations. 
+  **However**, the `Storage` object is still available in `Intent` classes, of course. It is accessed using `self.storage` both in the `Ability`
+  and in `Intent` classes.
+  > Note! This is a **breaking** change.
+
+* The `CommandProcessor` class which was deprecated in version 1.1.4, is removed.
+
+
+* The `Callback` class which was deprecated in 1.1.4, is removed.
+
+
+* Methods associated with legacy classes from the `Intent` and `Ability` classes internally, have been removed
+
+
+* The new `ReplyStream` Queue-like object offers you the ability to return **multiple** response messages in a single object from Intents.
+The `ReplyStream` will wrap your strings or other objects as `Reply` objects if compatible, and the client will post each of these elements as separate messages in the client. 
+
 
 * The `pyttman.schedule.method` api method no longer requires the use of the `async_loop` argument if the function to be scheduled is asynchronous, but rather acquires the running loop through `asyncio.get_running_loop()`. If no running loop is identified, it will automatically run the asynchronous function using `asyncio.run`. 
 
@@ -23,6 +43,7 @@
 
 * Fixes an [issue](https://github.com/dotchetter/Pyttman/issues/30) where line separations in `Reply` objects were not present when the data was displayed in applications such as DIscord or the Cli client terminal shell. These are now present.
   
+
 * Fixes an [issue](https://github.com/dotchetter/Pyttman/issues/24) where clients could not communicate any errors upon startup. These are now showed through user warnings.
 
 ------
