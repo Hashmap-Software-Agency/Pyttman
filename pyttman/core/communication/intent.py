@@ -181,7 +181,6 @@ class BaseIntent(AbstractIntent, ABC):
         self.trail = tuple([i.lower() for i in self.trail])
 
         self._entity_parser = self.EntityParser()
-        self._entity_parser.exclude = self._entity_parser.exclude + self.lead + self.trail
 
     def __repr__(self):
         return f"{self.__class__.__name__}(lead={self.lead}, " \
@@ -220,7 +219,6 @@ class BaseIntent(AbstractIntent, ABC):
         """
 
         match_trail = False
-
         sanitized = message.as_list(sanitized=True)
 
         if not (match_lead := [i for i in self.lead if i in sanitized]):
@@ -264,12 +262,6 @@ class BaseIntent(AbstractIntent, ABC):
                 ordered_trail = False
                 break
         return ordered_trail and ordered_lead
-
-    def truncate_message(self, message: MessageMixin):
-        as_set = set(message.lowered_content())
-        as_set -= set(self.lead)
-        as_set -= set(self.trail)
-        return list(as_set)
 
     def generate_help(self) -> str:
         input_string_parser_fields = self._entity_parser.get_parsers()
