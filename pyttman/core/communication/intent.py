@@ -29,9 +29,9 @@ class AbstractIntent(abc.ABC):
         The Intent class is meant to be stateless.
         For replies that require context such as
         cache or other things related to other
-        data, the use of a Caching backend is
-        encouraged inside this method to
-        store and retrieve information.
+        data, the use of the Storage object in the
+        Intent instance is encouraged inside this
+        method to store and retrieve information.
         """
         pass
 
@@ -39,8 +39,10 @@ class AbstractIntent(abc.ABC):
     def matches(self, message: MessageMixin) -> bool:
         """
         Determine whether a MessageMixin matches a
-        Intent instance. The 'lead' and 'trail'
-        fields are traversed over and sought
+        Intent instance's pattern config.
+        The 'lead' and 'trail'
+
+        Fields are traversed over and sought
         for matching strings.
         :param message: pyttman.MessageMixin object
         :return: bool, Intent matches or not
@@ -86,7 +88,8 @@ class BaseIntent(AbstractIntent, ABC):
 
     The Intent class is similar to an endpoint method
     in MVC, where it will recieve a Message objects
-    upon a matching route given by the MessageRouter.
+    upon a matching route given by the MessageRouter,
+    much like endpoint methods receive Request objects.
 
     :field lead:
         Define single strings or a sequence of strings in
