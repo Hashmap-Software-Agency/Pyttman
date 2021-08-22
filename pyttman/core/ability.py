@@ -17,17 +17,6 @@ class AbilityABC(ABC):
     """
 
     @abstractmethod
-    def find_matching_callback(self, message: MessageMixin) -> bool:
-        """
-        Designed to be called upon for returning a
-        matching Callback instance which returned
-        True on a given message object
-        @param message:
-        @return: bool
-        """
-        pass
-
-    @abstractmethod
     def configure(self):
         """
         Hook method which runs during the construction
@@ -41,28 +30,6 @@ class AbilityABC(ABC):
         of calling super() and passing *args and **kwargs.
         @return: None
         """
-        pass
-
-    @abstractmethod
-    def _get_callback(self, message: MessageMixin) -> Callback:
-        """
-        << DEPRECATED >>
-        Returns the method (function object) bound to a
-        Callback object, if eligible. This method
-        should be overloaded if a different return behavior
-        in a no-match-found scenario is desired.
-        @return: Callback
-        """
-        pass
-
-    @property
-    @abstractmethod
-    def callbacks(self) -> Tuple[Callback]:
-        pass
-
-    @callbacks.setter
-    @abstractmethod
-    def callbacks(self, callbacks: tuple):
         pass
 
 
@@ -103,40 +70,12 @@ class Ability(AbilityABC):
                                  f"one Intent class in the 'intents' "
                                  f"property tuple.")
 
-    def find_matching_callback(self, message: MessageMixin) -> \
-            Optional[functools.partial]:
-
-        if callback := self._get_callback(message):
-            return functools.partial(callback.func, message=message)
-        return None
-
     def __repr__(self):
         return f'Ability({type(self).__name__})'
 
     def configure(self):
         pass
 
-    def _get_callback(self, message: MessageMixin) -> Optional[Any]:
-        for callback in self.callbacks:
-            if callback.matches(message):
-                return callback
-        return None
-
-    @property
-    def callbacks(self) -> Tuple[Callback]:
-        # noinspection PyTypeChecker
-        return self._callbacks
-
-    @callbacks.setter
-    def callbacks(self, callbacks: tuple):
-        if isinstance(callbacks, dict):
-            raise DeprecationWarning(f"callbacks must be of type Callback")
-
-        try:
-            iter(callbacks)
-        except TypeError:
-            callbacks = (callbacks,)
-        self._callbacks = callbacks
     def __validate_intents(self):
         """
         Assert that the tuple contains references to

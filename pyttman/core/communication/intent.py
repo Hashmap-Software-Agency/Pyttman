@@ -61,16 +61,6 @@ class AbstractIntent(abc.ABC):
         """
 
     @abc.abstractmethod
-    def truncate_message(self, message: MessageMixin) -> List[str]:
-        """
-        Truncates all strings which occurs in
-        lead and trail.
-        :param message: Pyttman.MessageMixin
-        :return: list, truncate_message
-        """
-        pass
-
-    @abc.abstractmethod
     def generate_help(self):
         """
         Generates a descriptive help_string message based
