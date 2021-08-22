@@ -28,13 +28,12 @@ class AbstractMessageRouter(abc.ABC):
 
     help_keyword = "help"
 
-    def __init__(self, features: List[Feature],
-                 command_unknonw_responses: List[str],
     def __init__(self, abilities: List[Ability],
+                 intent_unknown_responses: List[str],
                  help_keyword: str, **kwargs):
         self.abilities = abilities
         self.help_keyword = help_keyword
-        self.command_unknown_responses = command_unknonw_responses
+        self.intent_unknown_responses = intent_unknown_responses
         [setattr(self, k, v) for k, v in kwargs.items()]
 
     @abc.abstractmethod
