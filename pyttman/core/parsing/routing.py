@@ -14,12 +14,16 @@ class AbstractMessageRouter(abc.ABC):
     """
     Abstract class for a MessageRouter.
 
-    The MessageRouter replaces the legacy
-    CommandProcessor class.
+    MessageRouters delegate Message objects
+    coming from Clients, originating from some
+    kind of platform with a user interface.
 
-    It acts as the first instance when relaying
-    an incoming message from a front end client,
-    passing the message to the correct Ability.
+    Message routers can be very simple and
+    linearly search through Abilities and their
+    Intent classes and select the first one
+    matching - or they can be powered by internal
+    caches, learn patterns and be powered by
+    Machine Leraning.
 
     Users should rarely encounter this class as
     it's being used outside the scope of apps
