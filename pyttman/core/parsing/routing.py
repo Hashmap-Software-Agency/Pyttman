@@ -4,7 +4,7 @@ import warnings
 from typing import List, Union
 
 import pyttman
-from pyttman import Ability
+from pyttman.core.ability import Ability
 from pyttman.core.communication.intent import Intent
 from pyttman.core.communication.models.containers import MessageMixin, Reply, ReplyStream
 from pyttman.core.internals import _generate_error_entry
@@ -131,7 +131,7 @@ class FirstMatchingRouter(AbstractMessageRouter):
         for ability in self.abilities:
             for intent in ability.intents:
                 try:
-                    intent = intent(ability=ability)
+                    intent = intent(storage=ability.storage)
                     if intent.matches(message):
                         matching_intents.append(intent)
                 except TypeError as e:
