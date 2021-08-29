@@ -181,7 +181,14 @@ class BaseIntent(AbstractIntent, ABC):
         self.lead = tuple([i.lower() for i in self.lead])
         self.trail = tuple([i.lower() for i in self.trail])
 
-        self._entity_parser = self.EntityParser()
+        if self.EntityParser is not None:
+            parsers = {name: parser for name, parser in self.EntityParser.__dict__.items()
+                       if issubclass(parser.__class__, AbstractParser)}
+
+            # Use the EntityParserBase as metaclass for an EntityParser class with
+            # the fields configured in the user Intent.EntityParser class.
+            self._entity_parser = type("EntityParser", (EntityParserBase,), {"parsers": parsers})()
+            self._entity_parser.__dict__.update(parsers)
 
     def __repr__(self):
         return f"{self.__class__.__name__}(lead={self.lead}, " \
