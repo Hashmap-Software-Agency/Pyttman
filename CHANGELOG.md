@@ -22,10 +22,20 @@
   and in `Intent` classes.
   > Note! This is a **breaking** change.
 
+
+* The NLU component `EntityParser` class of `Intent` classes has been improved, and no longer identifies one entity more than once. It is also a lot smarter in how it traveres the message in order to find the data of interest.
+
+
+* The `EntityParser` class must no longer inherit from `EntityParserBase` or `Intent.EntityParser`, metaclassing is internally handeled.
+
+
 * The `CommandProcessor` class which was deprecated in version 1.1.4, is removed.
 
 
 * The `Callback` class which was deprecated in 1.1.4, is removed.
+
+
+* The `Interpretation` class which was deprecated in 1.1.4, is removed.
 
 
 * Methods associated with legacy classes from the `Intent` and `Ability` classes internally, have been removed
@@ -42,9 +52,18 @@ The `ReplyStream` will wrap your strings or other objects as `Reply` objects if 
 ### 🐛 Splatted bugs and corrected issues 
 
 * Fixes an [issue](https://github.com/dotchetter/Pyttman/issues/30) where line separations in `Reply` objects were not present when the data was displayed in applications such as DIscord or the Cli client terminal shell. These are now present.
-  
+
 
 * Fixes an [issue](https://github.com/dotchetter/Pyttman/issues/24) where clients could not communicate any errors upon startup. These are now showed through user warnings.
+
+
+ 
+* Fixes an [issue](https://github.com/dotchetter/Pyttman/issues/31) where one element in a message would end up multiple times in `self.entities` incorrectly
+
+
+* Fixes an [issue](https://github.com/dotchetter/Pyttman/issues/32) where strings defined in `lead` and `trail` in `Intent` classes were case-sensitive - they are not anymore.
+
+
 
 ------
 
