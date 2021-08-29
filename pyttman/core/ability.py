@@ -4,6 +4,7 @@ from typing import Tuple
 
 from pyttman.core.intent import Intent
 from pyttman.core.internals import _generate_name
+from pyttman.core.parsing.parsers import EntityParserBase
 from pyttman.core.storage.basestorage import Storage
 
 
@@ -96,8 +97,9 @@ class Ability(AbilityABC):
                                     "'(FooIntent, BarIntent).")
 
                 # Validate the EntityParser by calling constructor
-                try:
-                    intent_class().EntityParser()
-                except Exception as e:
-                    raise AttributeError("An error occurred with the EntityParser "
-                                         f"in command {intent_class}: {e}")
+                if intent_class.EntityParser is not None:
+                    try:
+                        intent_class().EntityParser()
+                    except Exception as e:
+                        raise AttributeError("An error occurred with the EntityParser "
+                                             f"in Intent class '{intent_class}': {e}")
