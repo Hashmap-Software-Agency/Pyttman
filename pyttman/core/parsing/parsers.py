@@ -435,9 +435,9 @@ class ChoiceParser(Parser):
             last_occurring_in_match = matching[-1]
             if not self.multiple:
                 self.value = Entity(last_occurring_in_match,
-                                    message.content.index(last_occurring_in_match))
+                                    sanitized_set.index(last_occurring_in_match))
             else:
-                self.value = Entity(matching, message.content.index(last_occurring_in_match))
+                self.value = Entity(matching, sanitized_set.index(last_occurring_in_match))
 
     @property
     def choices(self) -> Tuple[str]:
