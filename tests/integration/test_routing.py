@@ -1,7 +1,7 @@
 from unittest import TestCase
 import pyttman
 import testing_project.settings as settings
-from tests.mockups import ContactFeature
+from tests.mockups import ContactsAbility
 
 pyttman.load_settings(settings)
 
@@ -12,7 +12,7 @@ from pyttman.core.parsing.routing import FirstMatchingRouter
 class TestLinearSearchFirstMatchingRouter(TestCase):
     def test_reply(self):
         update_contact_message = Message("register 1112222442 as new number for John")
-        contact_feature = ContactFeature()
+        contact_feature = ContactsAbility()
         router = FirstMatchingRouter()
         router.abilities = (contact_feature,)
         self.assertEqual(router.get_reply(message=update_contact_message).as_list(),
