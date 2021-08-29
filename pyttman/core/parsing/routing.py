@@ -5,7 +5,7 @@ from typing import List, Union
 
 import pyttman
 from pyttman.core.ability import Ability
-from pyttman.core.communication.intent import Intent
+from pyttman.core.intent import Intent
 from pyttman.core.communication.models.containers import MessageMixin, Reply, ReplyStream
 from pyttman.core.internals import _generate_error_entry
 

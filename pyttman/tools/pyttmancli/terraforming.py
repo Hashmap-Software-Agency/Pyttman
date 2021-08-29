@@ -11,8 +11,8 @@ from typing import List
 from py7zr import unpack_7zarchive
 
 import pyttman
-from pyttman import Ability
 from pyttman.clients.builtin.cli import CliClient
+from pyttman.core.ability import Ability
 from pyttman.core.parsing.routing import AbstractMessageRouter
 from pyttman.tools.pyttmancli import Runner
 

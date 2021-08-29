@@ -2,8 +2,7 @@ import inspect
 from abc import ABC, abstractmethod
 from typing import Tuple
 
-from pyttman.core.communication.intent import Intent
-from pyttman.core.communication.models.containers import MessageMixin
+from pyttman.core.intent import Intent
 from pyttman.core.internals import _generate_name
 from pyttman.core.storage.basestorage import Storage
 
