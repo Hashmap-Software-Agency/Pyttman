@@ -4,14 +4,36 @@ strings and sequences to logic, for defining a
 set of rules on how natural language relates to
 functions and methods.
 """
+#     MIT License
+#
+#      Copyright (c) 2021-present Simon Olofsson
+#
+#      Permission is hereby granted, free of charge, to any person obtaining a copy
+#      of this software and associated documentation files (the "Software"), to deal
+#      in the Software without restriction, including without limitation the rights
+#      to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+#      copies of the Software, and to permit persons to whom the Software is
+#      furnished to do so, subject to the following conditions:
+#
+#      The above copyright notice and this permission notice shall be included in all
+#      copies or substantial portions of the Software.
+#
+#      THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+#      IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+#      FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+#      AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+#      LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+#      OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+#      SOFTWARE.
 import abc
 from abc import ABC
+from copy import copy
 from itertools import zip_longest
 from typing import Tuple, Union
 
 from pyttman.core.communication.models.containers import MessageMixin, Reply, ReplyStream
 from pyttman.core.internals import _generate_name, _generate_error_entry
-from pyttman.core.parsing.parsers import ChoiceParser, EntityParserBase
+from pyttman.core.parsing.parsers import ChoiceParser, EntityParserBase, AbstractParser
 from pyttman.core.storage.basestorage import Storage
 
 
@@ -141,34 +163,7 @@ class BaseIntent(AbstractIntent, ABC):
     ordered: bool = False
     help_string: str = None
     storage: Storage = None
-
-    class EntityParser(EntityParserBase):
-        """
-        Optional inner class to configure query strings
-        in recieved messages which matches a Intent.
-
-        The identified values are stored in the
-        'entities' dict, and are also available
-        in the variable which the ValueParser is assigned
-        to under the 'value' field.
-
-        Class variables dictate the name of the key
-        in which an identified value is placed under.
-
-        > example:
-            first_name = ValueParser(identifier=CapitalizedIdentifier)
-            last_name = ValueParser(identifier=CapitalizedIdentifier,
-                                    prefixes=(firstname,))
-
-        In a given message based on the Intent:
-            "My name is John Doe, what's yours?"
-        .. the inut_strings field in the Intent would look like:
-            `{"first_name": "John", "last_name": "doe"}`
-        .. This is because we specified that the last name
-        has to occur after the first name, with the "prefixes"
-        argument, and using the first name as that condition.
-        """
-        pass
+    EntityParser = None
 
     def __init__(self, **kwargs):
         if not isinstance(self.lead, tuple) or not isinstance(self.trail, tuple):
