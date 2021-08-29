@@ -25,6 +25,7 @@ functions and methods.
 #      LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 #      OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 #      SOFTWARE.
+
 import abc
 from abc import ABC
 from copy import copy
@@ -302,9 +303,18 @@ class BaseIntent(AbstractIntent, ABC):
         :return: Reply, logic defined in the 'respond' method
         """
         joined_patterns = self.lead + self.trail
+        original_content = copy(message.content)
+
+        # The message is cloned so that the original message is protected
+        # from modification needed during the NLU processing components to
+        # follow here. Since entities may be wrongly intercepted as they
+        # match patterns defined in an EntityParser class inside an Intent
+        # class, this is omitted by passing a clone of the message with all
+        # elements from lead and trail tuples truncated from it.
         message.truncate(collection=joined_patterns, case_sensitive=False)
-        self._entity_parser.parse_message(message, memoization=self.entities)
+        self._entity_parser.parse_message(message)
         self.entities = self._entity_parser.value
+        message.content = original_content
 
         try:
             reply: Union[Reply, ReplyStream] = self.respond(message=message)
