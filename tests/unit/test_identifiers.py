@@ -17,9 +17,9 @@ class TestDateStringIdentifier(TestCase):
     def test_identify_valid(self):
         for string in self.valid_strings:
             identifier = identifiers.DateTimeStringIdentifier()
-            self.assertEqual(string, identifier.get_matching_string(Message(string)))
+            self.assertEqual(string, identifier.try_identify_entity(Message(string)))
 
     def test_identify_invalid(self):
         for string in self.invalid_strings:
             identifier = identifiers.DateTimeStringIdentifier()
-            self.assertIsNone(identifier.get_matching_string(Message(string)))
+            self.assertIsNone(identifier.try_identify_entity(Message(string)))

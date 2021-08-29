@@ -13,9 +13,12 @@
 import abc
 from abc import ABC
 from itertools import zip_longest
-from typing import Tuple, Any, Type, Collection, Dict, Optional
+from typing import Tuple, Any, Type, Collection, Dict, Optional, Union
+
+from ordered_set import OrderedSet
 
 from pyttman.core.communication.models.containers import MessageMixin
+from pyttman.core.parsing.entity import Entity
 from pyttman.core.parsing.identifiers import Identifier
 
 
@@ -27,7 +30,7 @@ class AbstractParser(abc.ABC):
     last_item = -1
 
     @abc.abstractmethod
-    def parse_message(self, message: MessageMixin, memoization: dict) -> None:
+    def parse_message(self, message: MessageMixin, memoization: dict = None) -> None:
         """
         Subclasses override this method, defining the
         logic for parsing the message contents and
@@ -68,21 +71,6 @@ class Parser(AbstractParser, ABC):
         """
         self.value = None
 
-    def get_parsers(self) -> Dict:
-        """
-        Returns a collection of fields on the instance of
-        type Parser.
-        :return: Tuple, instances of Parser.
-        """
-        parser_fields = {}
-
-        for field_name in dir(self):
-            field_value = getattr(self, field_name)
-            if not field_name.startswith("__") and issubclass(field_value.__class__,
-                                                              AbstractParser):
-                parser_fields[field_name] = field_value
-        return parser_fields
-
 
 class EntityParserBase(Parser):
     """
@@ -95,6 +83,14 @@ class EntityParserBase(Parser):
     the field variables themselves.
     """
 
+    # EntityParser classes have Parser fields which help them
+    # find entities in messages.
+    parsers: Dict[str, Parser]
+
+    # Mapping an entity with its index of occurrence in the message.
+    # Used to prevent multiple entities with the same exact element.
+    entities: Dict[str, Entity]
+
     def parse_message(self, message: MessageMixin, memoization: dict = None) -> None:
         """
         Traverse over all fields which are Parser subclasses.
@@ -106,12 +102,39 @@ class EntityParserBase(Parser):
         :return:
         """
         self.value = {}
+        parsers_memoization: Dict[int, Entity] = {}
+
         for field_name, parser_object in self.get_parsers().items():
-            parser_object.parse_message(message, memoization=memoization)
-            if parser_object.value not in self.exclude:
-                self.value[field_name] = parser_object.value
+            parser_object.parse_message(message, memoization=parsers_memoization)
+
+            # See what the parser found - Entity or None.
+            parsed_entity: Union[Entity, None] = parser_object.value
+            if parsed_entity is None:
+                self.value[field_name] = None
+                continue
+
+            if parsed_entity.value not in self.exclude:
+                self.value[field_name] = parsed_entity.value
             else:
                 self.value[field_name] = None
+
+            # Store the entity for memoization to prohibit multiple occurrence
+            parsers_memoization[parsed_entity.index_in_message] = parsed_entity
+
+    def get_parsers(self) -> Dict:
+        """
+        Returns a collection of fields on the instance of
+        type Parser.
+        :return: Tuple, instances of Parser.
+        """
+        parser_fields = {}
+
+        for field_name in self.parsers:
+            field_value = getattr(self, field_name)
+            if not field_name.startswith("__") and issubclass(field_value.__class__,
+                                                              AbstractParser):
+                parser_fields[field_name] = field_value
+        return parser_fields
 
 
 class ValueParser(Parser):
@@ -150,6 +173,7 @@ class ValueParser(Parser):
     example: `arrival_time = ValueParser(suffixes=("arrival", "arrive", "arrives", "arrives"))`
               would return "20:44" on message "flight 34392 arrives 20:44"
     """
+
     def __init__(self, prefixes: Tuple = None, suffixes: Tuple = None,
                  identifier: Type[Identifier] = None, span: int = 0, **kwargs):
         super().__init__(**kwargs)
@@ -176,7 +200,7 @@ class ValueParser(Parser):
                f"identifier={self.identifier}, prefixes={self.prefixes}, " \
                f"suffixes={self.suffixes}, span={self.span})"
 
-    def parse_message(self, message: MessageMixin, memoization: dict) -> None:
+    def parse_message(self, message: MessageMixin, memoization: dict = None) -> None:
         """
         Walk the message and parse it for values.
         If the identified value exists in memoization,
@@ -184,13 +208,16 @@ class ValueParser(Parser):
         message is exhausted.
         """
         for i, _ in enumerate(message.content):
-            self._identify_value(message, start_index=i)
-            if self.value is not None and self.value not in memoization.values():
+            parsed_entity: Entity = self._identify_value(message, start_index=i)
+
+            # An entity has been identified, and it's unique.
+            if parsed_entity is not None and memoization.get(parsed_entity.index_in_message) is None:
+                self.value = parsed_entity
                 break
             else:
                 self.reset()
 
-    def _identify_value(self, message: MessageMixin, start_index: int = 0):
+    def _identify_value(self, message: MessageMixin, start_index: int = 0) -> Union[None, Entity]:
         """
         Parses the message for values to identify.
 
@@ -213,26 +240,33 @@ class ValueParser(Parser):
         which complies with the pre- and suffixes as provided.
         If the Identifier is alone, it will return the first value
         encountered in the traversing of the message.
+
+        :param message: Message object to parse
+        :param start_index: Index pointer, where parsing is started from in the message
+        :return: Entity or None, depending on if parsing is successful.
         """
-        prefix_value, prefix_index, suffix_value, suffix_index = None, None, None, None
+        prefix_entity, prefix_index, suffix_entity, suffix_index = None, None, None, None
         prefixes, suffixes, prefix_indexes, suffix_indexes = [], [], [], []
         last_prefix_index, earliest_suffix_index = 0, 0
+        parsed_entity: Union[Entity, None] = None  # dataclass, ctor cannot be empty
 
-        # First - traverse over the pre- and suffixes and collect theim in separate lists
+        # First - traverse over the pre- and suffixes and collect them in separate lists
         for i_prefix, i_suffix in zip_longest(self.prefixes, self.suffixes, fillvalue=None):
             if i_prefix is not None:
                 if isinstance(i_prefix, Parser) and i_prefix.value is not None:
-                    prefixes.append(i_prefix.value.split().pop().lower().strip())
+                    entity: Entity = i_prefix.value
+                    prefixes.append(entity.value.split().pop().lower().strip())
                 elif isinstance(i_prefix, str):
                     prefixes.append(i_prefix)
 
             if i_suffix is not None:
                 if isinstance(i_suffix, Parser) and i_suffix.value is not None:
-                    suffixes.append(i_suffix.value.split().pop().lower().strip())
+                    entity: Entity = i_suffix.value
+                    suffixes.append(entity.value.split().pop().lower().strip())
                 elif isinstance(i_suffix, str):
                     suffixes.append(i_suffix)
 
-        # Ensure all indexing is non-case sensitive
+        # Ensure all indexing is non-case sensitive and without special characters
         lowered_content = message.sanitized_content(preserve_case=False)
 
         # Now, we store the indexes for all pre- and/or prefixes in separate lists too
@@ -252,53 +286,56 @@ class ValueParser(Parser):
 
         # Let's extract the last occurring prefix,
         # and the earliest suffix of the ones present
-
         if prefixes:
             if not prefix_indexes:
-                return
+                return None
+
+            # Obtain the last occurrence of all prefixes
             last_prefix_index = max(prefix_indexes)
             try:
-                prefix_value = message.content[last_prefix_index + 1]
+                prefix_entity = Entity(value=message.content[last_prefix_index + 1],
+                                       index_in_message=last_prefix_index + 1)
             except IndexError:
-                prefix_value = None
+                prefix_entity = None
             start_index = last_prefix_index + 1
 
         if suffixes:
             if not suffix_indexes:
-                return
+                return None
+
+            # Obtain the earliest occurring suffix
             earliest_suffix_index = min(suffix_indexes)
             try:
-                suffix_value = message.content[earliest_suffix_index - 1]
+                suffix_entity = Entity(value=message.content[earliest_suffix_index - 1],
+                                       index_in_message=earliest_suffix_index - 1)
             except IndexError:
-                suffix_value = None
+                suffix_entity = None
 
         # If an Identifier was used - let it parse the message, but make sure it complies with
         # Pre- and/or suffix values, if configured
 
         if self.identifier:
-            if identifier_value := self.identifier(start_index=start_index) \
-                    .get_matching_string(message):
-                identifier_index = message.content.index(identifier_value)
-                if not self.prefixes and not self.suffixes:
-                    self.value = identifier_value
-
-                elif self.prefixes and identifier_index == last_prefix_index + 1:
-                    self.value = identifier_value
-                elif self.suffixes and identifier_index == earliest_suffix_index - 1:
-                    self.value = identifier_value
-                elif self.prefixes and self.suffixes and last_prefix_index \
-                        < identifier_index < earliest_suffix_index:
-                    self.value = identifier_value
+            identifier_object = self.identifier(start_index=start_index)
+            identifier_entity: Union[Entity, None] = identifier_object.try_identify_entity(message)
+            if identifier_entity is not None:
+                if any((not self.prefixes and not self.suffixes,
+                       self.prefixes and identifier_entity.index_in_message == last_prefix_index + 1,
+                       self.suffixes and identifier_entity.index_in_message == earliest_suffix_index - 1,
+                       self.prefixes and self.suffixes and last_prefix_index
+                       < identifier_entity.index_in_message < earliest_suffix_index)):
+                    parsed_entity = identifier_entity
         else:
             if self.prefixes and not self.suffixes:
-                self.value = prefix_value
+                parsed_entity = prefix_entity
             elif self.suffixes and not self.prefixes:
-                self.value = suffix_value
+                parsed_entity = suffix_entity
             elif self.prefixes and self.suffixes:
                 try:
-                    self.value = message.content[prefix_index:suffix_index].pop()
+                    begin = prefix_entity.index_in_message
+                    end = suffix_entity.index_in_message
+                    parsed_entity = Entity(value=message.content[begin:end].pop(), index_in_message=begin + 1)
                 except IndexError:
-                    self.value = None
+                    parsed_entity = None
 
         # If the span property is set to greater than 0, walk further in
         # message.content and also include elements as far as the span
@@ -307,24 +344,27 @@ class ValueParser(Parser):
         # for each span iteration as the walk in the message progresses.
         # If an Identifier is does not comply with a tring, the walk is
         # cancelled.
-        if self.value is not None and self.span:
-            current_index = message.content.index(self.value)
+        if parsed_entity is not None and self.span:
+            current_index = parsed_entity.index_in_message
+
             for i in range(1, self.span):
                 try:
                     current_index += 1
                     if self.identifier:
-                        elem = self.identifier(start_index=current_index).get_matching_string(message)
-                        if elem is None or message.content.index(elem) != current_index:
+                        identifier_object: Identifier = self.identifier(start_index=current_index)
+                        # Identifier did not find
+                        span_entity = identifier_object.try_identify_entity(message)
+                        if span_entity is None or span_entity.index_in_message != current_index:
                             break
-                        else:
-                            self.value += f" {elem}"
+                        parsed_entity.value += f" {span_entity.value}"
                     else:
-                        self.value += f" {message.content[current_index]}"
+                        parsed_entity += f" {message.content[current_index]}"
 
                 # There are not enough elements in message.content to walk as far as
                 # the span property requests. Abort.
                 except IndexError:
-                    return
+                    break
+        return parsed_entity
 
 
 class PositionalParser(Parser):
@@ -339,7 +379,7 @@ class PositionalParser(Parser):
     """
     position = Parser.last_item
 
-    def parse_message(self, message: MessageMixin, memoization: dict) -> None:
+    def parse_message(self, message: MessageMixin, memoization: dict = None) -> None:
         """
         Set whichever element at index 'position'
         as value.
@@ -349,7 +389,8 @@ class PositionalParser(Parser):
         :return: None
         """
         try:
-            self.value = message.content[self.position]
+            self.value = Entity(value=message.content[self.position],
+                                index_in_message=self.position)
         except IndexError:
             pass
 
@@ -379,7 +420,7 @@ class ChoiceParser(Parser):
         self.choices = choices
         self.multiple = multiple
 
-    def parse_message(self, message: MessageMixin, memoization: dict) -> None:
+    def parse_message(self, message: MessageMixin, memoization: dict = None) -> None:
         """
         Identify if any of the choices are present in the
         message.
@@ -389,12 +430,14 @@ class ChoiceParser(Parser):
                             input strings by other parsers
         :return: None
         """
-        sanitized_set = set(message.sanitized_content(preserve_case=False))
-        if matching := sanitized_set.intersection(self.choices):
+        sanitized_set = OrderedSet(message.sanitized_content(preserve_case=False))
+        if matching := tuple(sanitized_set.intersection(self.choices)):
+            last_occurring_in_match = matching[-1]
             if not self.multiple:
-                self.value = matching.pop()
+                self.value = Entity(last_occurring_in_match,
+                                    message.content.index(last_occurring_in_match))
             else:
-                self.value = tuple(matching)
+                self.value = Entity(matching, message.content.index(last_occurring_in_match))
 
     @property
     def choices(self) -> Tuple[str]:
