@@ -319,8 +319,8 @@ class ValueParser(Parser):
             identifier_entity: Union[Entity, None] = identifier_object.try_identify_entity(message)
             if identifier_entity is not None:
                 if any((not self.prefixes and not self.suffixes,
-                       self.prefixes and identifier_entity.index_in_message == last_prefix_index + 1,
-                       self.suffixes and identifier_entity.index_in_message == earliest_suffix_index - 1,
+                       self.prefixes and identifier_entity.index_in_message >= (last_prefix_index + 1),
+                       self.suffixes and identifier_entity.index_in_message <= (earliest_suffix_index - 1),
                        self.prefixes and self.suffixes and last_prefix_index
                        < identifier_entity.index_in_message < earliest_suffix_index)):
                     parsed_entity = identifier_entity
