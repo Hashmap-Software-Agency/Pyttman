@@ -84,7 +84,9 @@ class CellPhoneNumberIdentifier(Identifier):
 
 class DateTimeStringIdentifier(Identifier):
     """ Identifies whether a string looks like a date string """
-    patterns = (r"^(\d{4}).(\d{2}).(\d{2}).(\d{2}):(\d).*$",
+    patterns = (r"^(\d{4}).(\d{2})",
+                r"^(\d{2}).(\d{2}).(\d{2})",
+                r"^(\d{4}).(\d{2}).(\d{2}).(\d{2}):(\d).*$",
                 r"^(\d{2}).(\d{2}).(\d{2}).(\d{2}):(\d{2}).*$")
 
 
