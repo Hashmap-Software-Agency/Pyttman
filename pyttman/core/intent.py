@@ -185,6 +185,8 @@ class BaseIntent(AbstractIntent, ABC):
             # the fields configured in the user Intent.EntityParser class.
             self._entity_parser = type("EntityParser", (EntityParserBase,), {"parsers": parsers})()
             self._entity_parser.__dict__.update(parsers)
+        else:
+            self._entity_parser = EntityParserBase()
 
     def __repr__(self):
         return f"{self.__class__.__name__}(lead={self.lead}, " \
