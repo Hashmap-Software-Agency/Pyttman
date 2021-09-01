@@ -11,7 +11,7 @@
   > Note! This is a **breaking** change.
 
 
-* The 'Command' class is renamed to `Intent` for better semantic similarity to the general standard of terminology.
+* The `Command` class is renamed to `Intent` for better semantic similarity to the general standard of terminology.
   > Note! This is a **breaking** change.
 
 
@@ -48,6 +48,9 @@ The `ReplyStream` will wrap your strings or other objects as `Reply` objects if 
 * The `pyttman.schedule.method` api method no longer requires the use of the `async_loop` argument if the function to be scheduled is asynchronous, but rather acquires the running loop through `asyncio.get_running_loop()`. If no running loop is identified, it will automatically run the asynchronous function using `asyncio.run`. 
 
 
+* Identifier class `DateTimeStringIdentifier` has added regex patterns to also identify strings with a date stamp, without a specific time. 
+  For example, in a message like: `On that fateful night of 1986/04/26 (...)` - the `DateTimeStringIdentifier` would now find `1986/04/26` as a valid entity. 
+
 
 ### 🐛 Splatted bugs and corrected issues 
 
@@ -55,7 +58,6 @@ The `ReplyStream` will wrap your strings or other objects as `Reply` objects if 
 
 
 * Fixes an [issue](https://github.com/dotchetter/Pyttman/issues/24) where clients could not communicate any errors upon startup. These are now showed through user warnings.
-
 
  
 * Fixes an [issue](https://github.com/dotchetter/Pyttman/issues/31) where one element in a message would end up multiple times in `self.entities` incorrectly
