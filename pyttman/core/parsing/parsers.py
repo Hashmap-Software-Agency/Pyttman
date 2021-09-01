@@ -85,11 +85,11 @@ class EntityParserBase(Parser):
 
     # EntityParser classes have Parser fields which help them
     # find entities in messages.
-    parsers: Dict[str, Parser]
+    parsers: Dict[str, Parser] = {}
 
     # Mapping an entity with its index of occurrence in the message.
     # Used to prevent multiple entities with the same exact element.
-    entities: Dict[str, Entity]
+    entities: Dict[str, Entity] = {}
 
     def parse_message(self, message: MessageMixin, memoization: dict = None) -> None:
         """
