@@ -27,6 +27,6 @@ class TestDateStringIdentifier(TestCase):
         identifier = identifiers.DateTimeStringIdentifier(start_index=9)
 
         # Expect to find an Entity with the following value on index 8
-        expected_entity = Entity("", 34)
+        expected_entity = Entity("1945-08-06.", 34)
         found_entity = identifier.try_identify_entity(self.sample_message)
         self.assertIsNotNone(found_entity)
