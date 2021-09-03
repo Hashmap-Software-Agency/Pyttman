@@ -430,14 +430,22 @@ class ChoiceParser(Parser):
                             input strings by other parsers
         :return: None
         """
+        casefolded_choices = [i.casefold() for i in self._choices]
         sanitized_set = OrderedSet(message.sanitized_content(preserve_case=False))
-        if matching := tuple(sanitized_set.intersection(self.choices)):
-            last_occurring_in_match = matching[-1]
+
+        if matching := list(sanitized_set.intersection(casefolded_choices)):
+            last_occurring_matching_entity = matching[-1]
+            position = casefolded_choices.index(last_occurring_matching_entity)
+
             if not self.multiple:
-                self.value = Entity(last_occurring_in_match,
-                                    sanitized_set.index(last_occurring_in_match))
+                self.value = Entity(self._choices[position], position)
             else:
-                self.value = Entity(matching, sanitized_set.index(last_occurring_in_match))
+                case_preserved = OrderedSet()
+                while matching:
+                    elem = matching.pop()
+                    index_in_casefolded = casefolded_choices.index(elem)
+                    case_preserved.add(self._choices[index_in_casefolded])
+                self.value = Entity(case_preserved, position)
 
     @property
     def choices(self) -> Tuple[str]:
