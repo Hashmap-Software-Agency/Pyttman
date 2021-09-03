@@ -453,11 +453,9 @@ class ChoiceParser(Parser):
 
     @choices.setter
     def choices(self, value: Tuple[str]) -> None:
-        _values = []
         for i in value:
             if not isinstance(i, str):
                 raise ValueError("All values in the 'choices' property must me 'str'")
             elif len(i.split()) > 1:
                 raise ValueError(f"Spaces in Choices is not supported at this time: '{i}'")
-            _values.append(i.lower().strip())
-        self._choices = tuple(_values)
+        self._choices = tuple(value)
