@@ -66,7 +66,14 @@ The `ReplyStream` will wrap your strings or other objects as `Reply` objects if 
 * Fixes an [issue](https://github.com/dotchetter/Pyttman/issues/32) where strings defined in `lead` and `trail` in `Intent` classes were case-sensitive - they are not anymore.
 
 
+* Fixes an issue where an entity parsed using a `ChoiceParser` would
+  be stored as the casefolded variant. With this correction, identification
+  is done case-insensitively, and the defined value in the `ChoiceParser.choices`
+  is the one present in `self.entites`, when a match occurs.
 
+
+* Fixes an issue with the `CapitalizedIdentifier` identifier class, as it would not grant
+  all-caps words as valid.
 ------
 
 
