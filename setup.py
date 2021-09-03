@@ -37,7 +37,8 @@ setup(
         "pytz",
         "discord",
         "requests",
-        "py7zr"
+        "py7zr",
+        "ordered_set"
     ],
     entry_points={
         "console_scripts": [
