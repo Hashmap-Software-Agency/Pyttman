@@ -15,6 +15,10 @@
   > Note! This is a **breaking** change.
 
 
+* `pyttman-cli` is renamed to just `pyttman` for increased simplicity.
+  > Note! This is a **breaking** change.
+
+
 * The reference to `Feature` in `Intent` classes (previously `Command` classes) - is removed. 
   this means that the `Storage` object previously accessed through `self.feature.storage` can no longer be accessed this
   way. Instead, the `Ability` is no longer referenced inside `Intent` classes for cleaner OOP relations. 
