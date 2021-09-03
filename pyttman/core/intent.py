@@ -184,6 +184,7 @@ class BaseIntent(AbstractIntent, ABC):
             # Use the EntityParserBase as metaclass for an EntityParser class with
             # the fields configured in the user Intent.EntityParser class.
             self._entity_parser = type("EntityParser", (EntityParserBase,), {"parsers": parsers})()
+            self._entity_parser.__dict__.update(self.EntityParser.__dict__)
             self._entity_parser.__dict__.update(parsers)
         else:
             self._entity_parser = EntityParserBase()

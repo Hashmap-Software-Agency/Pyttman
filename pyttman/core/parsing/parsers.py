@@ -107,9 +107,10 @@ class EntityParserBase(Parser):
         for field_name, parser_object in self.get_parsers().items():
             parser_object.parse_message(message, memoization=parsers_memoization)
 
-            # See what the parser found - Entity or None.
+            # See what the parser found - Entity or None. Ignore entities in self.exclude.
             parsed_entity: Union[Entity, None] = parser_object.value
-            if parsed_entity is None:
+
+            if parsed_entity is None or parsed_entity.value in self.exclude:
                 self.value[field_name] = None
                 continue
 

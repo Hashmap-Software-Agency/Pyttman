@@ -2,7 +2,7 @@ from pyttman.tools.scheduling.schedule import schedule
 from pyttman.tools.pollcache import PollCache
 from pyttman.core.decorators import PyttmanLogger
 
-__version__ = '1.1.5'
+__version__ = '1.1.6'
 
 
 settings = None
