@@ -5,7 +5,6 @@ from pyttman.core.decorators import PyttmanLogger
 __version__ = '1.1.5'
 
 
-# Set by the user in each projects' main.py file, imported locally
 settings = None
 is_configured = False
 logger = PyttmanLogger
