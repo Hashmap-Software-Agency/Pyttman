@@ -41,7 +41,7 @@ setup(
     ],
     entry_points={
         "console_scripts": [
-            "pyttman-cli=pyttman.tools.pyttmancli:run",
+            "pyttman=pyttman.tools.pyttmancli:run",
         ]
     },
 )
