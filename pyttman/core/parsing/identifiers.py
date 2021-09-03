@@ -102,4 +102,4 @@ class IntegerIdentifier(Identifier):
 
 class CapitalizedIdentifier(Identifier):
     """ identifies names by looking for capitalized strings """
-    patterns = (r"^([A-Z][a-z]*)$",)
+    patterns = (r"\b[A-Z][a-zA-Z]*\b",)
