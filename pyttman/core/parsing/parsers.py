@@ -358,7 +358,7 @@ class ValueParser(Parser):
                             break
                         parsed_entity.value += f" {span_entity.value}"
                     else:
-                        parsed_entity += f" {message.content[current_index]}"
+                        parsed_entity.value += f" {message.content[current_index]}"
 
                 # There are not enough elements in message.content to walk as far as
                 # the span property requests. Abort.
