@@ -13,6 +13,7 @@ from py7zr import unpack_7zarchive
 import pyttman
 from pyttman.clients.builtin.cli import CliClient
 from pyttman.core.ability import Ability
+from pyttman.core.internals import Settings
 from pyttman.core.parsing.routing import AbstractMessageRouter
 from pyttman.tools.pyttmancli import Runner
 
@@ -64,7 +65,7 @@ class TerraFormer:
                f"Source: {self.source}"
 
 
-def bootstrap_environment(module: str = None, devmode: bool = False) -> List:
+def bootstrap_environment(module: str = None, devmode: bool = False) -> Runner:
     """
     Bootstraps the framework with modules and configurations
     read from the settings.py found in the current path.
@@ -75,10 +76,8 @@ def bootstrap_environment(module: str = None, devmode: bool = False) -> List:
 
     :param module: Module in which the app source is located
     :param devmode: Provides only one runner with the CliClient in.
-    :return: List of Runner objects, with ready-to-start clients
+    :return: Runner instance with a ready-to-run Client instance.
     """
-
-    runners = []
 
     # This enables relative imports
     sys.path.insert(0, Path.cwd().as_posix())
@@ -87,7 +86,11 @@ def bootstrap_environment(module: str = None, devmode: bool = False) -> List:
     # provided that the user is currently positioned in the app catalog for
     # their Pyttman project.
     try:
-        settings = import_module(f"{module}.settings")
+        settings_module = import_module(f"{module}.settings")
+        settings_names = [i for i in dir(settings_module) if not i.startswith("__")]
+        settings_config = {name: getattr(settings_module, name) for name in settings_names}
+        settings = Settings(**settings_config)
+
     except ImportError:
         raise ImportError("No 'settings.py' module found. Make sure you are "
                           "executing the command from within your Pyttman app "
@@ -149,8 +152,8 @@ def bootstrap_environment(module: str = None, devmode: bool = False) -> List:
                          "a list of strings")
 
     # Import the client classes defined in CLIENTS in settings.py
-    if not len(settings.CLIENTS):
-        raise ValueError("At least one Client is required for Pyttman to "
+    if not len(settings.CLIENT):
+        raise ValueError("A Client is required for Pyttman to "
                          "start your app in Client mode. Define a Client "
                          "in settings.py. Refer to the documentation for "
                          "examples.")
@@ -191,28 +194,35 @@ def bootstrap_environment(module: str = None, devmode: bool = False) -> List:
     # If devmode is active, return only one CliClient in a runner.
     if devmode:
         client = CliClient(message_router=message_router)
-        return [Runner(settings.APP_NAME, client)]
+        return Runner(settings.APP_NAME, client)
 
-    # Start the clients defined in settings.CLIENTS in separate threads
-    for i, config in enumerate(settings.CLIENTS):
-        try:
-            module_config = config.pop("module").split(".")
-            client_class_name = module_config.pop()
-            module_name = ".".join(module_config)
-
-            module = import_module(module_name)
-            client_class = getattr(module, client_class_name)
-        except Exception as e:
-            raise NotImplementedError(f"Cannot use client at position {i}"
-                                      f" due to incorrect config. Check "
-                                      f"the following error and correct "
-                                      f"any syntax error in settings.py:"
-                                      f"\n{e}") from e
+    # Start the client
+    if not isinstance(settings.CLIENT, dict):
+        raise TypeError("The CLIENT config must be a single dict, "
+                        "containing the full reference to the client "
+                        "class")
+    try:
+        client_class_config = settings.CLIENT.pop("class").split(".")
+    except Exception:
+        raise ValueError("The dictionary containing Client configuration "
+                         "must contain the key 'class', which should be "
+                         "the import path for the Client class. Verify "
+                         "the 'CLIENT' property in settings.py. See the "
+                         "Client documentation for more help on this subject.")
+    try:
+        client_class_name = client_class_config.pop()
+        module_name = ".".join(client_class_config)
+        module = import_module(module_name)
 
         # Provide the client with message_router and runner with client
-        client = client_class(message_router=message_router, **config)
-        runners.append(Runner(settings.APP_NAME, client))
+        client_class = getattr(module, client_class_name)
+    except Exception as e:
+        raise RuntimeError(f"Cannot start client. Check "
+                           f"the following error and correct "
+                           f"any syntax error in settings.py: "
+                           f"\n{e}") from e
+    client = client_class(message_router=message_router, **settings.CLIENT)
 
-        # Create a log entry for app start
-        pyttman.logger.log(f" -- App {app_name} started: {datetime.now()} -- ")
-    return runners
+    # Create a log entry for app start
+    pyttman.logger.log(f" -- App {app_name} started: {datetime.now()} -- ")
+    return Runner(settings.APP_NAME, client)

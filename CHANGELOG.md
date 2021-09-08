@@ -1,6 +1,22 @@
 # Pyttman Changelog
 
+# v 1.1.7
+This release is a hotfix release, adressing issues using the `runclients` command with `pyttman` cli tool on linux and unix based systems. 
 
+### 👀 Changes
+* Clients are no longer started in parallel using Threading due to issues with security and runtime on unix and linux based systems. Observe that in your `settings.py` file, the `CLIENTS` field is replaced by a  `CLIENT` field, which is a single dictionary containing the client configuration for your app. This was necessary for multiple reasons, one being the complexity of pickling application logic to run them in parallel using  a process pool instead of threading, to solve [bug #33](https://github.com/dotchetter/Pyttman/issues/33). We're sorry about the inconvenience this may cause for your development and the experience with Pyttman so far. We're still learning.
+  It seems that this approach works well with deploying apps using Docker, as you can create containers using different settings for various platforms and support multiple platforms in this manner.
+  > Note! This is a breaking change.
+
+* The Pyttman CLI "`pyttman`" argument for running client has changed from `runclients` to just `runclient`, indicating a `single` client configuration in settings.py
+  > Note! This is a breaking change.
+
+### 🐛 Splatted bugs and corrected issues 
+- Fixes an [issue](https://github.com/dotchetter/Pyttman/issues/33), causing the `runclients` argument not to start apps as intended on linux and unix based operating systems.
+
+
+- Improves how settings are loaded, using the new [Setting](https://github.com/dotchetter/Pyttman/blob/c9f4433d3221b8fd30d71cecdece84b0bb05a4db/pyttman/core/internals.py#L46) class.
+  You still access your settings defined in `settings.py` using `pyttman.settings` in your app.
 
 # v 1.1.6
 
