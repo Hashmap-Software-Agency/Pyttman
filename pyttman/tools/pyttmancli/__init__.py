@@ -8,6 +8,9 @@ from pyttman.tools.pyttmancli.terraforming import TerraFormer, bootstrap_environ
 
 
 def run(argv=None):
+
+    runners = None
+
     if argv is None:
         argv = sys.argv[:]
 
@@ -34,32 +37,28 @@ def run(argv=None):
         terraformer = TerraFormer(app_name=app_name)
         terraformer.terraform()
     elif command == "dev":
-        runners = bootstrap_environment(devmode=True, module=app_name)
-        runners.pop().run()
-    elif command == "runclients":
+        bootstrap_environment(devmode=True, module=app_name).run()
+    elif command == "runclient":
         print(f" {datetime.now()} --> Bootstrapping environment for app '{app_name}'...", end=" ")
         try:
-            runners = bootstrap_environment(module=app_name)
+            if (runner := bootstrap_environment(module=app_name)) is not None:
+                print(f" {datetime.now()} --> Starting app using '{runner.client}'...", end=" ")
+                runner.run()
+            else:
+                raise RuntimeError("Client bootstrapping failed")
         except Exception as e:
             print(f"failed - {e}")
         else:
             print(f"success")
-
-        # Put the client runtime in a separate processes for concurrent clients
-        with concurrent.futures.ThreadPoolExecutor(
-                thread_name_prefix="pyttman-client-thread-") as exc:
-            for runner in runners:
-                print(f" {datetime.now()} ---> Starting client '"
-                      f"{runner.client.__class__.__name__}'")
-                exc.submit(runner.run)
     else:
         from pyttman import __version__
         print(f"Pyttman CLI, version {__version__}")
-        print(f"\nSupported commands:\n\n * newapp [<app name>] - "
+        print(f"\nSupported commands:\n\n "
+              f"* newapp [<app name>] - "
               "Start a new app project. Creates files and "
-              "directories in the current directory\n * dev "
-              "[<app name>] - Starts running the app with a "
+              "directories in the current directory\n "
+              "* dev [<app name>] - Starts running the app with a "
               "CLI client for development purposes\n "
-              "* runclients - Starts your app with all clients "
-              "defined in the CLIENTS list, in parallel. This is "
+              "* runclient [<app name>]- Starts your app using the "
+              "Client class defined in settins.py. This is "
               "the standard production mode for Pyttman apps.\n")
