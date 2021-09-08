@@ -41,7 +41,7 @@ def run(argv=None):
         print(f" {datetime.now()} --> Bootstrapping environment for app '{app_name}'...", end=" ")
         try:
             if (runner := bootstrap_environment(module=app_name)) is not None:
-                print(f" {datetime.now()} --> Starting app using '{runner.client.name}'...", end=" ")
+                print(f" {datetime.now()} --> Starting app using '{runner.client.__class__.__name__}'...", end=" ")
             else:
                 raise RuntimeError("Client bootstrapping failed")
         except Exception as e:
