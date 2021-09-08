@@ -33,6 +33,7 @@ class BaseClient(abc.ABC):
     def __init__(self, *args, message_router: AbstractMessageRouter, **kwargs):
         super().__init__(*args, **kwargs)
         self.message_router = message_router
+        self.name = self.__class__.__name__
 
         [setattr(self, k, v) for k, v in kwargs.items()]
 
@@ -43,7 +44,7 @@ class BaseClient(abc.ABC):
                                  "Features")
 
     def __repr__(self):
-        return f"{self.__class__.__name__}({vars(self)})"
+        return f"{self.name}({vars(self)})"
 
     @abc.abstractmethod
     def run_client(self):
