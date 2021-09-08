@@ -42,14 +42,15 @@ def run(argv=None):
         print(f" {datetime.now()} --> Bootstrapping environment for app '{app_name}'...", end=" ")
         try:
             if (runner := bootstrap_environment(module=app_name)) is not None:
-                print(f" {datetime.now()} --> Starting app using '{runner.client}'...", end=" ")
-                runner.run()
+                print(f" {datetime.now()} --> Starting app using '{runner.client.name}'...", end=" ")
             else:
                 raise RuntimeError("Client bootstrapping failed")
         except Exception as e:
-            print(f"failed - {e}")
+            print(f"failed.")
+            raise e
         else:
-            print(f"success")
+            print(f"success!")
+            runner.run()
     else:
         from pyttman import __version__
         print(f"Pyttman CLI, version {__version__}")
