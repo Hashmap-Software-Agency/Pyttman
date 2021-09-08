@@ -1,5 +1,4 @@
 import argparse
-import concurrent
 import sys
 from datetime import datetime
 
