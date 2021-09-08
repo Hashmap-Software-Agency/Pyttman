@@ -1,3 +1,4 @@
+import inspect
 import logging
 import traceback
 import uuid
@@ -40,6 +41,39 @@ def is_dst(timezone: str):
     timezone = pytz.timezone(timezone)
     timezone_aware_date = timezone.localize(datetime.now(), is_dst=None)
     return timezone_aware_date.tzinfo._dst.seconds != 0
+
+
+class Settings:
+    """
+    Dataclass holding settings configured in the settings.py
+    settings module. Modules are not picklable in Python,
+    thus this class holds the user-level variables and
+    objects created in the module instead of the flooding
+    of using the entire module as reference in 'pyttman.settings'
+    throughout Pyttman apps.
+
+    The Settings class automatically omitts any instance
+    in **kwargs being of instance <module> since modules
+    aren't picklable. It also omitts functions as callables
+    aren't valid settings.
+    """
+    APPEND_LOG_FILES: bool
+    MESSAGE_ROUTER: dict
+    ABILITIES: list
+    FATAL_EXCEPTION_AUTO_REPLY: list
+    CLIENT: dict
+    APP_BASE_DIR: str
+    LOG_FILE_DIR: str
+    APP_NAME: str
+
+    def __init__(self, **kwargs):
+        [setattr(self, k, v) for k, v in kwargs.items()
+         if not inspect.ismodule(v)
+         and not inspect.isfunction(v)]
+
+    def __repr__(self):
+        _attrs = {name: value for name, value in self.__dict__.items()}
+        return f"Settings({_attrs})"
 
 
 @dataclass
