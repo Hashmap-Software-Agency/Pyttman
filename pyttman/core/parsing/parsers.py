@@ -87,9 +87,12 @@ class EntityParserBase(Parser):
     # find entities in messages.
     parsers: Dict[str, Parser] = {}
 
-    # Mapping an entity with its index of occurrence in the message.
-    # Used to prevent multiple entities with the same exact element.
-    entities: Dict[str, Entity] = {}
+    def __repr__(self):
+        return f"{self.__class__.__name__}(" \
+               f"value={self.value}, " \
+               f"exclude={self.exclude}, " \
+               f"identifier={self.identifier}, " \
+               f"parsers={self.parsers})"
 
     def parse_message(self, message: MessageMixin, memoization: dict = None) -> None:
         """
