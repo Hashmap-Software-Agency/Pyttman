@@ -55,6 +55,8 @@ class Parser(AbstractParser, ABC):
     """
     identifier: Identifier = None
     exclude: Tuple = ()
+    prefixes: Tuple = ()
+    suffixes: Tuple = ()
 
     def __init__(self, **kwargs):
         if hasattr(self, "value"):
