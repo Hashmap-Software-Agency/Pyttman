@@ -13,7 +13,7 @@
 import abc
 from abc import ABC
 from itertools import zip_longest
-from typing import Tuple, Any, Type, Collection, Dict, Optional, Union
+from typing import Tuple, Any, Type, Collection, Dict, Optional, Union, List
 
 from ordered_set import OrderedSet
 
@@ -114,8 +114,9 @@ class EntityParserBase(Parser):
         """
         self.value = {}
         parsers_memoization: Dict[int, Entity] = {}
-
-        for field_name, parser_object in self.get_parsers().items():
+        parser_classes = self.get_parsers()
+        for field_name, parser_object in parser_classes.items():
+            parser_object.exclude = self.exclude
             parser_object.parse_message(message, memoization=parsers_memoization)
 
             # See what the parser found - Entity or None. Ignore entities in self.exclude.
@@ -126,12 +127,45 @@ class EntityParserBase(Parser):
                 continue
 
             if parsed_entity.value not in self.exclude:
-                self.value[field_name] = parsed_entity.value
+                self.value[field_name] = parsed_entity
             else:
                 self.value[field_name] = None
 
             # Store the entity for memoization to prohibit multiple occurrence
             parsers_memoization[parsed_entity.index_in_message] = parsed_entity
+
+        """
+        Walk the message backwards and truncate entities which 
+        contain elements from entities occurring later in the 
+        message. 
+        
+        All elements in pre- and suffixes are also truncated 
+        from all entities as they are delimiters, and should 
+        not be present in the entity value.
+        """
+        duplicate_cache: List[str] = []
+
+        for field_name, entity in reversed(self.value.items()):
+            # Split the entity value by space so we can work with it
+            split_value = entity.value.split()
+
+            # Obtain all prefixes and suffixes for this parser
+            prefixes = parser_classes[field_name].prefixes
+            suffixes = parser_classes[field_name].suffixes
+
+            # Truncate prefixes and suffixes strings from the entity
+
+            to_truncate = prefixes + suffixes + tuple(duplicate_cache)
+            print(f"TO TRUNCATE FOR {field_name}:", to_truncate)
+            print(f"SPLIT VALUE FOR {field_name}:", split_value)
+
+            split_value = OrderedSet(split_value).difference(to_truncate)
+            print(f"SPLIT VALUE AFTER DIFF for {field_name}:", split_value)
+
+            print(field_name, "updated value:", split_value)
+            duplicate_cache.extend(split_value)
+            self.value[field_name] = str(" ").join(split_value)
+            print()
 
     def get_parsers(self) -> Dict:
         """
@@ -349,6 +383,11 @@ class ValueParser(Parser):
                 except IndexError:
                     parsed_entity = None
 
+        # The ValueParser has no prefixes, suffixes or identifier.
+        # The entity is the first string in the message.
+        if not prefixes and not suffixes and not self.identifier:
+            parsed_entity = Entity(value=message.content[0], index_in_message=0)
+
         # If the span property is set to greater than 0, walk further in
         # message.content and also include elements as far as the span
         # property designates.
@@ -368,14 +407,17 @@ class ValueParser(Parser):
                         span_entity = identifier_object.try_identify_entity(message)
                         if span_entity is None or span_entity.index_in_message != current_index:
                             break
-                        parsed_entity.value += f" {span_entity.value}"
+                        span_value = span_entity.value
                     else:
-                        parsed_entity.value += f" {message.content[current_index]}"
+                        span_value = message.content[current_index]
 
                 # There are not enough elements in message.content to walk as far as
                 # the span property requests. Abort.
                 except IndexError:
                     break
+                else:
+                    if span_value not in self.exclude:
+                        parsed_entity.value += f" {span_value}"
         return parsed_entity
 
 
