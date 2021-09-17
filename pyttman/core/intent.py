@@ -141,7 +141,7 @@ class BaseIntent(AbstractIntent, ABC):
         in the message compared to your lead and trail
         tuples. This can be set however with the 'ordered'
         parameter, to True. This will require that all
-        strings defined in lead and trail, ocurr in the
+        strings defined in lead and trail, occur in the
         same order as you have defined them
 
     :field help_string:
