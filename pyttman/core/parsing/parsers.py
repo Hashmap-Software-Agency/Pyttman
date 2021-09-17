@@ -64,6 +64,12 @@ class Parser(AbstractParser, ABC):
         for k, v in kwargs.items():
             setattr(self, k, v)
 
+    def __repr__(self):
+        return f"{self.__class__.__name__}(" \
+               f"exclude={self.exclude}, " \
+               f"identifier={self.identifier}, " \
+               f"value={self.value})"
+
     def reset(self) -> None:
         """
         Resets the parser, defaulting it's value to None.
