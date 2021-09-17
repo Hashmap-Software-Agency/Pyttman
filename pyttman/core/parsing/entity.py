@@ -22,6 +22,9 @@ class Entity:
         self.index_in_message = index_in_message
 
     def __eq__(self, other):
+        if isinstance(other, str):
+            return other == self.value
+
         return other.value == self.value \
                and other.index_in_message == self.index_in_message
 
