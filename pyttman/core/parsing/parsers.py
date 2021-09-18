@@ -158,7 +158,7 @@ class EntityParserBase(Parser):
 
             # Split the entity value by space so we can work with it
             if entity is not None:
-                if len(entity.value) > 2:
+                if len(entity.value) >= 2:
                     split_value = entity.value.split()
                 else:
                     split_value = entity.value
