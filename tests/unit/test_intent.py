@@ -25,7 +25,8 @@ from unittest import TestCase
 
 from pyttman.core.communication.models.containers import Message, MessageMixin, Reply, ReplyStream
 from pyttman.core.intent import Intent
-from pyttman.core.parsing.identifiers import CapitalizedIdentifier, CellPhoneNumberIdentifier, DateTimeStringIdentifier
+from pyttman.core.parsing.identifiers import CapitalizedIdentifier, CellPhoneNumberIdentifier, DateTimeStringIdentifier, \
+    IntegerIdentifier
 from pyttman.core.parsing.parsers import ValueParser, ChoiceParser
 
 
@@ -78,6 +79,15 @@ class TestableEntityParserIntentUsingIdentifierAndPrefixesSuffixes(_TestableEnti
         phone_standard = ChoiceParser(choices=("mobile", "cell", "land", "landline"))
 
 
+class TestEntityParserIdentifiersAndSuffixesComplex_ShouldSucceed(_TestableEntityParserConfiguredIntent):
+    class EntityParser:
+
+        restaurant = ValueParser(identifier=CapitalizedIdentifier, span=5)
+        preference = ChoiceParser(choices=("vegetarian", "meatarian"))
+        max_ingredients = ValueParser(prefixes=("ingredients",), identifier=IntegerIdentifier)
+        servings = ValueParser(suffixes=("servings",), identifier=IntegerIdentifier)
+
+
 ## Unit tests ##
 
 
@@ -105,6 +115,7 @@ class _TestBaseCase(TestCase):
         print(self.mock_intent.entities)
 
 
+
 class TestEntityParserPrefixesAndSuffixes_ShouldSucceed(_TestBaseCase):
 
     mock_intent_cls = TestableEntityParserUsingOnlyPreAndSuffixes
@@ -130,6 +141,9 @@ class TestEntityParserIdentifiers_ShouldSucceed(_TestBaseCase):
         self.assertEqual("0805552859", self.get_entity_value("phone_number"))
         self.assertEqual("mobile", self.get_entity_value("phone_standard"))
         self.assertEqual("2021-09-20-10:40", self.get_entity_value("date_change"))
+
+
+
 
 
 class TestEntityParserIdentifiersPrefixesSuffiixes_ShouldFail(_TestBaseCase):
@@ -161,3 +175,19 @@ class TestEntityParserIdentifiersPrefixesSuffiixes_ShouldSucceed(_TestBaseCase):
         self.assertEqual("0805552859", self.get_entity_value("phone_number"))
         self.assertEqual("mobile", self.get_entity_value("phone_standard"))
         self.assertEqual("2021-09-20-10:40", self.get_entity_value("date_change"))
+
+
+class TestEntityParserIDentifierPrefixesSuffixesMultipleChoices(_TestBaseCase):
+
+    mock_intent_cls = TestEntityParserIdentifiersAndSuffixesComplex_ShouldSucceed
+    mock_message = Message("search for vegetarian recipes on all websites "
+                           "max ingredients 10 and 4 servings on Pinchos")
+
+    def test_respond(self):
+        self.parse_message_for_entities()
+
+        self.assertEqual("vegetarian", self.get_entity_value("preference"))
+        self.assertEqual("10", self.get_entity_value("max_ingredients"))
+        self.assertEqual("4", self.get_entity_value("servings"))
+        self.assertEqual("Pinchos", self.get_entity_value("restaurant"))
+
