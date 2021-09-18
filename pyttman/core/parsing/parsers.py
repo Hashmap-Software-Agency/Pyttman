@@ -11,6 +11,7 @@
     intents which may be a value provider for a command.
 """
 import abc
+import typing
 from abc import ABC
 from itertools import zip_longest
 from typing import Tuple, Any, Type, Collection, Dict, Optional, Union, List
@@ -113,9 +114,21 @@ class EntityParserBase(Parser):
         :return:
         """
         self.value = {}
+
+        # The memoization dict is provided each Parser instance
+        # in order for them to avoid catching a string, previously
+        # caught by a predecessor in iterations.
         parsers_memoization: Dict[int, Entity] = {}
-        parser_classes = self.get_parsers()
+        parser_classes: Dict[str, Parser] = self.get_parsers()
+        parser_joined_suffixes_and_prefixes: typing.Set[str] = set()
+
         for field_name, parser_object in parser_classes.items():
+
+            # Collect all parser pre- and suffixes
+            parser_joined_suffixes_and_prefixes.update(parser_object.prefixes + parser_object.suffixes)
+
+            # Share the 'exclude' tuple assigned by the developer in the
+            # application code to each Parser instance
             parser_object.exclude = self.exclude
             parser_object.parse_message(message, memoization=parsers_memoization)
 
@@ -124,15 +137,11 @@ class EntityParserBase(Parser):
 
             if parsed_entity is None or parsed_entity.value in self.exclude:
                 self.value[field_name] = None
-                continue
-
-            if parsed_entity.value not in self.exclude:
-                self.value[field_name] = parsed_entity
             else:
-                self.value[field_name] = None
+                self.value[field_name] = parsed_entity
 
-            # Store the entity for memoization to prohibit multiple occurrence
-            parsers_memoization[parsed_entity.index_in_message] = parsed_entity
+                # Store the entity for memoization to prohibit multiple occurrence
+                parsers_memoization[parsed_entity.index_in_message] = parsed_entity
 
         """
         Walk the message backwards and truncate entities which 
@@ -143,29 +152,21 @@ class EntityParserBase(Parser):
         from all entities as they are delimiters, and should 
         not be present in the entity value.
         """
-        duplicate_cache: List[str] = []
+        duplicate_cache: typing.Set[str] = set(parser_joined_suffixes_and_prefixes)
 
         for field_name, entity in reversed(self.value.items()):
+
             # Split the entity value by space so we can work with it
-            split_value = entity.value.split()
+            if entity is not None:
+                split_value = entity.value.split()
 
-            # Obtain all prefixes and suffixes for this parser
-            prefixes = parser_classes[field_name].prefixes
-            suffixes = parser_classes[field_name].suffixes
+                # Truncate prefixes, suffixes and cached strings from the entity
+                split_value = OrderedSet(split_value).difference(duplicate_cache)
 
-            # Truncate prefixes and suffixes strings from the entity
-
-            to_truncate = prefixes + suffixes + tuple(duplicate_cache)
-            print(f"TO TRUNCATE FOR {field_name}:", to_truncate)
-            print(f"SPLIT VALUE FOR {field_name}:", split_value)
-
-            split_value = OrderedSet(split_value).difference(to_truncate)
-            print(f"SPLIT VALUE AFTER DIFF for {field_name}:", split_value)
-
-            print(field_name, "updated value:", split_value)
-            duplicate_cache.extend(split_value)
-            self.value[field_name] = str(" ").join(split_value)
-            print()
+                duplicate_cache.update(split_value)
+                self.value[field_name] = str(" ").join(split_value)
+            else:
+                self.value[field_name] = None
 
     def get_parsers(self) -> Dict:
         """
