@@ -158,7 +158,10 @@ class EntityParserBase(Parser):
 
             # Split the entity value by space so we can work with it
             if entity is not None:
-                split_value = entity.value.split()
+                if len(entity.value) > 2:
+                    split_value = entity.value.split()
+                else:
+                    split_value = entity.value
 
                 # Truncate prefixes, suffixes and cached strings from the entity
                 split_value = OrderedSet(split_value).difference(duplicate_cache)
