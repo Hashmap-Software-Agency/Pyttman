@@ -186,6 +186,46 @@ class EntityParserBase(Parser):
                 parser_fields[field_name] = field_value
         return parser_fields
 
+    @classmethod
+    def from_meta_class(cls, metaclass):
+        """
+        Classmethod returning an instance of an EntityParser
+        class with merged properties and fields from both
+        classes.
+
+        The EntityParser inner class inside an Intent subclass
+        enables developers to easily parse for entities in
+        messages from end users.
+
+        The EntityParser is updated by merging the parser fields
+        from the user defined EntityParser with the base class
+        for EntityParser classes: 'EntityParserBase'.
+
+        This omitts the need for developers to use direct inheritance
+        inside their Intent subclasses.
+
+        This is performed by updating the __dict__ attribute of the
+        user defined EntityClass with the EntityClassBase class.
+
+        See PEP584 for details on the "|" operator for the union
+        operator for dict updates.
+
+        :param cls: Class reference for class method call
+        :param metaclass: A User-defined EntityParser inner class in an Intent subclass
+        :return: EntityParserBase subclass instance
+                 with merged __dict__ fields
+        """
+        user_defined_parsers = {name: parser for name, parser in metaclass.__dict__.items()
+                                if issubclass(parser.__class__, AbstractParser)}
+
+        # Use the EntityParserBase as metaclass for an EntityParser class with
+        # the fields configured in the user Intent.EntityParser class.
+        merged_subclass = type(metaclass.__class__.__name__, (EntityParserBase,), {"parsers": user_defined_parsers})
+        entity_parser_instance = merged_subclass()
+        entity_parser_instance.__dict__ |= metaclass.__dict__
+        entity_parser_instance.__dict__ |= user_defined_parsers
+        return entity_parser_instance
+
 
 class ValueParser(Parser):
     """
