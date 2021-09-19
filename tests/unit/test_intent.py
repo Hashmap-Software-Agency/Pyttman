@@ -23,6 +23,8 @@ import unittest
 from typing import Union, Type
 from unittest import TestCase
 
+from ordered_set import OrderedSet
+
 from pyttman.core.communication.models.containers import Message, MessageMixin, Reply, ReplyStream
 from pyttman.core.intent import Intent
 from pyttman.core.parsing.identifiers import CapitalizedIdentifier, CellPhoneNumberIdentifier, DateTimeStringIdentifier, \
@@ -79,7 +81,7 @@ class TestableEntityParserIntentUsingIdentifierAndPrefixesSuffixes(_TestableEnti
         phone_standard = ChoiceParser(choices=("mobile", "cell", "land", "landline"))
 
 
-class TestEntityParserIdentifiersAndSuffixesComplex_ShouldSucceed(_TestableEntityParserConfiguredIntent):
+class TestEntityParserIdentifiersAndSuffixes_FoodMessage_ShouldSucceed(_TestableEntityParserConfiguredIntent):
     class EntityParser:
 
         restaurant = ValueParser(identifier=CapitalizedIdentifier, span=5)
@@ -88,7 +90,17 @@ class TestEntityParserIdentifiersAndSuffixesComplex_ShouldSucceed(_TestableEntit
         servings = ValueParser(suffixes=("servings",), identifier=IntegerIdentifier)
 
 
-## Unit tests ##
+class TestEntityParserIdentifiersAndSuffixes_AdvertisementMessage_ShouldSucceed(_TestableEntityParserConfiguredIntent):
+
+    class EntityParser:
+        exclude = ("search", "for", "on")
+        manufacturer = ValueParser(span=2)
+        model = ValueParser(prefixes=(manufacturer,))
+        pages = ChoiceParser(choices=("all", "page_a", "page_b", "page_c"), multiple=True)
+        minimum_price = ValueParser(identifier=IntegerIdentifier, prefixes=("price",))
+        maximum_results = ValueParser(suffixes=("results",), identifier=IntegerIdentifier)
+
+# Unit tests
 
 
 class _TestBaseCase(TestCase):
@@ -100,6 +112,7 @@ class _TestBaseCase(TestCase):
 
     def setUp(self) -> None:
         self.mock_intent = self.mock_intent_cls()
+        self.intent_reply = None
 
         # Truncate 'lead' and 'trail' from the message before parsing
         self.mock_message.truncate(self.mock_intent.lead + self.mock_intent.trail)
@@ -109,11 +122,9 @@ class _TestBaseCase(TestCase):
 
     def parse_message_for_entities(self):
         # Truncate 'lead' and 'trail' from the message before parsing
-        self.mock_message.truncate(self.mock_intent.lead + self.mock_intent.trail)
-        self.mock_intent._entity_parser.parse_message(self.mock_message)
-        self.mock_intent.entities = self.mock_intent._entity_parser.value
+        self.intent_reply = self.mock_intent.process(self.mock_message)
+        self.mock_intent.entities = self.mock_intent.entities
         print(self.mock_intent.entities)
-
 
 
 class TestEntityParserPrefixesAndSuffixes_ShouldSucceed(_TestBaseCase):
@@ -141,9 +152,6 @@ class TestEntityParserIdentifiers_ShouldSucceed(_TestBaseCase):
         self.assertEqual("0805552859", self.get_entity_value("phone_number"))
         self.assertEqual("mobile", self.get_entity_value("phone_standard"))
         self.assertEqual("2021-09-20-10:40", self.get_entity_value("date_change"))
-
-
-
 
 
 class TestEntityParserIdentifiersPrefixesSuffiixes_ShouldFail(_TestBaseCase):
@@ -177,9 +185,9 @@ class TestEntityParserIdentifiersPrefixesSuffiixes_ShouldSucceed(_TestBaseCase):
         self.assertEqual("2021-09-20-10:40", self.get_entity_value("date_change"))
 
 
-class TestEntityParserIDentifierPrefixesSuffixesMultipleChoices(_TestBaseCase):
+class TestEntityParserIDentifierPrefixesSuffixesMultipleChoices_1_ShouldSucceed(_TestBaseCase):
 
-    mock_intent_cls = TestEntityParserIdentifiersAndSuffixesComplex_ShouldSucceed
+    mock_intent_cls = TestEntityParserIdentifiersAndSuffixes_FoodMessage_ShouldSucceed
     mock_message = Message("search for vegetarian recipes on all websites "
                            "max ingredients 10 and 4 servings on Pinchos")
 
@@ -191,3 +199,18 @@ class TestEntityParserIDentifierPrefixesSuffixesMultipleChoices(_TestBaseCase):
         self.assertEqual("4", self.get_entity_value("servings"))
         self.assertEqual("Pinchos", self.get_entity_value("restaurant"))
 
+
+class TestEntityParserIDentifierPrefixesSuffixesMultipleChoices_3_ShouldSucceed(_TestBaseCase):
+
+    mock_intent_cls = TestEntityParserIdentifiersAndSuffixes_AdvertisementMessage_ShouldSucceed
+    mock_message = Message("Search for ManufacturerA ManufacturerB Model123 "
+                           "on page_a and page_b price 45000 60 results")
+
+    def test_respond(self):
+        self.parse_message_for_entities()
+
+        self.assertEqual("ManufacturerA ManufacturerB", self.get_entity_value("manufacturer"))
+        self.assertEqual("Model123", self.get_entity_value("model"))
+        self.assertEqual(OrderedSet(['page_b', 'page_a']), self.get_entity_value("pages"))
+        self.assertEqual("60", self.get_entity_value("maximum_results"))
+        self.assertEqual("45000", self.get_entity_value("minimum_price"))
