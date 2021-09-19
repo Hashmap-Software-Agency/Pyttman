@@ -325,7 +325,6 @@ class BaseIntent(AbstractIntent, ABC):
                              f"expected Reply or ReplyStream")
 
         # Purge entities values and all parser instances from their local values
-        self.entities.clear()
         for parser_name in self._entity_parser.get_parsers():
             parser = getattr(self._entity_parser, parser_name)
             parser.reset()
