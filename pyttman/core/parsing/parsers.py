@@ -156,17 +156,24 @@ class EntityParserBase(Parser):
 
         for field_name, entity in reversed(self.value.items()):
 
-            # Split the entity value by space so we can work with it
+            # Assess only Parsers which have successfully parsed entities.
             if entity is not None:
-                if len(entity.value) >= 2:
+                # Work with OrderedSet's from ChoiceParsers with 'multiple=True' differently.
+                if isinstance(entity.value, OrderedSet):
+                    duplicate_cache.update(entity.value)
+                    self.value[field_name] = entity.value
+                    continue
+
+                # Value is a string - split the entity value by space so we can work with it
+                elif len(entity.value) >= 2:
                     split_value = entity.value.split()
                 else:
                     split_value = entity.value
 
                 # Truncate prefixes, suffixes and cached strings from the entity
                 split_value = OrderedSet(split_value).difference(duplicate_cache)
-
                 duplicate_cache.update(split_value)
+
                 self.value[field_name] = str(" ").join(split_value)
             else:
                 self.value[field_name] = None
