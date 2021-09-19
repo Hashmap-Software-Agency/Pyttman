@@ -440,6 +440,16 @@ class ValueParser(Parser):
         # If an Identifier is does not comply with a tring, the walk is
         # cancelled.
         if parsed_entity is not None and self.span:
+            while parsed_entity.value.casefold() in self.exclude:
+                parsed_entity.index_in_message += 1
+                # Traverse the message for as long as the current found entity is
+                # in the 'exclude' tuple. If the end of message is reached, quietly
+                # break the loop.
+                try:
+                    parsed_entity.value = message.content[parsed_entity.index_in_message]
+                except IndexError:
+                    return None
+
             current_index = parsed_entity.index_in_message
 
             for i in range(1, self.span):
