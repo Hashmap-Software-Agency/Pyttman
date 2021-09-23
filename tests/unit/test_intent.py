@@ -41,6 +41,23 @@ class _TestableEntityParserConfiguredIntent(Intent):
         return Reply(self.entities)
 
 
+class EntityParserWithEmptyValueParser(_TestableEntityParserConfiguredIntent):
+    """
+    Tests the use of a single ValueParser without any configuration """
+
+    class EntityParser:
+        item = ValueParser()
+
+
+class TestEntityParserWithTwoValueParsers(_TestableEntityParserConfiguredIntent):
+    """
+    Tests the use of a single ValueParser without any configuration """
+
+    class EntityParser:
+        item = ValueParser(span=5)
+        price = ValueParser(identifier=IntegerIdentifier)
+
+
 class TestableEntityParserUsingOnlyPreAndSuffixes(_TestableEntityParserConfiguredIntent):
     """
     Intent class for testing Intent matching
@@ -100,6 +117,7 @@ class TestEntityParserIdentifiersAndSuffixes_AdvertisementMessage_ShouldSucceed(
         minimum_price = ValueParser(identifier=IntegerIdentifier, prefixes=("price",))
         maximum_results = ValueParser(suffixes=("results",), identifier=IntegerIdentifier)
 
+
 # Unit tests
 
 
@@ -125,6 +143,17 @@ class _TestBaseCase(TestCase):
         self.intent_reply = self.mock_intent.process(self.mock_message)
         self.mock_intent.entities = self.mock_intent.entities
         print(self.mock_intent.entities)
+
+
+class TestEntityParserWithEmptyValueParser_ShouldSucceed(_TestBaseCase):
+
+    mock_intent_cls = TestEntityParserWithTwoValueParsers
+    mock_message = Message("some shopped item 695")
+
+    def test_respond(self):
+        self.parse_message_for_entities()
+        self.assertEqual("some shopped item", self.get_entity_value("item"))
+        self.assertEqual("695", self.get_entity_value("price"))
 
 
 class TestEntityParserPrefixesAndSuffixes_ShouldSucceed(_TestBaseCase):
@@ -189,7 +218,7 @@ class TestEntityParserIDentifierPrefixesSuffixesMultipleChoices_1_ShouldSucceed(
 
     mock_intent_cls = TestEntityParserIdentifiersAndSuffixes_FoodMessage_ShouldSucceed
     mock_message = Message("search for vegetarian recipes on all websites "
-                           "max ingredients 10 and 4 servings on Pinchos")
+                           "max ingredients 10 and 4 servings on RestaurantName")
 
     def test_respond(self):
         self.parse_message_for_entities()
@@ -197,7 +226,7 @@ class TestEntityParserIDentifierPrefixesSuffixesMultipleChoices_1_ShouldSucceed(
         self.assertEqual("vegetarian", self.get_entity_value("preference"))
         self.assertEqual("10", self.get_entity_value("max_ingredients"))
         self.assertEqual("4", self.get_entity_value("servings"))
-        self.assertEqual("Pinchos", self.get_entity_value("restaurant"))
+        self.assertEqual("RestaurantName", self.get_entity_value("restaurant"))
 
 
 class TestEntityParserIDentifierPrefixesSuffixesMultipleChoices_3_ShouldSucceed(_TestBaseCase):
