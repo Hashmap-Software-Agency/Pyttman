@@ -27,14 +27,14 @@ functions and methods.
 #      SOFTWARE.
 
 import abc
+import typing
 from abc import ABC
 from copy import copy
 from itertools import zip_longest
-from typing import Tuple, Union
 
-from pyttman.core.communication.models.containers import MessageMixin, Reply, ReplyStream
+from pyttman.core.communication.models.containers import Reply, ReplyStream, Message
 from pyttman.core.internals import _generate_name, _generate_error_entry
-from pyttman.core.parsing.parsers import ChoiceParser, EntityParserBase, AbstractParser
+from pyttman.core.parsing.parsers import ChoiceParser, EntityParserBase
 from pyttman.core.storage.basestorage import Storage
 
 
@@ -45,7 +45,7 @@ class AbstractIntent(abc.ABC):
         pass
 
     @abc.abstractmethod
-    def respond(self, message: MessageMixin) -> Union[Reply, ReplyStream]:
+    def respond(self, message: Message) -> typing.Union[Reply, ReplyStream]:
         """
         Subclasses overload this method to respond
         to a given Intent upon a match.
@@ -159,8 +159,8 @@ class BaseIntent(AbstractIntent, ABC):
     """
     description: str = "Unavailable"
     example: str = None
-    lead: Tuple[str] = tuple()
-    trail: Tuple[str] = tuple()
+    lead: typing.Tuple[str] = tuple()
+    trail: typing.Tuple[str] = tuple()
     ordered: bool = False
     help_string: str = None
     storage: Storage = None
@@ -220,7 +220,7 @@ class BaseIntent(AbstractIntent, ABC):
         exits with False.
 
         :param message:
-            pyttman.MessageMixin
+            pyttman.Message
         :returns:
             Bool, True if self matches Intent
         """
@@ -298,11 +298,11 @@ class BaseIntent(AbstractIntent, ABC):
             help_string = self.help_string
         return help_string
 
-    def process(self, message: MessageMixin) -> Union[Reply, ReplyStream]:
+    def process(self, message: Message) -> typing.Union[Reply, ReplyStream]:
         """
         Iterate over all ValueParser objects and the name
         of the field it's allocated as.
-        :param message: MessageMixin object
+        :param message: Message object
         :return: Reply, logic defined in the 'respond' method
         """
         joined_patterns = self.lead + self.trail
@@ -320,7 +320,7 @@ class BaseIntent(AbstractIntent, ABC):
         message.content = original_content
 
         try:
-            reply: Union[Reply, ReplyStream] = self.respond(message=message)
+            reply: typing.Union[Reply, ReplyStream] = self.respond(message=message)
         except Exception as e:
             reply = _generate_error_entry(message, e)
 
@@ -339,6 +339,6 @@ class BaseIntent(AbstractIntent, ABC):
 
 
 class Intent(BaseIntent):
-    def respond(self, message: MessageMixin) -> Union[Reply, ReplyStream]:
+    def respond(self, message: Message) -> typing.Union[Reply, ReplyStream]:
         raise NotImplementedError("The 'respond' method must be "
                                   "defined when subclassing Intent")
