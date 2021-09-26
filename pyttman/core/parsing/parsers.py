@@ -58,6 +58,7 @@ class Parser(AbstractParser, ABC):
     exclude: Tuple = ()
     prefixes: Tuple = ()
     suffixes: Tuple = ()
+    case_preserved_cache = set()
 
     def __init__(self, **kwargs):
         if hasattr(self, "value"):
@@ -155,24 +156,25 @@ class EntityParserBase(Parser):
         duplicate_cache: typing.Set[str] = set(parser_joined_suffixes_and_prefixes)
 
         for field_name, entity in reversed(self.value.items()):
+            iter_parser = self.parsers.get(field_name)
+            duplicate_cache.update(iter_parser.case_preserved_cache)
 
             # Assess only Parsers which have successfully parsed entities.
             if entity is not None:
                 # Work with OrderedSet's from ChoiceParsers with 'multiple=True' differently.
                 if isinstance(entity.value, OrderedSet):
                     duplicate_cache.update(entity.value)
+                    duplicate_cache.update(set([i.casefold() for i in entity.value]))
                     self.value[field_name] = entity.value
                     continue
 
                 # Value is a string - split the entity value by space so we can work with it
-                elif len(entity.value) >= 2:
-                    split_value = entity.value.split()
-                else:
-                    split_value = entity.value
+                split_value = entity.value.split()
 
                 # Truncate prefixes, suffixes and cached strings from the entity
                 split_value = OrderedSet(split_value).difference(duplicate_cache)
                 duplicate_cache.update(split_value)
+                duplicate_cache.update(set([i.casefold() for i in split_value]))
 
                 self.value[field_name] = str(" ").join(split_value)
             else:
@@ -528,6 +530,14 @@ class ChoiceParser(Parser):
     one field per value has to be defined. Due to
     memoization when values are being parsed, no
     Parser class will parse the same value twice.
+
+    :field choices: Tuple of strings which the Parser will
+                    parse messages for
+    :field multiple: bool, where the ChoiceParser will collect
+                     multiple strings in an OrderedSet if set to
+                     True. If False, only one parsed value is saved
+                     in the Parser, even in scenarios where multiple
+                     valid ones occur in the message.
     """
 
     def __init__(self, choices: Tuple, multiple: bool = False, **kwargs):
@@ -547,20 +557,30 @@ class ChoiceParser(Parser):
         """
         casefolded_choices = [i.casefold() for i in self._choices]
         sanitized_set = OrderedSet(message.sanitized_content(preserve_case=False))
+        nonidentical_matching_strings = set()
 
         if matching := list(sanitized_set.intersection(casefolded_choices)):
+
+            # Add the matching elements to the case_preserved_cache set only if
+            # the case differs between the sourced entity and representative choice value
+            for i in message.content:
+                if i.casefold() in matching and i.casefold() not in message.content:
+                    nonidentical_matching_strings.add(i)
+
+            self.case_preserved_cache.update(nonidentical_matching_strings)
             last_occurring_matching_entity = matching[-1]
-            position = casefolded_choices.index(last_occurring_matching_entity)
+            choice_position = casefolded_choices.index(last_occurring_matching_entity)
+            position_in_message = sanitized_set.index(last_occurring_matching_entity)
 
             if not self.multiple:
-                self.value = Entity(self._choices[position], position)
+                self.value = Entity(self._choices[choice_position], position_in_message)
             else:
                 case_preserved = OrderedSet()
                 while matching:
                     elem = matching.pop()
                     index_in_casefolded = casefolded_choices.index(elem)
                     case_preserved.add(self._choices[index_in_casefolded])
-                self.value = Entity(case_preserved, position)
+                self.value = Entity(case_preserved, position_in_message)
 
     @property
     def choices(self) -> Tuple[str]:
