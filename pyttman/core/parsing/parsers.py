@@ -48,10 +48,27 @@ class Parser(AbstractParser, ABC):
     base class.
     Subclass this class when creating a custom Parser.
 
-    field identifier:
+    :field identifier:
         An optional Identifier class can be supplied as an Identifier.
         The Identifier's job is finding strings in a message which
         matches its own patterns.
+
+    :field exclude:
+        An optional tuple of strings which will be ignored in parsing.
+
+    :field prefixes:
+        An optional tuple of strings in which at least (1) must
+        occur before the word of interest, for it to be considered.
+
+    :field suffixes:
+        An optional tuple of strings in which at least (1) must
+        occur after the word of interest, for it to be considered.
+
+    :field case_preserved_cache:
+        Set of strings for internal use, as it stores the string
+        parsed from the message, not a case manipulated string
+        which can be the case with parsers who casefold messages
+        and use their value as the entity.
     """
     identifier: Identifier = None
     exclude: Tuple = ()
