@@ -60,15 +60,15 @@ class AbstractIntent(abc.ABC):
         pass
 
     @abc.abstractmethod
-    def matches(self, message: MessageMixin) -> bool:
+    def matches(self, message: Message) -> bool:
         """
-        Determine whether a MessageMixin matches a
+        Determine whether a Message matches a
         Intent instance's pattern config.
         The 'lead' and 'trail'
 
         Fields are traversed over and sought
         for matching strings.
-        :param message: pyttman.MessageMixin object
+        :param message: pyttman.Message object
         :return: bool, Intent matches or not
         """
         pass
@@ -193,7 +193,7 @@ class BaseIntent(AbstractIntent, ABC):
         return f"{self.__class__.__name__}(lead={self.lead}, " \
                f"trail={self.trail}, ordered={self.ordered})"
 
-    def matches(self, message: MessageMixin) -> bool:
+    def matches(self, message: Message) -> bool:
         """
         Boolean indicator to whether the Intent
         matches a given message, without returning

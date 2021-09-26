@@ -6,7 +6,7 @@ from typing import List, Union
 import pyttman
 from pyttman.core.ability import Ability
 from pyttman.core.intent import Intent
-from pyttman.core.communication.models.containers import MessageMixin, Reply, ReplyStream
+from pyttman.core.communication.models.containers import Message, Reply, ReplyStream
 from pyttman.core.internals import _generate_error_entry
 
 
@@ -41,19 +41,19 @@ class AbstractMessageRouter(abc.ABC):
         [setattr(self, k, v) for k, v in kwargs.items()]
 
     @abc.abstractmethod
-    def get_matching_intent(self, message: MessageMixin) -> List[Intent]:
+    def get_matching_intent(self, message: Message) -> List[Intent]:
         """
         Return all matching Intent classes which match
         a given message, as made evident by their
         lead and trail configuration.
 
-        :param message: MessageMixin subclassed object, from client
+        :param message: Message subclassed object, from client
         :return: collection of Intents, if multiple.
         """
         pass
 
     @abc.abstractmethod
-    def get_reply(self, message: MessageMixin) -> Reply:
+    def get_reply(self, message: Message) -> Reply:
         """
         Return the Reply from matching Intent.
         If no command matched, return a response from
@@ -74,7 +74,7 @@ class FirstMatchingRouter(AbstractMessageRouter):
     in order is chosen.
     """
 
-    def get_reply(self, message: MessageMixin) -> Reply:
+    def get_reply(self, message: Message) -> Reply:
 
         try:
             if not (matching_intents := self.get_matching_intent(message)):
@@ -114,7 +114,7 @@ class FirstMatchingRouter(AbstractMessageRouter):
             reply: Reply = _generate_error_entry(message, e)
         return reply
 
-    def get_matching_intent(self, message: MessageMixin) -> List[Intent]:
+    def get_matching_intent(self, message: Message) -> List[Intent]:
         """
         Perform a linear search over intents for abilities.
         The matchinf one first in the sequence is chosen to
