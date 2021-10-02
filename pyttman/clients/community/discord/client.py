@@ -53,12 +53,11 @@
 #      OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 #      SOFTWARE.
 import asyncio
-import warnings
 from datetime import datetime
 
 import discord
 from typing import Union
-from pyttman.clients.builtin.base import BaseClient
+from pyttman.clients.base import BaseClient
 from pyttman.clients.community.discord.misc import DiscordMessage
 from pyttman.core.communication.models.containers import Reply, ReplyStream
 from pyttman.core.internals import _generate_error_entry

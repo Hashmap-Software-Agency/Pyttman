@@ -1,6 +1,6 @@
 import pyttman
 from typing import Union
-from pyttman.clients.builtin.base import BaseClient
+from pyttman.clients.base import BaseClient
 from pyttman.core.communication.models.containers import Message, Reply, ReplyStream
 
 
