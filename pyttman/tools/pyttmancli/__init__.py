@@ -8,8 +8,6 @@ from pyttman.tools.pyttmancli.terraforming import TerraFormer, bootstrap_environ
 
 def run(argv=None):
 
-    runners = None
-
     if argv is None:
         argv = sys.argv[:]
 
