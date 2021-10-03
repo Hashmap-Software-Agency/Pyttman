@@ -1,7 +1,7 @@
 from pyttman.tools.scheduling.schedule import schedule
 from pyttman.core.decorators import PyttmanLogger
 
-__version__ = '1.1.7'
+__version__ = '1.1.8'
 
 
 settings = None
