@@ -34,8 +34,14 @@ Although the points listed below may seem minor, we've rewired and tested this r
 ### 👀 Changes
 
 * The `BaseClient` class is moved in Pyttman, which changes the import path for the class:
-  * `pyttman.clients.builtin.base.BaseClient`  becomes  `pyttman.clients.base.BaseClient` .
-* 
+
+  `pyttman.clients.builtin.base.BaseClient`  becomes  `pyttman.clients.base.BaseClient` .
+
+* Vast improvements to the Pyttman CLI tool
+
+  The administrative CLI tool `pyttman` for creating, bootstrapping and 
+  debugging Pyttman apps has been rewritten using the Pyttman framework 
+  itself to build Intents, read from the terminal shell. 
 
 
 
