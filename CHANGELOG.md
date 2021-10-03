@@ -48,7 +48,7 @@ Although the points listed below may seem minor, we've rewired and tested this r
 ### **🐛 Splatted bugs and corrected issues** 
 
 * Fixes [#35](https://github.com/dotchetter/Pyttman/issues/35)  with internal improvements to the EntityParser algorithm in how it considers the resolution order of how entity strings are parsed, identified and later stored in `self.entities` in `Intent` classes.
-* 
+* Fixes [#40]([[BUG\] - pyttman · Issue #40 · dotchetter/Pyttman (github.com)](https://github.com/dotchetter/Pyttman/issues/40)) - `pyttman dev <app name>` now works without providing a Client class.
 
 
 
