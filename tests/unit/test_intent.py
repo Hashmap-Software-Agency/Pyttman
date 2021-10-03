@@ -143,9 +143,6 @@ class _TestBaseCase(TestCase):
         self.mock_intent = self.mock_intent_cls()
         self.intent_reply = None
 
-        # Truncate 'lead' and 'trail' from the message before parsing
-        self.mock_message.truncate(self.mock_intent.lead + self.mock_intent.trail)
-
     def get_entity_value(self, entity_name):
         return self.mock_intent.entities.get(entity_name)
 
