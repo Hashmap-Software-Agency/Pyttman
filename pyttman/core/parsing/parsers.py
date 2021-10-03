@@ -11,9 +11,10 @@
     intents which may be a value provider for a command.
 """
 import abc
+import typing
 from abc import ABC
 from itertools import zip_longest
-from typing import Tuple, Any, Type, Collection, Dict, Optional, Union
+from typing import Tuple, Any, Type, Collection, Dict, Optional, Union, List
 
 from ordered_set import OrderedSet
 
@@ -55,6 +56,9 @@ class Parser(AbstractParser, ABC):
     """
     identifier: Identifier = None
     exclude: Tuple = ()
+    prefixes: Tuple = ()
+    suffixes: Tuple = ()
+    case_preserved_cache = set()
 
     def __init__(self, **kwargs):
         if hasattr(self, "value"):
@@ -63,6 +67,12 @@ class Parser(AbstractParser, ABC):
         self.value = None
         for k, v in kwargs.items():
             setattr(self, k, v)
+
+    def __repr__(self):
+        return f"{self.__class__.__name__}(" \
+               f"exclude={self.exclude}, " \
+               f"identifier={self.identifier}, " \
+               f"value={self.value})"
 
     def reset(self) -> None:
         """
@@ -87,9 +97,12 @@ class EntityParserBase(Parser):
     # find entities in messages.
     parsers: Dict[str, Parser] = {}
 
-    # Mapping an entity with its index of occurrence in the message.
-    # Used to prevent multiple entities with the same exact element.
-    entities: Dict[str, Entity] = {}
+    def __repr__(self):
+        return f"{self.__class__.__name__}(" \
+               f"value={self.value}, " \
+               f"exclude={self.exclude}, " \
+               f"identifier={self.identifier}, " \
+               f"parsers={self.parsers})"
 
     def parse_message(self, message: MessageMixin, memoization: dict = None) -> None:
         """
@@ -102,9 +115,22 @@ class EntityParserBase(Parser):
         :return:
         """
         self.value = {}
-        parsers_memoization: Dict[int, Entity] = {}
 
-        for field_name, parser_object in self.get_parsers().items():
+        # The memoization dict is provided each Parser instance
+        # in order for them to avoid catching a string, previously
+        # caught by a predecessor in iterations.
+        parsers_memoization: Dict[int, Entity] = {}
+        parser_classes: Dict[str, Parser] = self.get_parsers()
+        parser_joined_suffixes_and_prefixes: typing.Set[str] = set()
+
+        for field_name, parser_object in parser_classes.items():
+
+            # Collect all parser pre- and suffixes
+            parser_joined_suffixes_and_prefixes.update(parser_object.prefixes + parser_object.suffixes)
+
+            # Share the 'exclude' tuple assigned by the developer in the
+            # application code to each Parser instance
+            parser_object.exclude = self.exclude
             parser_object.parse_message(message, memoization=parsers_memoization)
 
             # See what the parser found - Entity or None. Ignore entities in self.exclude.
@@ -112,15 +138,47 @@ class EntityParserBase(Parser):
 
             if parsed_entity is None or parsed_entity.value in self.exclude:
                 self.value[field_name] = None
-                continue
+            else:
+                self.value[field_name] = parsed_entity
 
-            if parsed_entity.value not in self.exclude:
-                self.value[field_name] = parsed_entity.value
+                # Store the entity for memoization to prohibit multiple occurrence
+                parsers_memoization[parsed_entity.index_in_message] = parsed_entity
+
+        """
+        Walk the message backwards and truncate entities which 
+        contain elements from entities occurring later in the 
+        message. 
+        
+        All elements in pre- and suffixes are also truncated 
+        from all entities as they are delimiters, and should 
+        not be present in the entity value.
+        """
+        duplicate_cache: typing.Set[str] = set(parser_joined_suffixes_and_prefixes)
+
+        for field_name, entity in reversed(self.value.items()):
+            iter_parser = self.parsers.get(field_name)
+            duplicate_cache.update(iter_parser.case_preserved_cache)
+
+            # Assess only Parsers which have successfully parsed entities.
+            if entity is not None:
+                # Work with OrderedSet's from ChoiceParsers with 'multiple=True' differently.
+                if isinstance(entity.value, OrderedSet):
+                    duplicate_cache.update(entity.value)
+                    duplicate_cache.update(set([i.casefold() for i in entity.value]))
+                    self.value[field_name] = entity.value
+                    continue
+
+                # Value is a string - split the entity value by space so we can work with it
+                split_value = entity.value.split()
+
+                # Truncate prefixes, suffixes and cached strings from the entity
+                split_value = OrderedSet(split_value).difference(duplicate_cache)
+                duplicate_cache.update(split_value)
+                duplicate_cache.update(set([i.casefold() for i in split_value]))
+
+                self.value[field_name] = str(" ").join(split_value)
             else:
                 self.value[field_name] = None
-
-            # Store the entity for memoization to prohibit multiple occurrence
-            parsers_memoization[parsed_entity.index_in_message] = parsed_entity
 
     def get_parsers(self) -> Dict:
         """
@@ -136,6 +194,46 @@ class EntityParserBase(Parser):
                                                               AbstractParser):
                 parser_fields[field_name] = field_value
         return parser_fields
+
+    @classmethod
+    def from_meta_class(cls, metaclass):
+        """
+        Classmethod returning an instance of an EntityParser
+        class with merged properties and fields from both
+        classes.
+
+        The EntityParser inner class inside an Intent subclass
+        enables developers to easily parse for entities in
+        messages from end users.
+
+        The EntityParser is updated by merging the parser fields
+        from the user defined EntityParser with the base class
+        for EntityParser classes: 'EntityParserBase'.
+
+        This omitts the need for developers to use direct inheritance
+        inside their Intent subclasses.
+
+        This is performed by updating the __dict__ attribute of the
+        user defined EntityClass with the EntityClassBase class.
+
+        See PEP584 for details on the "|" operator for the union
+        operator for dict updates.
+
+        :param cls: Class reference for class method call
+        :param metaclass: A User-defined EntityParser inner class in an Intent subclass
+        :return: EntityParserBase subclass instance
+                 with merged __dict__ fields
+        """
+        user_defined_parsers = {name: parser for name, parser in metaclass.__dict__.items()
+                                if issubclass(parser.__class__, AbstractParser)}
+
+        # Use the EntityParserBase as metaclass for an EntityParser class with
+        # the fields configured in the user Intent.EntityParser class.
+        merged_subclass = type(metaclass.__class__.__name__, (EntityParserBase,), {"parsers": user_defined_parsers})
+        entity_parser_instance = merged_subclass()
+        entity_parser_instance.__dict__ |= metaclass.__dict__
+        entity_parser_instance.__dict__ |= user_defined_parsers
+        return entity_parser_instance
 
 
 class ValueParser(Parser):
@@ -338,6 +436,11 @@ class ValueParser(Parser):
                 except IndexError:
                     parsed_entity = None
 
+        # The ValueParser has no prefixes, suffixes or identifier.
+        # The entity is the first string in the message.
+        if not prefixes and not suffixes and not self.identifier:
+            parsed_entity = Entity(value=message.content[0], index_in_message=0)
+
         # If the span property is set to greater than 0, walk further in
         # message.content and also include elements as far as the span
         # property designates.
@@ -346,6 +449,16 @@ class ValueParser(Parser):
         # If an Identifier is does not comply with a tring, the walk is
         # cancelled.
         if parsed_entity is not None and self.span:
+            while parsed_entity.value.casefold() in self.exclude:
+                parsed_entity.index_in_message += 1
+                # Traverse the message for as long as the current found entity is
+                # in the 'exclude' tuple. If the end of message is reached, quietly
+                # break the loop.
+                try:
+                    parsed_entity.value = message.content[parsed_entity.index_in_message]
+                except IndexError:
+                    return None
+
             current_index = parsed_entity.index_in_message
 
             for i in range(1, self.span):
@@ -357,14 +470,17 @@ class ValueParser(Parser):
                         span_entity = identifier_object.try_identify_entity(message)
                         if span_entity is None or span_entity.index_in_message != current_index:
                             break
-                        parsed_entity.value += f" {span_entity.value}"
+                        span_value = span_entity.value
                     else:
-                        parsed_entity.value += f" {message.content[current_index]}"
+                        span_value = message.content[current_index]
 
                 # There are not enough elements in message.content to walk as far as
                 # the span property requests. Abort.
                 except IndexError:
                     break
+                else:
+                    if span_value not in self.exclude:
+                        parsed_entity.value += f" {span_value}"
         return parsed_entity
 
 
@@ -414,6 +530,14 @@ class ChoiceParser(Parser):
     one field per value has to be defined. Due to
     memoization when values are being parsed, no
     Parser class will parse the same value twice.
+
+    :field choices: Tuple of strings which the Parser will
+                    parse messages for
+    :field multiple: bool, where the ChoiceParser will collect
+                     multiple strings in an OrderedSet if set to
+                     True. If False, only one parsed value is saved
+                     in the Parser, even in scenarios where multiple
+                     valid ones occur in the message.
     """
 
     def __init__(self, choices: Tuple, multiple: bool = False, **kwargs):
@@ -433,20 +557,30 @@ class ChoiceParser(Parser):
         """
         casefolded_choices = [i.casefold() for i in self._choices]
         sanitized_set = OrderedSet(message.sanitized_content(preserve_case=False))
+        nonidentical_matching_strings = set()
 
         if matching := list(sanitized_set.intersection(casefolded_choices)):
+
+            # Add the matching elements to the case_preserved_cache set only if
+            # the case differs between the sourced entity and representative choice value
+            for i in message.content:
+                if i.casefold() in matching and i.casefold() not in message.content:
+                    nonidentical_matching_strings.add(i)
+
+            self.case_preserved_cache.update(nonidentical_matching_strings)
             last_occurring_matching_entity = matching[-1]
-            position = casefolded_choices.index(last_occurring_matching_entity)
+            choice_position = casefolded_choices.index(last_occurring_matching_entity)
+            position_in_message = sanitized_set.index(last_occurring_matching_entity)
 
             if not self.multiple:
-                self.value = Entity(self._choices[position], position)
+                self.value = Entity(self._choices[choice_position], position_in_message)
             else:
                 case_preserved = OrderedSet()
                 while matching:
                     elem = matching.pop()
                     index_in_casefolded = casefolded_choices.index(elem)
                     case_preserved.add(self._choices[index_in_casefolded])
-                self.value = Entity(case_preserved, position)
+                self.value = Entity(case_preserved, position_in_message)
 
     @property
     def choices(self) -> Tuple[str]:
