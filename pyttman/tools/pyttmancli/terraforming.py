@@ -47,18 +47,13 @@ class TerraFormer:
             self.source = source
 
     def terraform(self):
-        print(f"\n\t{datetime.now()} - Creating project '{self.app_name}'...")
+
         shutil.register_unpack_format('7zip', ['.7z'], unpack_7zarchive)
         shutil.unpack_archive(self.source, self.extraction_dir)
         settings_file_path = Path(self.extraction_dir) / Path("settings.py")
 
         with open(settings_file_path, "a", encoding="utf-8") as settings_file:
             settings_file.write(f"\nAPP_NAME = \"{self.app_name}\"\n")
-        print(f"\t{datetime.now()} - done.")
-        print("\nTip! To start your new app, develop Features and "
-              "then use pyttman-cli to start it. Test it with "
-              "the 'pyttman-cli dev' command to get a CLI shell "
-              "for chatting with your app while developing.")
 
     def get_info(self):
         return f"Extraction dir: {self.extraction_dir}, " \
@@ -152,7 +147,7 @@ def bootstrap_environment(module: str = None, devmode: bool = False) -> Runner:
                          "a list of strings")
 
     # Import the client classes defined in CLIENTS in settings.py
-    if not len(settings.CLIENT):
+    if not len(settings.CLIENT) and not devmode:
         raise ValueError("A Client is required for Pyttman to "
                          "start your app in Client mode. Define a Client "
                          "in settings.py. Refer to the documentation for "
@@ -173,14 +168,14 @@ def bootstrap_environment(module: str = None, devmode: bool = False) -> Runner:
         ability_class = getattr(ability_module, ability_class_name)
 
         # Instantiate the ability class and traverse over its intents. Validate.
-        feature_object = ability_class()
-        assert issubclass(ability_class, Ability), f"'{feature_object.__class__.__name__}' " \
+        intent_instance = ability_class()
+        assert issubclass(ability_class, Ability), f"'{intent_instance.__class__.__name__}' " \
                                                    f"is not a subclass of 'Ability'. " \
                                                    f"Check your ABILITIES list in " \
                                                    f"settings.py and verify that " \
                                                    f"all classes defined are Ability" \
                                                    f"subclasses."
-        ability_objects_set.add(feature_object)
+        ability_objects_set.add(intent_instance)
 
     assert len(ability_objects_set), "No Ability classes were provided the " \
                                      "ABILITIES list in settings.py"
@@ -193,6 +188,7 @@ def bootstrap_environment(module: str = None, devmode: bool = False) -> Runner:
 
     # If devmode is active, return only one CliClient in a runner.
     if devmode:
+        pyttman.settings.DEV_MODE = True
         client = CliClient(message_router=message_router)
         return Runner(settings.APP_NAME, client)
 

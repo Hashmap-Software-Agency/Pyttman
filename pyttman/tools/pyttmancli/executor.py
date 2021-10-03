@@ -3,7 +3,7 @@ from importlib import import_module
 from pathlib import Path
 import sys
 
-from pyttman.clients.builtin.base import BaseClient
+from pyttman.clients.base import BaseClient
 
 
 class Runner:

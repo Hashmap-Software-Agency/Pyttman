@@ -177,15 +177,9 @@ class BaseIntent(AbstractIntent, ABC):
         self.lead = tuple([i.lower() for i in self.lead])
         self.trail = tuple([i.lower() for i in self.trail])
 
+        # If an EntityParser class is defined by the user, merge it with EntityParserBase
         if self.EntityParser is not None:
-            parsers = {name: parser for name, parser in self.EntityParser.__dict__.items()
-                       if issubclass(parser.__class__, AbstractParser)}
-
-            # Use the EntityParserBase as metaclass for an EntityParser class with
-            # the fields configured in the user Intent.EntityParser class.
-            self._entity_parser = type("EntityParser", (EntityParserBase,), {"parsers": parsers})()
-            self._entity_parser.__dict__.update(self.EntityParser.__dict__)
-            self._entity_parser.__dict__.update(parsers)
+            self._entity_parser = EntityParserBase.from_meta_class(self.EntityParser)
         else:
             self._entity_parser = EntityParserBase()
 
@@ -331,7 +325,6 @@ class BaseIntent(AbstractIntent, ABC):
                              f"expected Reply or ReplyStream")
 
         # Purge entities values and all parser instances from their local values
-        self.entities.clear()
         for parser_name in self._entity_parser.get_parsers():
             parser = getattr(self._entity_parser, parser_name)
             parser.reset()

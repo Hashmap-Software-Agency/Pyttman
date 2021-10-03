@@ -1,14 +1,69 @@
 # Pyttman Changelog
 
+
+
+# v 1.1.8
+
+This release includes bug fixes and internal improvements mainly. 
+
+Although the points listed below may seem minor, we've rewired and tested this release probably better than any other up to this point :happy:
+
+
+
+### :star2: News
+
+* **New setting in  `settings.py`**
+
+  `settings.py` in Pyttman apps now have the `DEV_MODE` flag for users to toggle. 
+
+  > Note! When you run an app in dev mode using `pyttman dev <app_name>`, it is automatically set to `True` regardless of `settings.py`. 
+
+  *Example*:
+
+  ```python
+  # In settings.py
+  DEV_MODE = True
+  
+  # Somewhere in the app logic
+  if pyttman.DEV_MODE is True:
+  	print("Some debug statement")
+  ```
+
+  
+
+### 👀 Changes
+
+* The `BaseClient` class is moved in Pyttman, which changes the import path for the class:
+
+  `pyttman.clients.builtin.base.BaseClient`  becomes  `pyttman.clients.base.BaseClient` .
+
+* Vast improvements to the Pyttman CLI tool
+
+  The administrative CLI tool `pyttman` for creating, bootstrapping and 
+  debugging Pyttman apps has been rewritten using the Pyttman framework 
+  itself to build Intents, read from the terminal shell. 
+
+
+
+### **🐛 Splatted bugs and corrected issues** 
+
+* Fixes [#35](https://github.com/dotchetter/Pyttman/issues/35)  with internal improvements to the EntityParser algorithm in how it considers the resolution order of how entity strings are parsed, identified and later stored in `self.entities` in `Intent` classes.
+* Fixes [#40]([[BUG\] - pyttman · Issue #40 · dotchetter/Pyttman (github.com)](https://github.com/dotchetter/Pyttman/issues/40)) - `pyttman dev <app name>` now works without providing a Client class.
+
+
+
 # v 1.1.7
+
 This release is a hotfix release, adressing issues using the `runclients` command with `pyttman` cli tool on linux and unix based systems. 
 
 ### 👀 Changes
 * Clients are no longer started in parallel using Threading due to issues with security and runtime on unix and linux based systems. Observe that in your `settings.py` file, the `CLIENTS` field is replaced by a  `CLIENT` field, which is a single dictionary containing the client configuration for your app. This was necessary for multiple reasons, one being the complexity of pickling application logic to run them in parallel using  a process pool instead of threading, to solve [bug #33](https://github.com/dotchetter/Pyttman/issues/33). We're sorry about the inconvenience this may cause for your development and the experience with Pyttman so far. We're still learning.
   It seems that this approach works well with deploying apps using Docker, as you can create containers using different settings for various platforms and support multiple platforms in this manner.
+  
   > Note! This is a breaking change.
-
+  
 * The Pyttman CLI "`pyttman`" argument for running client has changed from `runclients` to just `runclient`, indicating a `single` client configuration in settings.py
+  
   > Note! This is a breaking change.
 
 ### 🐛 Splatted bugs and corrected issues 
@@ -24,14 +79,17 @@ This release is a hotfix release, adressing issues using the `runclients` comman
 
 ### 🤗 New features and changes
 * The `Feature` class is renamed to `Ability` for better semantic similarity to the general standard of terminology.
+  
   > Note! This is a **breaking** change.
 
 
 * The `Command` class is renamed to `Intent` for better semantic similarity to the general standard of terminology.
+  
   > Note! This is a **breaking** change.
 
 
 * `pyttman-cli` is renamed to just `pyttman` for increased simplicity.
+  
   > Note! This is a **breaking** change.
 
 
@@ -40,6 +98,7 @@ This release is a hotfix release, adressing issues using the `runclients` comman
   way. Instead, the `Ability` is no longer referenced inside `Intent` classes for cleaner OOP relations. 
   **However**, the `Storage` object is still available in `Intent` classes, of course. It is accessed using `self.storage` both in the `Ability`
   and in `Intent` classes.
+  
   > Note! This is a **breaking** change.
 
 
@@ -79,7 +138,7 @@ The `ReplyStream` will wrap your strings or other objects as `Reply` objects if 
 
 * Fixes an [issue](https://github.com/dotchetter/Pyttman/issues/24) where clients could not communicate any errors upon startup. These are now showed through user warnings.
 
- 
+
 * Fixes an [issue](https://github.com/dotchetter/Pyttman/issues/31) where one element in a message would end up multiple times in `self.entities` incorrectly
 
 

@@ -3,6 +3,7 @@ from setuptools import setup, find_packages
 
 
 HERE = Path(__file__).parent
+BUILD_VERSION = "1.1.8"
 
 # The text of the README file
 README = (HERE / "README.md").read_text()
@@ -11,7 +12,7 @@ README = (HERE / "README.md").read_text()
 # This call to setup() does all the work
 setup(
     name="Pyttman",
-    version="1.1.7",
+    version=BUILD_VERSION,
     description="The virtual assistant framework made for developers with ideas",
     long_description=README,
     long_description_content_type="text/markdown",
