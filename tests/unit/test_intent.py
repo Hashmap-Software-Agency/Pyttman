@@ -118,6 +118,17 @@ class TestEntityParserIdentifiersAndSuffixes_AdvertisementMessage_ShouldSucceed(
         maximum_results = ValueParser(suffixes=("results",), identifier=IntegerIdentifier)
 
 
+class TestableEntityParserShouldIgnoreLeadAndTrailInEntities(_TestableEntityParserConfiguredIntent):
+    lead = ("new",)
+    trail = ("app",)
+    ordered = True
+
+    class EntityParser:
+        name = ValueParser()
+
+
+
+
 # Unit tests
 
 
@@ -243,3 +254,13 @@ class TestEntityParserIDentifierPrefixesSuffixesMultipleChoices_3_ShouldSucceed(
         self.assertEqual(OrderedSet(['page_b', 'page_a']), self.get_entity_value("pages"))
         self.assertEqual("60", self.get_entity_value("maximum_results"))
         self.assertEqual("45000", self.get_entity_value("minimum_price"))
+
+
+class EntityParserShouldIgnoreLeadAndTrailInEntities_ShouldSucceed(_TestBaseCase):
+
+    mock_intent_cls = TestableEntityParserShouldIgnoreLeadAndTrailInEntities
+    mock_message = Message("new app name")
+
+    def test_respond(self):
+        self.parse_message_for_entities()
+        self.assertEqual("name", self.get_entity_value("name"))
