@@ -177,7 +177,7 @@ class PyttmanCli(Ability):
     Encapsulates the Pyttman CLI tool 'pyttman'
     used in the terminal by framework users.
     """
-    intents = (CreateNewApp, RunAppInDevMode, RunAppInClientMode, CreateNewAbilityIntent)
+    intents = (CreateNewApp, RunAppInDevMode, RunAppInClientMode)
     description = f"Pyttman v{pyttman.__version__}" \
                   f"\nSupported commands:"
 
