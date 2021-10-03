@@ -152,7 +152,7 @@ def bootstrap_environment(module: str = None, devmode: bool = False) -> Runner:
                          "a list of strings")
 
     # Import the client classes defined in CLIENTS in settings.py
-    if not len(settings.CLIENT):
+    if not len(settings.CLIENT) and not pyttman.settings.DEV_MODE:
         raise ValueError("A Client is required for Pyttman to "
                          "start your app in Client mode. Define a Client "
                          "in settings.py. Refer to the documentation for "
@@ -193,6 +193,7 @@ def bootstrap_environment(module: str = None, devmode: bool = False) -> Runner:
 
     # If devmode is active, return only one CliClient in a runner.
     if devmode:
+        pyttman.settings.DEV_MODE = True
         client = CliClient(message_router=message_router)
         return Runner(settings.APP_NAME, client)
 
