@@ -161,22 +161,25 @@ class MessageMixin:
         :param case_sensitive:
         :return: None
         """
-        # Ignore case, remove strings even if case does not match
-        casefolded_collection = set([i.casefold() for i in collection])
 
         # Case sensitivity is True; no need to use casefolding.
-        if case_sensitive is True:
-            try:
-                content_as_set = OrderedSet(self.content)
-                content_as_set -= content_as_set.intersection(OrderedSet(collection))
-                self.content = list(content_as_set)
-            except ValueError:
-                pass
-        # Case sensitivity is False; evaluate the collections with casefolding
-        else:
-            for elem in self.content:
-                if casefolded_collection.intersection([elem.casefold()]):
-                    self.content.remove(elem)
+        try:
+            if case_sensitive is True:
+                collection_as_set = OrderedSet(collection)
+                casefolded_message = OrderedSet(self.content)
+                remainder = casefolded_message - casefolded_message.intersection(collection_as_set)
+                self.content = list(remainder)
+            # Case sensitivity is False; evaluate the collections with casefolding
+            else:
+                collection_as_set = OrderedSet([i.casefold() for i in collection])
+                casefolded_message = OrderedSet((i.casefold() for i in self.content))
+                remainder = casefolded_message - collection_as_set.intersection(casefolded_message)
+                for elem in casefolded_message:
+                    if elem.casefold() not in remainder:
+                        self.content.remove(elem)
+        except ValueError:
+            # Trying to remove something which is does not exist is not a concern.
+            pass
 
 
 class Message(MessageMixin):
