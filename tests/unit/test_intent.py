@@ -100,7 +100,6 @@ class TestableEntityParserIntentUsingIdentifierAndPrefixesSuffixes(_TestableEnti
 
 class TestableEntityParserIdentifiersAndSuffixes_FoodMessage_ShouldSucceed(_TestableEntityParserConfiguredIntent):
     class EntityParser:
-
         restaurant = ValueParser(identifier=CapitalizedIdentifier, span=5)
         preference = ChoiceParser(choices=("vegetarian", "meatarian"))
         max_ingredients = ValueParser(prefixes=("ingredients",), identifier=IntegerIdentifier)
@@ -108,6 +107,8 @@ class TestableEntityParserIdentifiersAndSuffixes_FoodMessage_ShouldSucceed(_Test
 
 
 class TestableEntityParserIdentifiersAndSuffixes_AdvertisementMessage_ShouldSucceed(_TestableEntityParserConfiguredIntent):
+    lead = ("search",)
+    trail = ("for", "after")
 
     class EntityParser:
         exclude = ("search", "for", "on")
@@ -125,8 +126,6 @@ class TestableEntityParserShouldIgnoreLeadAndTrailInEntities(_TestableEntityPars
 
     class EntityParser:
         name = ValueParser()
-
-
 
 
 # Unit tests
@@ -154,7 +153,6 @@ class _TestBaseCase(TestCase):
 
 
 class TestEntityParserWithEmptyValueParser_ShouldSucceed(_TestBaseCase):
-
     mock_intent_cls = TestEntityParserWithTwoValueParsers
     mock_message = Message("some shopped item 695")
 
@@ -165,7 +163,6 @@ class TestEntityParserWithEmptyValueParser_ShouldSucceed(_TestBaseCase):
 
 
 class TestEntityParserPrefixesAndSuffixes_ShouldSucceed(_TestBaseCase):
-
     mock_intent_cls = TestableEntityParserUsingOnlyPreAndSuffixes
     mock_message = Message("man in the mirror with Michael Jackson on spotify")
 
@@ -176,7 +173,6 @@ class TestEntityParserPrefixesAndSuffixes_ShouldSucceed(_TestBaseCase):
 
 
 class TestEntityParserIdentifiers_ShouldSucceed(_TestBaseCase):
-
     mock_intent_cls = TestableEntityParserIntentUsingIdentifier
     mock_message = Message("create a new contact Will "
                            "Byers on mobile with 0805552859 "
@@ -192,7 +188,6 @@ class TestEntityParserIdentifiers_ShouldSucceed(_TestBaseCase):
 
 
 class TestEntityParserIdentifiersPrefixesSuffiixes_ShouldFail(_TestBaseCase):
-
     mock_intent_cls = TestableEntityParserIntentUsingIdentifierAndPrefixesSuffixes
     mock_message = Message("create a new contact Will "
                            "Byers on mobile with 0805552859 "
@@ -207,7 +202,6 @@ class TestEntityParserIdentifiersPrefixesSuffiixes_ShouldFail(_TestBaseCase):
 
 
 class TestEntityParserIdentifiersPrefixesSuffiixes_ShouldSucceed(_TestBaseCase):
-
     mock_intent_cls = TestableEntityParserIntentUsingIdentifierAndPrefixesSuffixes
     mock_message = Message("create a new contact name Will "
                            "Byers on mobile with number: 0805552859 "
@@ -223,7 +217,6 @@ class TestEntityParserIdentifiersPrefixesSuffiixes_ShouldSucceed(_TestBaseCase):
 
 
 class TestEntityParserIDentifierPrefixesSuffixesMultipleChoices_1_ShouldSucceed(_TestBaseCase):
-
     mock_intent_cls = TestableEntityParserIdentifiersAndSuffixes_FoodMessage_ShouldSucceed
     mock_message = Message("search for vegetarian recipes on all websites "
                            "max ingredients 10 and 4 servings on RestaurantName")
@@ -238,7 +231,6 @@ class TestEntityParserIDentifierPrefixesSuffixesMultipleChoices_1_ShouldSucceed(
 
 
 class TestEntityParserIDentifierPrefixesSuffixesMultipleChoices_3_ShouldSucceed(_TestBaseCase):
-
     mock_intent_cls = TestableEntityParserIdentifiersAndSuffixes_AdvertisementMessage_ShouldSucceed
     mock_message = Message("Search for ManufacturerA ManufacturerB Model123 "
                            "on page_a and page_b price 45000 60 results")
@@ -254,7 +246,6 @@ class TestEntityParserIDentifierPrefixesSuffixesMultipleChoices_3_ShouldSucceed(
 
 
 class EntityParserShouldIgnoreLeadAndTrailInEntities_ShouldSucceed(_TestBaseCase):
-
     mock_intent_cls = TestableEntityParserShouldIgnoreLeadAndTrailInEntities
     mock_message = Message("new app name")
 
