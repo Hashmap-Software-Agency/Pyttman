@@ -98,7 +98,7 @@ class TestableEntityParserIntentUsingIdentifierAndPrefixesSuffixes(_TestableEnti
         phone_standard = ChoiceParser(choices=("mobile", "cell", "land", "landline"))
 
 
-class TestEntityParserIdentifiersAndSuffixes_FoodMessage_ShouldSucceed(_TestableEntityParserConfiguredIntent):
+class TestableEntityParserIdentifiersAndSuffixes_FoodMessage_ShouldSucceed(_TestableEntityParserConfiguredIntent):
     class EntityParser:
 
         restaurant = ValueParser(identifier=CapitalizedIdentifier, span=5)
@@ -107,7 +107,7 @@ class TestEntityParserIdentifiersAndSuffixes_FoodMessage_ShouldSucceed(_Testable
         servings = ValueParser(suffixes=("servings",), identifier=IntegerIdentifier)
 
 
-class TestEntityParserIdentifiersAndSuffixes_AdvertisementMessage_ShouldSucceed(_TestableEntityParserConfiguredIntent):
+class TestableEntityParserIdentifiersAndSuffixes_AdvertisementMessage_ShouldSucceed(_TestableEntityParserConfiguredIntent):
 
     class EntityParser:
         exclude = ("search", "for", "on")
@@ -227,7 +227,7 @@ class TestEntityParserIdentifiersPrefixesSuffiixes_ShouldSucceed(_TestBaseCase):
 
 class TestEntityParserIDentifierPrefixesSuffixesMultipleChoices_1_ShouldSucceed(_TestBaseCase):
 
-    mock_intent_cls = TestEntityParserIdentifiersAndSuffixes_FoodMessage_ShouldSucceed
+    mock_intent_cls = TestableEntityParserIdentifiersAndSuffixes_FoodMessage_ShouldSucceed
     mock_message = Message("search for vegetarian recipes on all websites "
                            "max ingredients 10 and 4 servings on RestaurantName")
 
@@ -242,7 +242,7 @@ class TestEntityParserIDentifierPrefixesSuffixesMultipleChoices_1_ShouldSucceed(
 
 class TestEntityParserIDentifierPrefixesSuffixesMultipleChoices_3_ShouldSucceed(_TestBaseCase):
 
-    mock_intent_cls = TestEntityParserIdentifiersAndSuffixes_AdvertisementMessage_ShouldSucceed
+    mock_intent_cls = TestableEntityParserIdentifiersAndSuffixes_AdvertisementMessage_ShouldSucceed
     mock_message = Message("Search for ManufacturerA ManufacturerB Model123 "
                            "on page_a and page_b price 45000 60 results")
 
