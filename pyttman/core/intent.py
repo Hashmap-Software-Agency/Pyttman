@@ -32,7 +32,7 @@ from copy import copy
 from itertools import zip_longest
 from typing import Tuple, Union
 
-from pyttman.core.communication.models.containers import MessageMixin, Reply, ReplyStream
+from pyttman.core.communication.models.containers import MessageMixin, Reply, ReplyStream, Message
 from pyttman.core.internals import _generate_name, _generate_error_entry
 from pyttman.core.parsing.parsers import ChoiceParser, EntityParserBase, AbstractParser
 from pyttman.core.storage.basestorage import Storage
@@ -45,7 +45,7 @@ class AbstractIntent(abc.ABC):
         pass
 
     @abc.abstractmethod
-    def respond(self, message: MessageMixin) -> Union[Reply, ReplyStream]:
+    def respond(self, message: Message) -> Union[Reply, ReplyStream]:
         """
         Subclasses overload this method to respond
         to a given Intent upon a match.
@@ -60,7 +60,7 @@ class AbstractIntent(abc.ABC):
         pass
 
     @abc.abstractmethod
-    def matches(self, message: MessageMixin) -> bool:
+    def matches(self, message: Message) -> bool:
         """
         Determine whether a MessageMixin matches a
         Intent instance's pattern config.
@@ -187,7 +187,7 @@ class BaseIntent(AbstractIntent, ABC):
         return f"{self.__class__.__name__}(lead={self.lead}, " \
                f"trail={self.trail}, ordered={self.ordered})"
 
-    def matches(self, message: MessageMixin) -> bool:
+    def matches(self, message: Message) -> bool:
         """
         Boolean indicator to whether the Intent
         matches a given message, without returning
@@ -292,7 +292,7 @@ class BaseIntent(AbstractIntent, ABC):
             help_string = self.help_string
         return help_string
 
-    def process(self, message: MessageMixin) -> Union[Reply, ReplyStream]:
+    def process(self, message: Message) -> Union[Reply, ReplyStream]:
         """
         Iterate over all ValueParser objects and the name
         of the field it's allocated as.
@@ -332,6 +332,6 @@ class BaseIntent(AbstractIntent, ABC):
 
 
 class Intent(BaseIntent):
-    def respond(self, message: MessageMixin) -> Union[Reply, ReplyStream]:
+    def respond(self, message: Message) -> Union[Reply, ReplyStream]:
         raise NotImplementedError("The 'respond' method must be "
                                   "defined when subclassing Intent")
