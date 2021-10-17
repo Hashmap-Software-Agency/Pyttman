@@ -1,4 +1,5 @@
 import re
+from copy import copy
 from datetime import datetime
 from queue import Queue
 from typing import List, Iterable
@@ -171,14 +172,15 @@ class MessageMixin:
                 self.content = list(remainder)
             # Case sensitivity is False; evaluate the collections with casefolding
             else:
-                collection_as_set = OrderedSet([i.casefold() for i in collection])
-                casefolded_message = OrderedSet((i.casefold() for i in self.content))
-                remainder = casefolded_message - collection_as_set.intersection(casefolded_message)
-                for elem in casefolded_message:
-                    if elem.casefold() not in remainder:
-                        self.content.remove(elem)
-        except ValueError:
-            # Trying to remove something which is does not exist is not a concern.
+                # TODO - Hotfix for #47, optimize this linear search.
+                casefolded_content = [i.lower() for i in self.content]
+                casefolded_collection = [i.lower() for i in collection]
+                for elem in casefolded_collection:
+                    if elem in casefolded_content:
+                        index_of_elem = casefolded_content.index(elem)
+                        self.content.remove(self.content[index_of_elem])
+                        casefolded_content.remove(elem)
+        except Exception:
             pass
 
 

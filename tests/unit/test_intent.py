@@ -52,9 +52,11 @@ class EntityParserWithEmptyValueParser(_TestableEntityParserConfiguredIntent):
 class TestEntityParserWithTwoValueParsers(_TestableEntityParserConfiguredIntent):
     """
     Tests the use of a single ValueParser without any configuration """
+    lead = ("new", "add")
+    trail = ("expense", "purchase")
 
     class EntityParser:
-        item = ValueParser(span=5)
+        item = ValueParser(span=10)
         price = ValueParser(identifier=IntegerIdentifier)
 
 
@@ -151,9 +153,23 @@ class _TestBaseCase(TestCase):
         print(self.mock_intent.entities)
 
 
-class TestEntityParserWithEmptyValueParser_ShouldSucceed(_TestBaseCase):
+class TestEntityParserWithEmptyValueParserCapitalized_ShouldSucceed(_TestBaseCase):
     mock_intent_cls = TestEntityParserWithTwoValueParsers
-    mock_message = Message("some shopped item 695")
+
+    # Capitalized
+    mock_message = Message("Add expense some shopped item 695")
+
+    def test_respond(self):
+        self.parse_message_for_entities()
+        self.assertEqual("some shopped item", self.get_entity_value("item"))
+        self.assertEqual("695", self.get_entity_value("price"))
+
+
+class TestEntityParserWithEmptyValueParserLowerCase_ShouldSucceed(_TestBaseCase):
+    mock_intent_cls = TestEntityParserWithTwoValueParsers
+
+    # Lowercase
+    mock_message = Message("add expense some shopped item 695")
 
     def test_respond(self):
         self.parse_message_for_entities()
