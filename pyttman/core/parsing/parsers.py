@@ -172,10 +172,11 @@ class EntityParserBase(Parser):
                 split_value = entity.value.split()
 
                 # Truncate prefixes, suffixes and cached strings from the entity
-                split_value = OrderedSet(split_value).difference(duplicate_cache)
+                if split_value != list(duplicate_cache):
+                    split_value = OrderedSet(split_value).difference(duplicate_cache)
+
                 duplicate_cache.update(split_value)
                 duplicate_cache.update(set([i.casefold() for i in split_value]))
-
                 self.value[field_name] = str(" ").join(split_value)
             else:
                 self.value[field_name] = None
@@ -558,14 +559,13 @@ class ChoiceParser(Parser):
         casefolded_choices = [i.casefold() for i in self._choices]
         sanitized_set = OrderedSet(message.sanitized_content(preserve_case=False))
         nonidentical_matching_strings = set()
+        common_occurences = sanitized_set.intersection(casefolded_choices)
 
-        if matching := list(sanitized_set.intersection(casefolded_choices)):
-
-            # Add the matching elements to the case_preserved_cache set only if
-            # the case differs between the sourced entity and representative choice value
-            for i in message.content:
-                if i.casefold() in matching and i.casefold() not in message.content:
-                    nonidentical_matching_strings.add(i)
+        if matching := list(common_occurences):
+            for word in message.content:
+                casefolded_word = word.casefold()
+                if casefolded_word in matching and casefolded_word not in message.content:
+                    nonidentical_matching_strings.add(word)
 
             self.case_preserved_cache.update(nonidentical_matching_strings)
             last_occurring_matching_entity = matching[-1]
