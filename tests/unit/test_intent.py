@@ -100,6 +100,20 @@ class TestableEntityParserIntentUsingIdentifierAndPrefixesSuffixes(_TestableEnti
         phone_standard = ChoiceParser(choices=("mobile", "cell", "land", "landline"))
 
 
+class TestableEntityParserIntentUsingIdentifierAndPrefixesSuffixes_CapitalizedChoices(_TestableEntityParserConfiguredIntent):
+    """
+    Intent class for testing Intent matching and Entity
+    parsing, using identifiers AND pre/suffixes.
+
+    Testing ChoiceParser with capitalized choices.
+    """
+
+    class EntityParser:
+        month = ChoiceParser(choices=("January", "February", "Mars", "April", "May",
+                                      "June", "July", "August", "September",
+                                      "October", "November", "December"))
+
+
 class TestableEntityParserIdentifiersAndSuffixes_FoodMessage_ShouldSucceed(_TestableEntityParserConfiguredIntent):
     class EntityParser:
         restaurant = ValueParser(identifier=CapitalizedIdentifier, span=5)
@@ -229,6 +243,24 @@ class TestEntityParserIdentifiersPrefixesSuffiixes_ShouldSucceed(_TestBaseCase):
         self.assertEqual("0805552859", self.get_entity_value("phone_number"))
         self.assertEqual("mobile", self.get_entity_value("phone_standard"))
         self.assertEqual("2021-09-20-10:40", self.get_entity_value("date_change"))
+
+
+class TestEntityParserChoiceParserWithCaseMixedChoices_ShouldSucceed(_TestBaseCase):
+    mock_intent_cls = TestableEntityParserIntentUsingIdentifierAndPrefixesSuffixes_CapitalizedChoices
+    mock_message = Message("I love the colors of october")
+
+    def test_respond(self):
+        self.parse_message_for_entities()
+        self.assertEqual("October", self.get_entity_value("month"))
+
+
+class TestEntityParserChoiceParser_Capitalized_ShouldSucceed(_TestBaseCase):
+    mock_intent_cls = TestableEntityParserIntentUsingIdentifierAndPrefixesSuffixes_CapitalizedChoices
+    mock_message = Message("I love the colors of October")
+
+    def test_respond(self):
+        self.parse_message_for_entities()
+        self.assertEqual("October", self.get_entity_value("month"))
 
 
 class TestEntityParserIDentifierPrefixesSuffixesMultipleChoices_1_ShouldSucceed(_TestBaseCase):
