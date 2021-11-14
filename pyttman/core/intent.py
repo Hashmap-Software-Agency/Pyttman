@@ -294,20 +294,21 @@ class BaseIntent(AbstractIntent, ABC):
 
     def process(self, message: Message) -> Union[Reply, ReplyStream]:
         """
-        Iterate over all ValueParser objects and the name
+        Iterate over all Parser objects and the name
         of the field it's allocated as.
+        The message is cloned so that the original message is protected
+        from modification needed during the NLU processing components to
+        follow here. Since entities may be wrongly intercepted as they
+        match patterns defined in an EntityParser class inside an Intent
+        class, this is omitted by passing a clone of the message with all
+        elements from lead and trail tuples truncated from it.
+
         :param message: MessageMixin object
         :return: Reply, logic defined in the 'respond' method
         """
         joined_patterns = self.lead + self.trail
         original_content = copy(message.content)
 
-        # The message is cloned so that the original message is protected
-        # from modification needed during the NLU processing components to
-        # follow here. Since entities may be wrongly intercepted as they
-        # match patterns defined in an EntityParser class inside an Intent
-        # class, this is omitted by passing a clone of the message with all
-        # elements from lead and trail tuples truncated from it.
         message.truncate(collection=joined_patterns, case_sensitive=False)
         self._entity_parser.parse_message(message)
         self.entities = self._entity_parser.value
