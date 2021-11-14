@@ -1,7 +1,10 @@
 from pyttman.tools.scheduling.schedule import schedule
 from pyttman.core.decorators import PyttmanLogger
 
-__version__ = '1.1.8'
+__version__ = "1.1.8"
+__author__ = "Simon Olofsson"
+__copyright__ = "(c) Pyttman development Team 2020-2021"
+__licence__ = "MIT"
 
 
 class _SettingsNotConfigured:
