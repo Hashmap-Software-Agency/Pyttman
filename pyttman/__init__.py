@@ -4,7 +4,18 @@ from pyttman.core.decorators import PyttmanLogger
 __version__ = '1.1.8'
 
 
-settings = None
+class _SettingsNotConfigured:
+    def __getattr__(self, item):
+        raise NotImplementedError("pyttman.settings cannot be "
+                                  "accessed in this scope. "
+                                  "To use pyttman.settings  "
+                                  "you must use the Pyttman CLI."
+                                  "If you're looking for an "
+                                  "interactive shell for debugging, "
+                                  "use 'pyttman shell <app name>'. ")
+
+
+settings = _SettingsNotConfigured
 is_configured = False
 logger = PyttmanLogger
 
