@@ -25,7 +25,7 @@ Although the points listed below may seem minor, we've rewired and tested this r
   DEV_MODE = True
   
   # Somewhere in the app logic
-  if pyttman.DEV_MODE is True:
+  if pyttman.settings.DEV_MODE is True:
   	print("Some debug statement")
   ```
 
