@@ -108,14 +108,20 @@ def bootstrap_environment(module: str = None, devmode: bool = False) -> Runner:
     log_file_name = Path(pyttman.settings.LOG_FILE_DIR) / file_name
     logging_handle = logging.FileHandler(filename=log_file_name, encoding="utf-8",
                                          mode="a+" if pyttman.settings.APPEND_LOG_FILES else "w")
-    logging_handle.setFormatter(logging.Formatter("%(asctime)s:%(levelname)"
-                                                  "s:%(name)s: %(message)s"))
-    _logger = logging.getLogger("Pyttman logger")
-    _logger.setLevel(logging.DEBUG)
-    _logger.addHandler(logging_handle)
+
+    # Assign logging format - added in 1.1.9. Accounts for lower versions
+    try:
+        logging_format = pyttman.settings.LOG_FORMAT
+    except AttributeError:
+        logging_format = logging.BASIC_FORMAT
+
+    logging_handle.setFormatter(logging.Formatter(logging_format))
+    logger = logging.getLogger("Pyttman logger")
+    logger.setLevel(logging.DEBUG)
+    logger.addHandler(logging_handle)
 
     # Set the configured instance of logger to the pyttman.PyttmanLogger object
-    pyttman.logger.LOG_INSTANCE = _logger
+    pyttman.logger.LOG_INSTANCE = logger
 
     # Import the router defined in MESSAGE_ROUTER in settings.py
     message_router_config = settings.MESSAGE_ROUTER.get("ROUTER_CLASS").split(".")
