@@ -1,5 +1,5 @@
 from pyttman.tools.scheduling.schedule import schedule
-from pyttman.core.decorators import PyttmanLogger
+from pyttman.tools.logger.logger import PyttmanLogger
 
 __version__ = "1.1.8"
 __author__ = "Simon Olofsson"
