@@ -123,27 +123,6 @@ class MessageMixin:
         except Exception:
             pass
 
-    def contains(self, string: str, case_sensitive: bool = True):
-        """
-        Evaluates whether or not self.contents
-        contains an element.
-
-
-        :param string: string to be evaluated if self.contents
-                       does contain or not.
-        :param case_sensitive: Consider the case of all strings
-                               in self.content when evaluation is done
-        :return: bool, contains or not.
-        """
-        content_as_set = set(self.content)
-
-        if case_sensitive is False:
-            return bool(content_as_set.intersection([string]))
-        for elem in content_as_set:
-            if elem.casefold() == string.casefold():
-                return True
-        return bool(len([i.casefold() == string.casefold()
-                         for i in content_as_set]))
 
 
 class Message(MessageMixin):
