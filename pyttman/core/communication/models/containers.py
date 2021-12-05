@@ -8,7 +8,7 @@ from ordered_set import OrderedSet
 
 class MessageMixin:
     """
-    Pyttman MessageMixin, to extend the functionalty
+    Pyttman MessageMixin, to extend the functionality
     of existing Message classes provided by 3rd party
     libraries and APIs, to also accommodate for the
     internal requirements of the Message object

@@ -127,7 +127,8 @@ class EntityParserBase(Parser):
         for field_name, parser_object in parser_classes.items():
 
             # Collect all parser pre- and suffixes
-            parser_joined_suffixes_and_prefixes.update(parser_object.prefixes + parser_object.suffixes)
+            parser_joined_suffixes_and_prefixes.update(
+                parser_object.prefixes + parser_object.suffixes)
 
             # Share the 'exclude' tuple assigned by the developer in the
             # application code to each Parser instance
@@ -158,7 +159,8 @@ class EntityParserBase(Parser):
         from all entities as they are delimiters, and should 
         not be present in the entity value.
         """
-        duplicate_cache: typing.Set[str] = set(parser_joined_suffixes_and_prefixes)
+        duplicate_cache: typing.Set[str] = set(
+            parser_joined_suffixes_and_prefixes)
 
         for field_name, entity in reversed(self.value.items()):
             iter_parser = self.parsers.get(field_name)
@@ -166,22 +168,28 @@ class EntityParserBase(Parser):
 
             # Assess only Parsers which have successfully parsed entities.
             if entity is not None:
-                # Work with OrderedSet's from ChoiceParsers with 'multiple=True' differently.
+                # Work with OrderedSet's from ChoiceParsers with
+                # 'multiple=True' differently.
                 if isinstance(entity.value, OrderedSet):
                     duplicate_cache.update(entity.value)
-                    duplicate_cache.update(set([i.casefold() for i in entity.value]))
+                    duplicate_cache.update(set([i.casefold()
+                                                for i in entity.value]))
                     self.value[field_name] = entity.value
                     continue
 
-                # Value is a string - split the entity value by space so we can work with it
+                # Value is a string - split the entity value by space
+                # so we can work with it
                 split_value = entity.value.split()
 
-                # Truncate prefixes, suffixes and cached strings from the entity
+                # Truncate prefixes, suffixes and cached strings
+                # from the entity
                 if split_value != list(duplicate_cache):
-                    split_value = OrderedSet(split_value).difference(duplicate_cache)
+                    split_value = OrderedSet(split_value)\
+                        .difference(duplicate_cache)
 
                 duplicate_cache.update(split_value)
-                duplicate_cache.update(set([i.casefold() for i in split_value]))
+                duplicate_cache.update(set([i.casefold()
+                                            for i in split_value]))
                 self.value[field_name] = str(" ").join(split_value)
             else:
                 self.value[field_name] = None
@@ -196,8 +204,8 @@ class EntityParserBase(Parser):
 
         for field_name in self.parsers:
             field_value = getattr(self, field_name)
-            if not field_name.startswith("__") and issubclass(field_value.__class__,
-                                                              AbstractParser):
+            if not field_name.startswith("__") and \
+                    issubclass(field_value.__class__, AbstractParser):
                 parser_fields[field_name] = field_value
         return parser_fields
 
@@ -216,7 +224,7 @@ class EntityParserBase(Parser):
         from the user defined EntityParser with the base class
         for EntityParser classes: 'EntityParserBase'.
 
-        This omitts the need for developers to use direct inheritance
+        This omits the need for developers to use direct inheritance
         inside their Intent subclasses.
 
         This is performed by updating the __dict__ attribute of the
@@ -226,16 +234,21 @@ class EntityParserBase(Parser):
         operator for dict updates.
 
         :param cls: Class reference for class method call
-        :param metaclass: A User-defined EntityParser inner class in an Intent subclass
+        :param metaclass: A User-defined EntityParser inner class
+                          in an Intent subclass
         :return: EntityParserBase subclass instance
                  with merged __dict__ fields
         """
-        user_defined_parsers = {name: parser for name, parser in metaclass.__dict__.items()
-                                if issubclass(parser.__class__, AbstractParser)}
+        user_defined_parsers = {name: parser for name, parser
+                                in metaclass.__dict__.items()
+                                if issubclass(parser.__class__,
+                                              AbstractParser)}
 
         # Use the EntityParserBase as metaclass for an EntityParser class with
         # the fields configured in the user Intent.EntityParser class.
-        merged_subclass = type(metaclass.__class__.__name__, (EntityParserBase,), {"parsers": user_defined_parsers})
+        merged_subclass = type(metaclass.__class__.__name__,
+                               (EntityParserBase,),
+                               {"parsers": user_defined_parsers})
         entity_parser_instance = merged_subclass()
         entity_parser_instance.__dict__ |= metaclass.__dict__
         entity_parser_instance.__dict__ |= user_defined_parsers
@@ -250,7 +263,7 @@ class ValueParser(Parser):
 
     You can provide the ValueParser with a collection
     of prefixes and/or suffixes which will increasingly
-    make the ValueParser more precice.
+    make the ValueParser more precise.
 
     You can also use an Identifier class, together with
     the prefixes and suffixes, or use it alone.
@@ -275,7 +288,8 @@ class ValueParser(Parser):
     If suffix or prefix are alone, their first encountered
     value is set as the ultimate value.
 
-    example: `arrival_time = ValueParser(suffixes=("arrival", "arrive", "arrives", "arrives"))`
+    example: `arrival_time = ValueParser(suffixes=("arrival", "arrive",
+                                                   "arrives", "arrives"))`
               would return "20:44" on message "flight 34392 arrives 20:44"
     """
 
@@ -294,10 +308,14 @@ class ValueParser(Parser):
         self.span = span
 
         # Validate that the object was constructed properly
-        if not isinstance(self.prefixes, tuple) or not isinstance(self.suffixes, tuple):
-            raise AttributeError("\n\nValueParser fields 'prefixes' and 'suffixes' "
-                                 f"must be tuples.\nDo you have a tuple with only "
-                                 f"one item? Don't forget the trailing comma, "
+        if not isinstance(self.prefixes, tuple) or \
+                not isinstance(self.suffixes, tuple):
+            raise AttributeError("\n\nValueParser fields "
+                                 "'prefixes' and 'suffixes' "
+                                 f"must be tuples.\nDo you have "
+                                 f"a tuple with only "
+                                 f"one item? Don't forget "
+                                 f"the trailing comma, "
                                  f"example: '(1,)' instead of '(1)'.")
 
     def __repr__(self):
@@ -305,7 +323,8 @@ class ValueParser(Parser):
                f"identifier={self.identifier}, prefixes={self.prefixes}, " \
                f"suffixes={self.suffixes}, span={self.span})"
 
-    def parse_message(self, message: MessageMixin, memoization: dict = None) -> None:
+    def parse_message(self, message: MessageMixin,
+                      memoization: dict = None) -> None:
         """
         Walk the message and parse it for values.
         If the identified value exists in memoization,
@@ -313,16 +332,19 @@ class ValueParser(Parser):
         message is exhausted.
         """
         for i, _ in enumerate(message.content):
-            parsed_entity: Entity = self._identify_value(message, start_index=i)
+            parsed_entity: Entity = self._identify_value(message,
+                                                         start_index=i)
 
             # An entity has been identified, and it's unique.
-            if parsed_entity is not None and memoization.get(parsed_entity.index_in_message) is None:
+            if parsed_entity is not None and memoization.get(
+                    parsed_entity.index_in_message) is None:
                 self.value = parsed_entity
                 break
             else:
                 self.reset()
 
-    def _identify_value(self, message: MessageMixin, start_index: int = 0) -> Union[None, Entity]:
+    def _identify_value(self, message: MessageMixin,
+                        start_index: int = 0) -> Union[None, Entity]:
         """
         Parses the message for values to identify.
 
@@ -347,16 +369,19 @@ class ValueParser(Parser):
         encountered in the traversing of the message.
 
         :param message: Message object to parse
-        :param start_index: Index pointer, where parsing is started from in the message
+        :param start_index: Index pointer, where parsing
+                            is started from in the message
         :return: Entity or None, depending on if parsing is successful.
         """
         prefix_entity, prefix_index, suffix_entity, suffix_index = None, None, None, None
         prefixes, suffixes, prefix_indexes, suffix_indexes = [], [], [], []
         last_prefix_index, earliest_suffix_index = 0, 0
-        parsed_entity: Union[Entity, None] = None  # dataclass, ctor cannot be empty
+        parsed_entity: Union[Entity, None] = None
 
-        # First - traverse over the pre- and suffixes and collect them in separate lists
-        for i_prefix, i_suffix in zip_longest(self.prefixes, self.suffixes, fillvalue=None):
+        # First - traverse over the pre- and suffixes and
+        # collect them in separate lists
+        for i_prefix, i_suffix in zip_longest(
+                self.prefixes, self.suffixes, fillvalue=None):
             if i_prefix is not None:
                 if isinstance(i_prefix, Parser) and i_prefix.value is not None:
                     entity: Entity = i_prefix.value
