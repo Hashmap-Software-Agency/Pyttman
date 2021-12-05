@@ -8,6 +8,7 @@ This release includes bug fixes but also some new cool features.
 
 
 ### **🐛 Splatted bugs and corrected issues** 
+* Fixes [#46](https://github.com/dotchetter/Pyttman/issues/46)
 * Fixes [#47](https://github.com/dotchetter/Pyttman/issues/47)
 * Fixes [#48](https://github.com/dotchetter/Pyttman/issues/48)
 * Fixes an issue with type hinting referring to the `MessageMixin` in `Intent.respond()` implementation -> Corrected to now hinting `Message`.
