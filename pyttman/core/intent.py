@@ -172,20 +172,34 @@ class BaseIntent(AbstractIntent, ABC):
                                  f"containing strings for parsing to work "
                                  f"correctly")
         [setattr(self, k, v) for k, v in kwargs.items()]
+        self._entities = {}
         self.name = _generate_name(self.__class__.__name__)
-        self.entities = {}
         self.lead = tuple([i.lower() for i in self.lead])
         self.trail = tuple([i.lower() for i in self.trail])
 
-        # If an EntityParser class is defined by the user, merge it with EntityParserBase
+        # If an EntityParser class is defined by the user,
+        # merge it with EntityParserBase
         if self.EntityParser is not None:
-            self._entity_parser = EntityParserBase.from_meta_class(self.EntityParser)
+            self._entity_parser = EntityParserBase.from_meta_class(
+                self.EntityParser)
         else:
             self._entity_parser = EntityParserBase()
 
     def __repr__(self):
         return f"{self.__class__.__name__}(lead={self.lead}, " \
                f"trail={self.trail}, ordered={self.ordered})"
+
+    @property
+    def entities(self) -> dict:
+        # Todo - remove depr.warn after 1.2.0
+        warnings.warn("'entities' will be removed from the Intent level in "
+                      "Pyttman 1.2.0. Since 1.1.9, entities are accessed on "
+                      "the Message object: 'message.entities'")
+        return self._entities
+
+    @entities.setter
+    def entities(self, value: dict) -> None:
+        self._entities = value
 
     def matches(self, message: Message) -> bool:
         """
@@ -310,6 +324,7 @@ class BaseIntent(AbstractIntent, ABC):
 
         self._entity_parser.parse_message(truncated_message)
         self.entities = self._entity_parser.value
+        message.entities = self._entity_parser.value
 
         try:
             reply: Union[Reply, ReplyStream] = self.respond(message=message)

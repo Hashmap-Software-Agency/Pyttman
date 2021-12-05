@@ -25,6 +25,7 @@ class MessageMixin:
         self.created = datetime.now()
         self.client = None
         self.content = content
+        self.entities = {}
 
         try:
             self.content_with_format = str(content).splitlines(keepends=True)
