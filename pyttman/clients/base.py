@@ -42,7 +42,6 @@ class BaseClient(abc.ABC):
     """
 
     def __init__(self, *args, message_router: AbstractMessageRouter, **kwargs):
-        super().__init__(*args, **kwargs)
         self.message_router = message_router
         self.name = self.__class__.__name__
 
