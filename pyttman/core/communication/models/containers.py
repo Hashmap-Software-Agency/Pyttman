@@ -117,12 +117,7 @@ class MessageMixin:
         Removes element from self.content.
         :return: None
         """
-        # noinspection PyBroadException
-        try:
-            self.content.remove(item)
-        except Exception:
-            pass
-
+        self.content.remove(item)
 
 
 class Message(MessageMixin):
