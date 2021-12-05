@@ -3,7 +3,7 @@ from setuptools import setup, find_packages
 
 
 HERE = Path(__file__).parent
-BUILD_VERSION = "1.1.8"
+BUILD_VERSION = "1.1.9a"
 
 # The text of the README file
 README = (HERE / "README.md").read_text()
