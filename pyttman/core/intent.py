@@ -27,6 +27,7 @@ functions and methods.
 #      SOFTWARE.
 
 import abc
+import warnings
 from abc import ABC
 from copy import copy
 from itertools import zip_longest
@@ -106,12 +107,12 @@ class AbstractIntent(abc.ABC):
 class BaseIntent(AbstractIntent, ABC):
     """
     Base class for a Intent, containing configuration
-    on which criterias are set for a message to match
+    on which criteria are set for a message to match
     it, as well as methods to make understanding and
-    retreiving data from a message easier.
+    retrieving data from a message easier.
 
     The Intent class is similar to an endpoint method
-    in MVC, where it will recieve a Message objects
+    in MVC, where it will receive a Message object
     upon a matching route given by the MessageRouter,
     much like endpoint methods receive Request objects.
 
@@ -137,7 +138,7 @@ class BaseIntent(AbstractIntent, ABC):
     :field ordered:
         Remember that all strings in 'lead' and 'trail'
         are 'any of'? That also means that Pyttman will not
-        consider their order of appearence left- to right
+        consider their order of appearance left- to right
         in the message compared to your lead and trail
         tuples. This can be set however with the 'ordered'
         parameter, to True. This will require that all
@@ -220,7 +221,7 @@ class BaseIntent(AbstractIntent, ABC):
         matches the trail in the message. The words that also
         are present in the lead are removed by subtraction.
         Next, by iterating over the two collections the order
-        of appearence can now be determined by identifying
+        of appearance can now be determined by identifying
         the index of the word compared between the two. If
         the index is higher in the trail than the lead, the
         loop continues and will eventually exhaust.
@@ -242,7 +243,7 @@ class BaseIntent(AbstractIntent, ABC):
             return False
 
         if self.trail:
-            latest_lead_occurence, latest_trail_occurence = 0, 0
+            latest_lead_occurrence, latest_trail_occurrence = 0, 0
 
             if not (match_trail := [i for i in self.trail if i in sanitized]):
                 return False
@@ -250,29 +251,31 @@ class BaseIntent(AbstractIntent, ABC):
             for lead, trail in zip_longest(match_lead, match_trail):
                 try:
                     _index = sanitized.index(lead)
-                    if _index > latest_lead_occurence:
-                        latest_lead_occurence = _index
+                    if _index > latest_lead_occurrence:
+                        latest_lead_occurrence = _index
                 except ValueError:
                     pass
                 try:
                     _index = sanitized.index(trail)
-                    if _index > latest_trail_occurence:
-                        latest_trail_occurence = _index
+                    if _index > latest_trail_occurrence:
+                        latest_trail_occurrence = _index
                 except ValueError:
                     pass
-            match_trail = (latest_trail_occurence > latest_lead_occurence)
+            match_trail = (latest_trail_occurrence > latest_lead_occurrence)
         return match_lead and match_trail or match_lead and not self.trail
 
     def _assert_ordered(self, message: list) -> bool:
         ordered_trail, ordered_lead = True, True
-        for word_a, word_b in zip([i for i in message if i in self.lead], self.lead):
+        for word_a, word_b in zip([i for i in message if i in self.lead],
+                                  self.lead):
             if word_a != word_b:
                 ordered_lead = False
                 break
         if not self.trail:
             return ordered_lead
 
-        for word_a, word_b in zip([i for i in message if i in self.trail], self.trail):
+        for word_a, word_b in zip([i for i in message if i in self.trail],
+                                  self.trail):
             if word_a != word_b:
                 ordered_trail = False
                 break

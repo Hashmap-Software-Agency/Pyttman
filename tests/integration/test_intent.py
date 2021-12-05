@@ -181,12 +181,13 @@ class _TestBaseCase(TestCase):
         self.intent_reply = None
 
     def get_entity_value(self, entity_name):
-        return self.mock_intent.entities.get(entity_name)
+        return self.mock_message.entities.get(entity_name)
 
     def parse_message_for_entities(self):
         # Truncate 'lead' and 'trail' from the message before parsing
         self.intent_reply = self.mock_intent.process(self.mock_message)
-        print(self.mock_intent.entities)
+        print(f"{self.__class__.__name__} ENTITIES:",
+              self.mock_message.entities)
 
 
 class TestEntityParserWithEmptyValueParserCapitalized_ShouldSucceed(_TestBaseCase):
