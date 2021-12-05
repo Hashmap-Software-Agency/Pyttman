@@ -104,7 +104,8 @@ class EntityParserBase(Parser):
                f"identifier={self.identifier}, " \
                f"parsers={self.parsers})"
 
-    def parse_message(self, message: MessageMixin, memoization: dict = None) -> None:
+    def parse_message(self, message: MessageMixin,
+                      memoization: dict = None) -> None:
         """
         Traverse over all fields which are Parser subclasses.
         Have them identify their values according to their
@@ -131,9 +132,11 @@ class EntityParserBase(Parser):
             # Share the 'exclude' tuple assigned by the developer in the
             # application code to each Parser instance
             parser_object.exclude = self.exclude
-            parser_object.parse_message(message, memoization=parsers_memoization)
+            parser_object.parse_message(message,
+                                        memoization=parsers_memoization)
 
-            # See what the parser found - Entity or None. Ignore entities in self.exclude.
+            # See what the parser found - Entity or None.
+            # Ignore entities in self.exclude.
             parsed_entity: Union[Entity, None] = parser_object.value
 
             if parsed_entity is None or parsed_entity.value in self.exclude:
@@ -141,8 +144,10 @@ class EntityParserBase(Parser):
             else:
                 self.value[field_name] = parsed_entity
 
-                # Store the entity for memoization to prohibit multiple occurrence
-                parsers_memoization[parsed_entity.index_in_message] = parsed_entity
+                # Store the entity for memoization to
+                # prohibit multiple occurrences
+                parsers_memoization[
+                    parsed_entity.index_in_message] = parsed_entity
 
         """
         Walk the message backwards and truncate entities which 
