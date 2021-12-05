@@ -296,36 +296,39 @@ class BaseIntent(AbstractIntent, ABC):
         """
         Iterate over all Parser objects and the name
         of the field it's allocated as.
-        The message is cloned so that the original message is protected
-        from modification needed during the NLU processing components to
-        follow here. Since entities may be wrongly intercepted as they
-        match patterns defined in an EntityParser class inside an Intent
-        class, this is omitted by passing a clone of the message with all
-        elements from lead and trail tuples truncated from it.
+
+        The strings present in 'lead' and 'trail' in the Intent are
+        filtered out as for them not to be parsed by the Entity parser.
 
         :param message: MessageMixin object
         :return: Reply, logic defined in the 'respond' method
         """
-        joined_patterns = self.lead + self.trail
-        original_content = copy(message.content)
+        joined_patterns = set(self.lead + self.trail)
+        truncated_content = [i for i in message.content
+                             if i.casefold() not in joined_patterns]
+        truncated_message = Message(content=truncated_content)
 
-        message.truncate(collection=joined_patterns, case_sensitive=False)
-        self._entity_parser.parse_message(message)
+        self._entity_parser.parse_message(truncated_message)
         self.entities = self._entity_parser.value
-        message.content = original_content
 
         try:
             reply: Union[Reply, ReplyStream] = self.respond(message=message)
         except Exception as e:
             reply = _generate_error_entry(message, e)
 
-        if not reply or not isinstance(reply, Reply) and not isinstance(reply, ReplyStream):
+        constraints = {
+            bool(reply is not None),
+            bool(isinstance(reply, Reply) or isinstance(reply, ReplyStream))
+        }
+
+        if False in constraints:
             raise ValueError(f"Improperly configured Intent class: "
                              f"{self.__class__.__name__}."
                              f"respond method returned '{type(reply)}', "
                              f"expected Reply or ReplyStream")
 
-        # Purge entities values and all parser instances from their local values
+        # Purge entities values and all parser instances
+        # from their local values
         for parser_name in self._entity_parser.get_parsers():
             parser = getattr(self._entity_parser, parser_name)
             parser.reset()

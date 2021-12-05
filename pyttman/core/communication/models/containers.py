@@ -142,46 +142,8 @@ class MessageMixin:
         for elem in content_as_set:
             if elem.casefold() == string.casefold():
                 return True
-        return bool(len([i.casefold() == string.casefold() for i in content_as_set]))
-
-    def truncate(self, collection: Iterable[str], case_sensitive: bool = True) -> None:
-        """
-        Remove any occurring element in 'collection' from
-        self.content.
-
-        if case_sensitive is False, case is not considered
-        and strings with different case are also removed.
-
-        The .content property of the Message is casted in
-        an OrderedSet for more efficient calculation of
-        common denominators in the collections.
-        The OrderedSet structure ensures the message order
-        isn't compromised in the process.
-
-        :param collection: Iterable with str elements
-        :param case_sensitive:
-        :return: None
-        """
-
-        # Case sensitivity is True; no need to use casefolding.
-        try:
-            if case_sensitive is True:
-                collection_as_set = OrderedSet(collection)
-                casefolded_message = OrderedSet(self.content)
-                remainder = casefolded_message - casefolded_message.intersection(collection_as_set)
-                self.content = list(remainder)
-            # Case sensitivity is False; evaluate the collections with casefolding
-            else:
-                # TODO - Hotfix for #47, optimize this linear search.
-                casefolded_content = [i.lower() for i in self.content]
-                casefolded_collection = [i.lower() for i in collection]
-                for elem in casefolded_collection:
-                    if elem in casefolded_content:
-                        index_of_elem = casefolded_content.index(elem)
-                        self.content.remove(self.content[index_of_elem])
-                        casefolded_content.remove(elem)
-        except Exception:
-            pass
+        return bool(len([i.casefold() == string.casefold()
+                         for i in content_as_set]))
 
 
 class Message(MessageMixin):
