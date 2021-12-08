@@ -515,34 +515,6 @@ class ValueParser(Parser):
         return parsed_entity
 
 
-class PositionalParser(Parser):
-    """
-    The PositionalParser class is designed to be used
-    when the position of a value in a message is known.
-    Example: You know the user will provide the name
-    of an airport as the last word in their message,
-    every time. This can be a suitable occasion to
-    use the PositionalParser and define the position
-    of the expected value.
-    """
-    position = Parser.last_item
-
-    def parse_message(self, message: MessageMixin, memoization: dict = None) -> None:
-        """
-        Set whichever element at index 'position'
-        as value.
-        :param memoization: An incrementing dictionary of previously added
-                            input strings by other parsers
-        :param message: Message object
-        :return: None
-        """
-        try:
-            self.value = Entity(value=message.content[self.position],
-                                index_in_message=self.position)
-        except IndexError:
-            pass
-
-
 class ChoiceParser(Parser):
     """
     The Choice Parser simplifies identifying a value
