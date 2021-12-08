@@ -4,38 +4,35 @@ strings and sequences to logic, for defining a
 set of rules on how natural language relates to
 functions and methods.
 """
-#     MIT License
-#
-#      Copyright (c) 2021-present Simon Olofsson
-#
-#      Permission is hereby granted, free of charge, to any person obtaining a copy
-#      of this software and associated documentation files (the "Software"), to deal
-#      in the Software without restriction, including without limitation the rights
-#      to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-#      copies of the Software, and to permit persons to whom the Software is
-#      furnished to do so, subject to the following conditions:
-#
-#      The above copyright notice and this permission notice shall be included in all
-#      copies or substantial portions of the Software.
-#
-#      THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-#      IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-#      FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-#      AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-#      LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-#      OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
-#      SOFTWARE.
+
+# MIT License
+# Copyright (c) 2021-present Simon Olofsson
+# Permission is hereby granted, free of charge, to any person obtaining a copy
+# of this software and associated documentation files (the "Software"), to deal
+# in the Software without restriction, including without limitation the rights
+# to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+# copies of the Software, and to permit persons to whom the Software is
+# furnished to do so, subject to the following conditions:
+# The above copyright notice and this permission notice shall be included
+# in all copies or substantial portions of the Software.
+# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+# IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+# FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+# AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+# LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+# OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+# SOFTWARE.
 
 import abc
 import warnings
 from abc import ABC
-from copy import copy
 from itertools import zip_longest
 from typing import Tuple, Union
 
-from pyttman.core.communication.models.containers import MessageMixin, Reply, ReplyStream, Message
+from pyttman.core.communication.models.containers import Reply, ReplyStream, \
+    Message
 from pyttman.core.internals import _generate_name, _generate_error_entry
-from pyttman.core.parsing.parsers import ChoiceParser, EntityParserBase, AbstractParser
+from pyttman.core.parsing.parsers import ChoiceParser, EntityParserBase
 from pyttman.core.storage.basestorage import Storage
 
 
@@ -168,7 +165,8 @@ class BaseIntent(AbstractIntent, ABC):
     EntityParser = None
 
     def __init__(self, **kwargs):
-        if not isinstance(self.lead, tuple) or not isinstance(self.trail, tuple):
+        if not isinstance(self.lead, tuple) or \
+                not isinstance(self.trail, tuple):
             raise AttributeError(f"'lead' and 'trail' fields must me tuples "
                                  f"containing strings for parsing to work "
                                  f"correctly")
@@ -192,7 +190,7 @@ class BaseIntent(AbstractIntent, ABC):
 
     @property
     def entities(self) -> dict:
-        # Todo - remove depr.warn after 1.2.0
+        # Todo - remove deprecation warning after 1.2.0
         warnings.warn("'entities' will be removed from the Intent level in "
                       "Pyttman 1.2.0. Since 1.1.9, entities are accessed on "
                       "the Message object: 'message.entities'")
@@ -291,7 +289,7 @@ class BaseIntent(AbstractIntent, ABC):
                 help_string += f"[{'|'.join(self.trail)}]\n"
 
             if input_string_parser_fields:
-                help_string += f"\n\t> Entities (information you can provide) :"
+                help_string += f"\n\t> Entities (information you can provide):"
                 for field_name, parser in input_string_parser_fields.items():
                     help_string += f"\n\t\t * {field_name}"
                     if isinstance(parser, ChoiceParser):
