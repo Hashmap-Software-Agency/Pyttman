@@ -184,13 +184,22 @@ class EntityParserBase(Parser):
                 # Truncate prefixes, suffixes and cached strings
                 # from the entity
                 if split_value != list(duplicate_cache):
-                    split_value = OrderedSet(split_value)\
+                    split_value = OrderedSet(split_value) \
                         .difference(duplicate_cache)
 
                 duplicate_cache.update(split_value)
                 duplicate_cache.update(set([i.casefold()
                                             for i in split_value]))
-                self.value[field_name] = str(" ").join(split_value)
+                concatenated_value = str(" ").join(split_value)
+
+                # New in 1.1.9 - If this is an EntityField class, convert
+                # the value in the Entity with it.
+                try:
+                    entity.value = iter_parser.convert_value(
+                        concatenated_value)
+                except AttributeError:
+                    entity.value = concatenated_value
+                self.value[field_name] = entity
             else:
                 self.value[field_name] = None
 
