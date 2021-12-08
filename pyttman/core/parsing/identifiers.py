@@ -64,7 +64,7 @@ class Identifier:
         Evaluates if any element in the content of
         a Message object matches with its pattern.
 
-        :return str: Element in message.content which matched
+        :return Entity: Element in message.content which matched
                      the pattern assigned, or None if none found
         """
         for pattern in self.patterns:
