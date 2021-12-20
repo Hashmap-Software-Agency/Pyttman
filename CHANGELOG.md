@@ -1,6 +1,7 @@
 # Pyttman Changelog
 
 # v 1.1.9
+2021-12-11
 
 This release includes bug fixes but also some new cool features.
 
@@ -9,7 +10,8 @@ This release includes bug fixes but also some new cool features.
   being accessed on the Intent itself. 
   Accessing Entities on the Intent is supported until 1.2.0 and will raise 
   a deprecation warning.
-* 
+* **EntityField**  classes provide an easier and more efficient way to find 
+  values of interest in messages from users. 
 
 ### **🐛 Splatted bugs and corrected issues** 
 * Fixes [#46](https://github.com/dotchetter/Pyttman/issues/46)
