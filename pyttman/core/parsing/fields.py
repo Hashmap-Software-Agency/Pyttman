@@ -31,11 +31,15 @@ from pyttman.core.parsing.parsers import ValueParser
 class EntityFieldBase(ValueParser):
     type_cls = None
 
-    def __init__(self, **kwargs):
-        super().__init__(identifier=self.identifier, **kwargs)
+    def __init__(self, valid_strings: Sequence = None, **kwargs):
+        super().__init__(identifier=self.identifier_cls, **kwargs)
 
-    @classmethod
-    def convert_value(cls, value: Any) -> Any:
+        if valid_strings and isinstance(valid_strings, Sequence) is False:
+            raise AttributeError("'valid_strings' must be a collection of "
+                                 "strings")
+        self.valid_strings = valid_strings
+
+    def convert_value(self, value: Any) -> Any:
         """
         Try and convert the value passed, with the type associated
         with the class as 'type_cls'.
@@ -43,11 +47,19 @@ class EntityFieldBase(ValueParser):
         :param value: Any
         :return: Any
         """
-        try:
-            value = cls.perform_type_conversion(value)
-        except ValueError:
-            raise TypeConversionFailed(from_type=type(value),
-                                       to_type=cls.type_cls)
+        if self.valid_strings:
+            common = OrderedSet(self.valid_strings).intersection((value,))
+            try:
+                value = common.pop()
+            except KeyError:
+                value = None
+
+        if value is not None:
+            try:
+                value = self.perform_type_conversion(value)
+            except ValueError:
+                raise TypeConversionFailed(from_type=type(value),
+                                           to_type=self.type_cls)
         return value
 
     @classmethod
