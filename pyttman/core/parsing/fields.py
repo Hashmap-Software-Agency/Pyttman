@@ -20,16 +20,18 @@
 #  WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
 #  FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE
 #  OR OTHER DEALINGS IN THE SOFTWARE.
-from typing import Any
+
+from typing import Any, Sequence
+from ordered_set import OrderedSet
 
 from pyttman.core.exceptions import TypeConversionFailed
-from pyttman.core.parsing.entity import Entity
 from pyttman.core.parsing.identifiers import IntegerIdentifier
 from pyttman.core.parsing.parsers import ValueParser
 
 
 class EntityFieldBase(ValueParser):
     type_cls = None
+    identifier_cls = None
 
     def __init__(self, valid_strings: Sequence = None, **kwargs):
         super().__init__(identifier=self.identifier_cls, **kwargs)
@@ -77,12 +79,12 @@ class EntityFieldBase(ValueParser):
 
 class IntegerEntityField(EntityFieldBase):
     type_cls = int
-    identifier = IntegerIdentifier
+    identifier_cls = IntegerIdentifier
 
 
 class FloatEntityField(EntityFieldBase):
     type_cls = float
-    identifier = IntegerIdentifier
+    identifier_cls = IntegerIdentifier
 
     @classmethod
     def perform_type_conversion(cls, value) -> Any:
