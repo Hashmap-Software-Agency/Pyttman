@@ -21,6 +21,8 @@ class Entity:
         if isinstance(other, str):
             return other == self.value
 
-        return other.value == self.value \
+        try:
+            return other.value == self.value \
                and other.index_in_message == self.index_in_message
-
+        except AttributeError:
+            return False
