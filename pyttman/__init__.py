@@ -1,7 +1,8 @@
+from pyttman import version
 from pyttman.tools.scheduling.schedule import schedule
 from pyttman.tools.logger.logger import PyttmanLogger
 
-__version__ = "1.1.8"
+__version__ = version.__version__
 __author__ = "Simon Olofsson"
 __copyright__ = "(c) Pyttman development Team 2020-2021"
 __licence__ = "MIT"
