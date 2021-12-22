@@ -20,7 +20,7 @@ This release includes bug fixes but also some new cool features.
 * Fixes an issue with type hinting referring to the `MessageMixin` in `Intent.respond()` implementation -> Corrected to now hinting `Message`.
   
 ### 👀 Changes
-* Entities are no longer `str`, but `Entity`instances. To fetch the value 
+* Entities are no longer `str`, but `Entity` instances. To fetch the value 
   of the entity itself as previously done by `name = self.entities.get
   ("name")` is now instead done as `name = self.entities.get("name").value`
 

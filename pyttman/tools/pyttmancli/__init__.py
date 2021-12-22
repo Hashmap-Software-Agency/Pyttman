@@ -27,10 +27,14 @@ import typing
 
 import pyttman
 from pyttman.core.ability import Ability
-from pyttman.core.communication.models.containers import Message, Reply, ReplyStream
+from pyttman.core.communication.models.containers import Message, Reply, \
+    ReplyStream
 from pyttman.core.intent import Intent
 from pyttman.core.parsing.parsers import ValueParser
-from pyttman.tools.pyttmancli import Runner, bootstrap_environment, TerraFormer
+from pyttman.tools.pyttmancli.executor import Runner
+from pyttman.tools.pyttmancli.executor import Runner
+from pyttman.tools.pyttmancli.terraforming import bootstrap_environment, \
+    TerraFormer
 
 
 class CreateNewApp(Intent):
@@ -50,20 +54,22 @@ class CreateNewApp(Intent):
         app_name = ValueParser()
 
     def respond(self, message: Message) -> typing.Union[Reply, ReplyStream]:
-        if (app_name := self.entities.get("app_name")) is not None:
-            print(f"- Creating project '{app_name}'...", end=" ")
-            try:
-                terraformer = TerraFormer(app_name=app_name)
-                terraformer.terraform()
-            except Exception as e:
-                print("errors occurred.")
-                return Reply(f"{e.__class__.__name__}: {e}")
-            print("done.")
-            return Reply(f"- Check out your new app '{app_name}' in "
-                         f"the current directory. Feel free to visit the "
-                         f"Pyttman Wiki to follow our Get Started guide at "
-                         f"https://github.com/dotchetter/Pyttman/wiki/Tutorial")
-        return Reply(self.storage.get("NO_APP_NAME_MSG"))
+        if (app_name := message.entities.get("app_name")) is None:
+            return Reply(self.storage.get("NO_APP_NAME_MSG"))
+
+        app_name = app_name.value
+        print(f"- Creating project '{app_name}'...", end=" ")
+        try:
+            terraformer = TerraFormer(app_name=app_name)
+            terraformer.terraform()
+        except Exception as e:
+            print("errors occurred.")
+            return Reply(f"{e.__class__.__name__}: {e}")
+        print("done.")
+        return Reply(f"- Check out your new app '{app_name}' in "
+                     f"the current directory. Feel free to visit the "
+                     f"Pyttman Wiki to follow our Get Started guide at "
+                     f"https://github.com/dotchetter/Pyttman/wiki/Tutorial")
 
 
 class RunAppInDevMode(Intent):
@@ -86,20 +92,22 @@ class RunAppInDevMode(Intent):
         app_name = ValueParser()
 
     def respond(self, message: Message) -> typing.Union[Reply, ReplyStream]:
-        if (app_name := self.entities.get("app_name")) is not None:
-            if not pathlib.Path(app_name).exists():
-                return Reply(f"- App '{app_name}' was not found here, "
-                             f"verify that a Pyttman app directory named "
-                             f"'{app_name}' exists.")
-            try:
-                runner = bootstrap_environment(devmode=True, module=app_name)
-            except Exception as e:
-                print("errors occurred:")
-                return Reply(f"\t{e.__class__.__name__}: {e}")
-            self.storage.put("runner", runner)
-            self.storage.put("ready", True)
-            return Reply(f"- Starting app '{app_name}' in dev mode...")
-        return Reply(self.storage.get("NO_APP_NAME_MSG"))
+        if (app_name := message.entities.get("app_name")) is None:
+            return Reply(self.storage.get("NO_APP_NAME_MSG"))
+
+        app_name = app_name.value
+        if not pathlib.Path(app_name).exists():
+            return Reply(f"- App '{app_name}' was not found here, "
+                         f"verify that a Pyttman app directory named "
+                         f"'{app_name}' exists.")
+        try:
+            runner = bootstrap_environment(devmode=True, module=app_name)
+        except Exception as e:
+            print("errors occurred:")
+            return Reply(f"\t{e.__class__.__name__}: {e}")
+        self.storage.put("runner", runner)
+        self.storage.put("ready", True)
+        return Reply(f"- Starting app '{app_name}' in dev mode...")
 
 
 class RunAppInClientMode(Intent):
@@ -119,7 +127,8 @@ class RunAppInClientMode(Intent):
         app_name = ValueParser()
 
     def respond(self, message: Message) -> typing.Union[Reply, ReplyStream]:
-        if (app_name := self.entities.get("app_name")) is not None:
+        if (app_name := message.entities.get("app_name")) is None:
+            app_name = app_name.value
             if not pathlib.Path(app_name).exists():
                 return Reply(f"- App '{app_name}' was not found here, "
                              f"verify that a Pyttman app directory named "
@@ -135,7 +144,7 @@ class RunAppInClientMode(Intent):
         return Reply(self.storage.get("NO_APP_NAME_MSG"))
 
 
-# TODO - Not finished in 1.1.8
+# TODO - Not finished in 1.1.9
 class CreateNewAbilityIntent(Intent):
     lead = ("new",)
     trail = ("ability",)
@@ -162,8 +171,9 @@ class PyttmanCli(Ability):
                   f"\nSupported commands:"
 
     def configure(self):
-        responses = {"NO_APP_NAME_MSG": "Please provide a name for your app. "
-                                        "For help, type: 'pyttman help new app'"}
+        responses = {"NO_APP_NAME_MSG": "Please provide a name "
+                                        "for your app. For help, "
+                                        "type: 'pyttman help new app'"}
         self.storage.put("runner", None)
         self.storage.put("ready", False)
         self.storage |= responses
@@ -178,10 +188,12 @@ class PyttmanCli(Ability):
         # #(used for attribute access in completion)
         runner: Runner = None
         if (runner := self.storage.get("runner")) is not None:
-            print(f"- Ability classes loaded: {runner.client.message_router.abilities}")
+            print(f"- Ability classes loaded: "
+                  f"{runner.client.message_router.abilities}")
             runner.run()
         else:
-            raise RuntimeError("No Runner provided, app cannot start. Exiting...")
+            raise RuntimeError("No Runner provided, app cannot start. "
+                               "Exiting...")
 
 
 def run(argv=None, dev_args: List = None):
@@ -208,11 +220,11 @@ def run(argv=None, dev_args: List = None):
                      disregard the 'argv' arguments
     :return: None
     """
-    terminal_message: Message = Message()
-    pyttman_cli: Ability = PyttmanCli()
+    terminal_message = Message()
+    pyttman_cli = PyttmanCli()
     dot = "\u2022"
     default_response = [pyttman_cli.description]
-    default_response.extend([f"\n{dot} {i.example}" \
+    default_response.extend([f"\n{dot} {i.example}"
                              f"\n\t{i.description}"
                              for i in pyttman_cli.intents])
     default_response = str(" ").join(default_response)
@@ -223,22 +235,25 @@ def run(argv=None, dev_args: List = None):
     # Extract args from terminal shell
     if argv is None:
         argv = sys.argv[:]
-        argparser = argparse.ArgumentParser(prog="Pyttman CLI", usage="%(prog)s command",
-                                            add_help=False, allow_abbrev=False)
-        argparser.add_argument("args", nargs="*")
+        arg_parser = argparse.ArgumentParser(prog="Pyttman CLI",
+                                             usage="%(prog)s command",
+                                             add_help=False,
+                                             allow_abbrev=False)
+        arg_parser.add_argument("args", nargs="*")
 
         try:
             command = argv[1]
         except IndexError:
             command = ""
 
-        options, args = argparser.parse_known_args(argv[2:])
+        options, args = arg_parser.parse_known_args(argv[2:])
         terminal_message = Message(command.split() + options.args)
 
     elif dev_args is not None:
         terminal_message = Message(dev_args)
 
-    # Let the Pyttman cli parse the command. If a Runner is created, it's started.
+    # Let the Pyttman cli parse the command. If a Runner is created,
+    # it's started.
     reply = router.get_reply(terminal_message)
     print(reply.as_str())
 
