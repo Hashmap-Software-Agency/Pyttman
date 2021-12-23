@@ -1,10 +1,25 @@
+from pyttman import version
 from pyttman.tools.scheduling.schedule import schedule
-from pyttman.core.decorators import PyttmanLogger
+from pyttman.tools.logger.logger import PyttmanLogger
 
-__version__ = '1.1.8'
+__version__ = version.__version__
+__author__ = "Simon Olofsson"
+__copyright__ = "(c) Pyttman development Team 2020-2021"
+__licence__ = "MIT"
 
 
-settings = None
+class _SettingsNotConfigured:
+    def __getattr__(self, item):
+        raise NotImplementedError("pyttman.settings cannot be "
+                                  "accessed in this scope. "
+                                  "To use pyttman.settings  "
+                                  "you must use the Pyttman CLI."
+                                  "If you're looking for an "
+                                  "interactive shell for debugging, "
+                                  "use 'pyttman shell <app name>'. ")
+
+
+settings = _SettingsNotConfigured
 is_configured = False
 logger = PyttmanLogger
 

@@ -1,4 +1,5 @@
 import re
+from copy import copy
 from datetime import datetime
 from queue import Queue
 from typing import List, Iterable
@@ -7,7 +8,7 @@ from ordered_set import OrderedSet
 
 class MessageMixin:
     """
-    Pyttman MessageMixin, to extend the functionalty
+    Pyttman MessageMixin, to extend the functionality
     of existing Message classes provided by 3rd party
     libraries and APIs, to also accommodate for the
     internal requirements of the Message object
@@ -24,6 +25,7 @@ class MessageMixin:
         self.created = datetime.now()
         self.client = None
         self.content = content
+        self.entities = {}
 
         try:
             self.content_with_format = str(content).splitlines(keepends=True)
@@ -116,70 +118,7 @@ class MessageMixin:
         Removes element from self.content.
         :return: None
         """
-        # noinspection PyBroadException
-        try:
-            self.content.remove(item)
-        except Exception:
-            pass
-
-    def contains(self, string: str, case_sensitive: bool = True):
-        """
-        Evaluates whether or not self.contents
-        contains an element.
-
-
-        :param string: string to be evaluated if self.contents
-                       does contain or not.
-        :param case_sensitive: Consider the case of all strings
-                               in self.content when evaluation is done
-        :return: bool, contains or not.
-        """
-        content_as_set = set(self.content)
-
-        if case_sensitive is False:
-            return bool(content_as_set.intersection([string]))
-        for elem in content_as_set:
-            if elem.casefold() == string.casefold():
-                return True
-        return bool(len([i.casefold() == string.casefold() for i in content_as_set]))
-
-    def truncate(self, collection: Iterable[str], case_sensitive: bool = True) -> None:
-        """
-        Remove any occurring element in 'collection' from
-        self.content.
-
-        if case_sensitive is False, case is not considered
-        and strings with different case are also removed.
-
-        The .content property of the Message is casted in
-        an OrderedSet for more efficient calculation of
-        common denominators in the collections.
-        The OrderedSet structure ensures the message order
-        isn't compromised in the process.
-
-        :param collection: Iterable with str elements
-        :param case_sensitive:
-        :return: None
-        """
-
-        # Case sensitivity is True; no need to use casefolding.
-        try:
-            if case_sensitive is True:
-                collection_as_set = OrderedSet(collection)
-                casefolded_message = OrderedSet(self.content)
-                remainder = casefolded_message - casefolded_message.intersection(collection_as_set)
-                self.content = list(remainder)
-            # Case sensitivity is False; evaluate the collections with casefolding
-            else:
-                collection_as_set = OrderedSet([i.casefold() for i in collection])
-                casefolded_message = OrderedSet((i.casefold() for i in self.content))
-                remainder = casefolded_message - collection_as_set.intersection(casefolded_message)
-                for elem in casefolded_message:
-                    if elem.casefold() not in remainder:
-                        self.content.remove(elem)
-        except ValueError:
-            # Trying to remove something which is does not exist is not a concern.
-            pass
+        self.content.remove(item)
 
 
 class Message(MessageMixin):

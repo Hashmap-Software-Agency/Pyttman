@@ -65,6 +65,7 @@ class Settings:
     APP_BASE_DIR: str
     LOG_FILE_DIR: str
     APP_NAME: str
+    LOG_FORMAT: str
 
     def __init__(self, **kwargs):
         [setattr(self, k, v) for k, v in kwargs.items()

@@ -245,8 +245,8 @@ class Job(Thread):
                         self.result = self.func()
                 except Exception as e:
                     pyttman.logger.log(f"The schedule job '{self.name}' "
-                                      f"raised {type(e).__name__}('{str(e)}') "
-                                      f"upon executing it", level="error")
+                                       f"raised {type(e).__name__}('{str(e)}') "
+                                       f"upon executing it", level="error")
                     self.error = e
                     break
 

@@ -1,40 +1,14 @@
-"""
-File containing base classes related to binding
-strings and sequences to logic, for defining a
-set of rules on how natural language relates to
-functions and methods.
-"""
-#     MIT License
-#
-#      Copyright (c) 2021-present Simon Olofsson
-#
-#      Permission is hereby granted, free of charge, to any person obtaining a copy
-#      of this software and associated documentation files (the "Software"), to deal
-#      in the Software without restriction, including without limitation the rights
-#      to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-#      copies of the Software, and to permit persons to whom the Software is
-#      furnished to do so, subject to the following conditions:
-#
-#      The above copyright notice and this permission notice shall be included in all
-#      copies or substantial portions of the Software.
-#
-#      THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-#      IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-#      FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-#      AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-#      LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-#      OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
-#      SOFTWARE.
 
 import abc
+import warnings
 from abc import ABC
-from copy import copy
 from itertools import zip_longest
 from typing import Tuple, Union
 
-from pyttman.core.communication.models.containers import MessageMixin, Reply, ReplyStream
+from pyttman.core.communication.models.containers import Reply, ReplyStream, \
+    Message
 from pyttman.core.internals import _generate_name, _generate_error_entry
-from pyttman.core.parsing.parsers import ChoiceParser, EntityParserBase, AbstractParser
+from pyttman.core.parsing.parsers import ChoiceParser, EntityParserBase
 from pyttman.core.storage.basestorage import Storage
 
 
@@ -45,7 +19,7 @@ class AbstractIntent(abc.ABC):
         pass
 
     @abc.abstractmethod
-    def respond(self, message: MessageMixin) -> Union[Reply, ReplyStream]:
+    def respond(self, message: Message) -> Union[Reply, ReplyStream]:
         """
         Subclasses overload this method to respond
         to a given Intent upon a match.
@@ -60,7 +34,7 @@ class AbstractIntent(abc.ABC):
         pass
 
     @abc.abstractmethod
-    def matches(self, message: MessageMixin) -> bool:
+    def matches(self, message: Message) -> bool:
         """
         Determine whether a MessageMixin matches a
         Intent instance's pattern config.
@@ -106,12 +80,12 @@ class AbstractIntent(abc.ABC):
 class BaseIntent(AbstractIntent, ABC):
     """
     Base class for a Intent, containing configuration
-    on which criterias are set for a message to match
+    on which criteria are set for a message to match
     it, as well as methods to make understanding and
-    retreiving data from a message easier.
+    retrieving data from a message easier.
 
     The Intent class is similar to an endpoint method
-    in MVC, where it will recieve a Message objects
+    in MVC, where it will receive a Message object
     upon a matching route given by the MessageRouter,
     much like endpoint methods receive Request objects.
 
@@ -137,7 +111,7 @@ class BaseIntent(AbstractIntent, ABC):
     :field ordered:
         Remember that all strings in 'lead' and 'trail'
         are 'any of'? That also means that Pyttman will not
-        consider their order of appearence left- to right
+        consider their order of appearance left- to right
         in the message compared to your lead and trail
         tuples. This can be set however with the 'ordered'
         parameter, to True. This will require that all
@@ -167,19 +141,22 @@ class BaseIntent(AbstractIntent, ABC):
     EntityParser = None
 
     def __init__(self, **kwargs):
-        if not isinstance(self.lead, tuple) or not isinstance(self.trail, tuple):
+        if not isinstance(self.lead, tuple) or \
+                not isinstance(self.trail, tuple):
             raise AttributeError(f"'lead' and 'trail' fields must me tuples "
                                  f"containing strings for parsing to work "
                                  f"correctly")
         [setattr(self, k, v) for k, v in kwargs.items()]
+        self._entities = {}
         self.name = _generate_name(self.__class__.__name__)
-        self.entities = {}
         self.lead = tuple([i.lower() for i in self.lead])
         self.trail = tuple([i.lower() for i in self.trail])
 
-        # If an EntityParser class is defined by the user, merge it with EntityParserBase
+        # If an EntityParser class is defined by the user,
+        # merge it with EntityParserBase
         if self.EntityParser is not None:
-            self._entity_parser = EntityParserBase.from_meta_class(self.EntityParser)
+            self._entity_parser = EntityParserBase.from_meta_class(
+                self.EntityParser)
         else:
             self._entity_parser = EntityParserBase()
 
@@ -187,7 +164,19 @@ class BaseIntent(AbstractIntent, ABC):
         return f"{self.__class__.__name__}(lead={self.lead}, " \
                f"trail={self.trail}, ordered={self.ordered})"
 
-    def matches(self, message: MessageMixin) -> bool:
+    @property
+    def entities(self) -> dict:
+        # Todo - remove deprecation warning after 1.2.0
+        warnings.warn("'entities' will be removed from the Intent level in "
+                      "Pyttman 1.2.0. Since 1.1.9, entities are accessed on "
+                      "the Message object: 'message.entities'")
+        return self._entities
+
+    @entities.setter
+    def entities(self, value: dict) -> None:
+        self._entities = value
+
+    def matches(self, message: Message) -> bool:
         """
         Boolean indicator to whether the Intent
         matches a given message, without returning
@@ -206,7 +195,7 @@ class BaseIntent(AbstractIntent, ABC):
         matches the trail in the message. The words that also
         are present in the lead are removed by subtraction.
         Next, by iterating over the two collections the order
-        of appearence can now be determined by identifying
+        of appearance can now be determined by identifying
         the index of the word compared between the two. If
         the index is higher in the trail than the lead, the
         loop continues and will eventually exhaust.
@@ -228,7 +217,7 @@ class BaseIntent(AbstractIntent, ABC):
             return False
 
         if self.trail:
-            latest_lead_occurence, latest_trail_occurence = 0, 0
+            latest_lead_occurrence, latest_trail_occurrence = 0, 0
 
             if not (match_trail := [i for i in self.trail if i in sanitized]):
                 return False
@@ -236,29 +225,31 @@ class BaseIntent(AbstractIntent, ABC):
             for lead, trail in zip_longest(match_lead, match_trail):
                 try:
                     _index = sanitized.index(lead)
-                    if _index > latest_lead_occurence:
-                        latest_lead_occurence = _index
+                    if _index > latest_lead_occurrence:
+                        latest_lead_occurrence = _index
                 except ValueError:
                     pass
                 try:
                     _index = sanitized.index(trail)
-                    if _index > latest_trail_occurence:
-                        latest_trail_occurence = _index
+                    if _index > latest_trail_occurrence:
+                        latest_trail_occurrence = _index
                 except ValueError:
                     pass
-            match_trail = (latest_trail_occurence > latest_lead_occurence)
+            match_trail = (latest_trail_occurrence > latest_lead_occurrence)
         return match_lead and match_trail or match_lead and not self.trail
 
     def _assert_ordered(self, message: list) -> bool:
         ordered_trail, ordered_lead = True, True
-        for word_a, word_b in zip([i for i in message if i in self.lead], self.lead):
+        for word_a, word_b in zip([i for i in message if i in self.lead],
+                                  self.lead):
             if word_a != word_b:
                 ordered_lead = False
                 break
         if not self.trail:
             return ordered_lead
 
-        for word_a, word_b in zip([i for i in message if i in self.trail], self.trail):
+        for word_a, word_b in zip([i for i in message if i in self.trail],
+                                  self.trail):
             if word_a != word_b:
                 ordered_trail = False
                 break
@@ -274,7 +265,7 @@ class BaseIntent(AbstractIntent, ABC):
                 help_string += f"[{'|'.join(self.trail)}]\n"
 
             if input_string_parser_fields:
-                help_string += f"\n\t> Entities (information you can provide) :"
+                help_string += f"\n\t> Entities (information you can provide):"
                 for field_name, parser in input_string_parser_fields.items():
                     help_string += f"\n\t\t * {field_name}"
                     if isinstance(parser, ChoiceParser):
@@ -292,39 +283,44 @@ class BaseIntent(AbstractIntent, ABC):
             help_string = self.help_string
         return help_string
 
-    def process(self, message: MessageMixin) -> Union[Reply, ReplyStream]:
+    def process(self, message: Message) -> Union[Reply, ReplyStream]:
         """
-        Iterate over all ValueParser objects and the name
+        Iterate over all Parser objects and the name
         of the field it's allocated as.
+
+        The strings present in 'lead' and 'trail' in the Intent are
+        filtered out as for them not to be parsed by the Entity parser.
+
         :param message: MessageMixin object
         :return: Reply, logic defined in the 'respond' method
         """
-        joined_patterns = self.lead + self.trail
-        original_content = copy(message.content)
+        joined_patterns = set(self.lead + self.trail)
+        truncated_content = [i for i in message.content
+                             if i.casefold() not in joined_patterns]
+        truncated_message = Message(content=truncated_content)
 
-        # The message is cloned so that the original message is protected
-        # from modification needed during the NLU processing components to
-        # follow here. Since entities may be wrongly intercepted as they
-        # match patterns defined in an EntityParser class inside an Intent
-        # class, this is omitted by passing a clone of the message with all
-        # elements from lead and trail tuples truncated from it.
-        message.truncate(collection=joined_patterns, case_sensitive=False)
-        self._entity_parser.parse_message(message)
+        self._entity_parser.parse_message(truncated_message)
         self.entities = self._entity_parser.value
-        message.content = original_content
+        message.entities = self._entity_parser.value
 
         try:
             reply: Union[Reply, ReplyStream] = self.respond(message=message)
         except Exception as e:
             reply = _generate_error_entry(message, e)
 
-        if not reply or not isinstance(reply, Reply) and not isinstance(reply, ReplyStream):
+        constraints = {
+            bool(reply is not None),
+            bool(isinstance(reply, Reply) or isinstance(reply, ReplyStream))
+        }
+
+        if False in constraints:
             raise ValueError(f"Improperly configured Intent class: "
                              f"{self.__class__.__name__}."
                              f"respond method returned '{type(reply)}', "
                              f"expected Reply or ReplyStream")
 
-        # Purge entities values and all parser instances from their local values
+        # Purge entities values and all parser instances
+        # from their local values
         for parser_name in self._entity_parser.get_parsers():
             parser = getattr(self._entity_parser, parser_name)
             parser.reset()
@@ -332,6 +328,6 @@ class BaseIntent(AbstractIntent, ABC):
 
 
 class Intent(BaseIntent):
-    def respond(self, message: MessageMixin) -> Union[Reply, ReplyStream]:
+    def respond(self, message: Message) -> Union[Reply, ReplyStream]:
         raise NotImplementedError("The 'respond' method must be "
                                   "defined when subclassing Intent")

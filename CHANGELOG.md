@@ -1,6 +1,28 @@
 # Pyttman Changelog
 
+# v 1.1.9
+2021-12-11
 
+This release includes bug fixes but also some new cool features.
+
+### :star2: News
+* Entities are now accessed on the `Message` object in Intents instead of 
+  being accessed on the Intent itself. 
+  Accessing Entities on the Intent is supported until 1.2.0 and will raise 
+  a deprecation warning.
+* **EntityField**  classes provide an easier and more efficient way to find 
+  values of interest in messages from users. 
+
+### **🐛 Splatted bugs and corrected issues** 
+* Fixes [#46](https://github.com/dotchetter/Pyttman/issues/46) - Incorrect error message when bootstrapping fails
+* Fixes [#47](https://github.com/dotchetter/Pyttman/issues/47) - Strings with different case from otherwise identical values in lead/trail/exclude are not truncated
+* Fixes [#48](https://github.com/dotchetter/Pyttman/issues/48) - ChoiceParser can't parse choices when capitalized
+* Fixes an issue with type hinting referring to the `MessageMixin` in `Intent.respond()` implementation -> Corrected to now hinting `Message`.
+  
+### 👀 Changes
+* Entities are no longer `str`, but `Entity` instances. To fetch the value 
+  of the entity itself as previously done by `name = self.entities.get
+  ("name")` is now instead done as `name = self.entities.get("name").value`
 
 # v 1.1.8
 

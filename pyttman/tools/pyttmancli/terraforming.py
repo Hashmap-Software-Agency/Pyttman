@@ -6,13 +6,13 @@ import traceback
 from datetime import datetime
 from importlib import import_module
 from pathlib import Path
-from typing import List
 
 from py7zr import unpack_7zarchive
 
 import pyttman
 from pyttman.clients.builtin.cli import CliClient
 from pyttman.core.ability import Ability
+from pyttman.core.exceptions import PyttmanProjectInvalidException
 from pyttman.core.internals import Settings
 from pyttman.core.parsing.routing import AbstractMessageRouter
 from pyttman.tools.pyttmancli import Runner
@@ -32,17 +32,18 @@ class TerraFormer:
         application_path = Path(os.path.dirname(os.path.abspath(__file__)))
 
         if source is None:
-            self.source = Path(application_path).parent.parent / Path("core") / \
-                          Path("terraform_template") / Path("project_template.7z")
+            self.source = Path(application_path).parent.parent / \
+                          Path("core") / Path("terraform_template") / \
+                          Path("project_template.7z")
             if not os.path.isfile(self.source):
-                raise FileNotFoundError("Pyttman could not locate the template "
-                                        ".7z archive for terraforming. It was "
-                                        f"expected to be here: '{self.source}'. "
-                                        "If you want, you can create this "
-                                        "structure and place the template "
-                                        f"file here, or reinstall Pyttman. "
-                                        f"If you think this error is our fault - "
-                                        f"please submit an issue on GitHub!")
+                raise FileNotFoundError("Pyttman could not locate the "
+                                        "template .7z archive for "
+                                        "terraforming. It was expected to be "
+                                        f"here: '{self.source}' To "
+                                        "solve this problem, reinstall "
+                                        "Pyttman. If you think this error "
+                                        "is our fault - please submit an "
+                                        "issue on GitHub!")
         else:
             self.source = source
 
@@ -80,45 +81,65 @@ def bootstrap_environment(module: str = None, devmode: bool = False) -> Runner:
     # First, find the settings.py. It should reside in the current directory
     # provided that the user is currently positioned in the app catalog for
     # their Pyttman project.
+    if (Path(module) / "settings.py").exists() is False:
+        raise PyttmanProjectInvalidException("No 'settings.py' module "
+                                             "found.\nMake sure you are "
+                                             "executing the command from "
+                                             "within your Pyttman app "
+                                             "directory (where the "
+                                             "settings.py file is located).")
+
     try:
         settings_module = import_module(f"{module}.settings")
-        settings_names = [i for i in dir(settings_module) if not i.startswith("__")]
-        settings_config = {name: getattr(settings_module, name) for name in settings_names}
+        settings_names = [i for i in dir(settings_module)
+                          if not i.startswith("__")]
+        settings_config = {name: getattr(settings_module, name)
+                           for name in settings_names}
         settings = Settings(**settings_config)
-
-    except ImportError:
-        raise ImportError("No 'settings.py' module found. Make sure you are "
-                          "executing the command from within your Pyttman app "
-                          "directory (where the settings.py file is located).")
+    except ImportError as e:
+        print(traceback.format_exc())
+        raise ImportError("An import error occurred when bootstrapping your "
+                          "application. Check the modules imported in "
+                          "'settings.py' and make sure they're installed and "
+                          "spelled correctly.") from e
 
     if settings is not None:
         pyttman.settings = settings
         pyttman.is_configured = True
     else:
-        raise NotImplementedError("Pyttman is improperly configured - settings "
-                                  "module for app not found. ")
+        raise NotImplementedError("Pyttman is improperly configured - "
+                                  "settings module for app not found. ")
 
     # Configure the logger instance for pyttman.logger
     app_name = pyttman.settings.APP_NAME
     if pyttman.settings.APPEND_LOG_FILES:
         file_name = Path(f"{app_name}.log")
     else:
-        file_name = Path(f"{app_name}-{datetime.now().strftime('%y%m%d-%H-%M-%S')}.log")
+        file_name = Path(
+            f"{app_name}-{datetime.now().strftime('%y%m%d-%H-%M-%S')}.log")
 
     log_file_name = Path(pyttman.settings.LOG_FILE_DIR) / file_name
-    logging_handle = logging.FileHandler(filename=log_file_name, encoding="utf-8",
-                                         mode="a+" if pyttman.settings.APPEND_LOG_FILES else "w")
-    logging_handle.setFormatter(logging.Formatter("%(asctime)s:%(levelname)"
-                                                  "s:%(name)s: %(message)s"))
-    _logger = logging.getLogger("Pyttman logger")
-    _logger.setLevel(logging.DEBUG)
-    _logger.addHandler(logging_handle)
+    logging_handle = logging.FileHandler(
+        filename=log_file_name, encoding="utf-8",
+        mode="a+" if pyttman.settings.APPEND_LOG_FILES else "w")
+
+    # Assign logging format - added in 1.1.9. Accounts for lower versions
+    try:
+        logging_format = pyttman.settings.LOG_FORMAT
+    except AttributeError:
+        logging_format = logging.BASIC_FORMAT
+
+    logging_handle.setFormatter(logging.Formatter(logging_format))
+    logger = logging.getLogger("Pyttman logger")
+    logger.setLevel(logging.DEBUG)
+    logger.addHandler(logging_handle)
 
     # Set the configured instance of logger to the pyttman.PyttmanLogger object
-    pyttman.logger.LOG_INSTANCE = _logger
+    pyttman.logger.LOG_INSTANCE = logger
 
     # Import the router defined in MESSAGE_ROUTER in settings.py
-    message_router_config = settings.MESSAGE_ROUTER.get("ROUTER_CLASS").split(".")
+    message_router_config = settings.MESSAGE_ROUTER\
+        .get("ROUTER_CLASS").split(".")
     message_router_class_name = message_router_config.pop()
     message_router_module = ".".join(message_router_config)
     message_router_module = import_module(message_router_module)
@@ -135,8 +156,9 @@ def bootstrap_environment(module: str = None, devmode: bool = False) -> Runner:
         raise AttributeError("'HELP_KEYWORD' not defined in settings.py. "
                              "Please define a word for the automatic "
                              "help page generation to trigger on in your "
-                             "app whenever it is present as the first occurring "
-                             "string in a message.\nExample: 'HELP_KEYWORD' = 'help'")
+                             "app whenever it is present as the first "
+                             "occurring string in a message.\nExample: "
+                             "'HELP_KEYWORD' = 'help'")
 
     # Retrieve command-unknown-responses from settings
     if not (command_unknown_responses := settings.MESSAGE_ROUTER.
@@ -156,10 +178,10 @@ def bootstrap_environment(module: str = None, devmode: bool = False) -> Runner:
     # Set the abilities of the router to the abilities from settings.py
     ability_objects_set = set()
     for ability in settings.ABILITIES:
-        assert not isinstance(ability, Ability), f"The ability '{ability}' is " \
-                                                 f"instantiated. Please redefine " \
-                                                 f"this ability as only the reference " \
-                                                 f"to the class, as shown in the docs. "
+        assert not isinstance(ability, Ability), \
+            f"The ability '{ability}' is instantiated. Please redefine " \
+            f"this ability as only the reference to the class, " \
+            f"as shown in the docs. "
 
         ability_module_config = ability.split(".")
         ability_class_name = ability_module_config.pop()
@@ -167,14 +189,14 @@ def bootstrap_environment(module: str = None, devmode: bool = False) -> Runner:
         ability_module = import_module(ability_module_name)
         ability_class = getattr(ability_module, ability_class_name)
 
-        # Instantiate the ability class and traverse over its intents. Validate.
+        # Instantiate the ability class and traverse over its intents.
+        # Validate.
         intent_instance = ability_class()
-        assert issubclass(ability_class, Ability), f"'{intent_instance.__class__.__name__}' " \
-                                                   f"is not a subclass of 'Ability'. " \
-                                                   f"Check your ABILITIES list in " \
-                                                   f"settings.py and verify that " \
-                                                   f"all classes defined are Ability" \
-                                                   f"subclasses."
+        assert issubclass(ability_class, Ability), \
+            f"'{intent_instance.__class__.__name__}' " \
+            f"is not a subclass of 'Ability'. " \
+            f"Check your ABILITIES list in settings.py and verify that " \
+            f"all classes defined are Ability subclasses."
         ability_objects_set.add(intent_instance)
 
     assert len(ability_objects_set), "No Ability classes were provided the " \

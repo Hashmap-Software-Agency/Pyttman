@@ -1,9 +1,9 @@
+from pyttman.version import __version__
 from pathlib import Path
 from setuptools import setup, find_packages
 
 
 HERE = Path(__file__).parent
-BUILD_VERSION = "1.1.8"
 
 # The text of the README file
 README = (HERE / "README.md").read_text()
@@ -12,8 +12,8 @@ README = (HERE / "README.md").read_text()
 # This call to setup() does all the work
 setup(
     name="Pyttman",
-    version=BUILD_VERSION,
-    description="The virtual assistant framework made for developers with ideas",
+    version=__version__,
+    description="The Python chatbot framework with batteries included",
     long_description=README,
     long_description_content_type="text/markdown",
     url="https://github.com/dotchetter/Pyttman",

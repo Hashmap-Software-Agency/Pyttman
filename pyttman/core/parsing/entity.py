@@ -17,14 +17,12 @@ class Entity:
     value: Any
     index_in_message: int
 
-    def __init__(self, value: Any, index_in_message):
-        self.value = value
-        self.index_in_message = index_in_message
-
     def __eq__(self, other):
         if isinstance(other, str):
             return other == self.value
 
-        return other.value == self.value \
+        try:
+            return other.value == self.value \
                and other.index_in_message == self.index_in_message
-
+        except AttributeError:
+            return False
