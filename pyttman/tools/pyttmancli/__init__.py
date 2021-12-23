@@ -1,13 +1,4 @@
 
-import argparse
-import sys
-from typing import List
-
-from pyttman.core.parsing.routing import FirstMatchingRouter
-from pyttman.tools.pyttmancli.executor import Runner
-from pyttman.tools.pyttmancli.terraforming import TerraFormer, \
-    bootstrap_environment
-
 """
 This file contains Intents and Ability classes which make out
 the Pyttman cli tool, used to administer, bootstrap and create
@@ -22,19 +13,27 @@ classes, since they provide essential data for users when
 using the tool in the terminal.
 
 """
+import pyttman
+import argparse
 import pathlib
+import sys
 import typing
 
-import pyttman
 from pyttman.core.ability import Ability
 from pyttman.core.communication.models.containers import Message, Reply, \
     ReplyStream
 from pyttman.core.intent import Intent
 from pyttman.core.parsing.parsers import ValueParser
+from pyttman.core.parsing.routing import FirstMatchingRouter
 from pyttman.tools.pyttmancli.executor import Runner
 from pyttman.tools.pyttmancli.executor import Runner
+from pyttman.tools.pyttmancli.executor import Runner
+from pyttman.tools.pyttmancli.terraforming import TerraFormer, \
+    bootstrap_environment
 from pyttman.tools.pyttmancli.terraforming import bootstrap_environment, \
     TerraFormer
+
+
 
 
 class CreateNewApp(Intent):
@@ -46,9 +45,10 @@ class CreateNewApp(Intent):
     lead = ("new",)
     trail = ("app",)
     ordered = True
-    description = "Creates a new Pyttman app project in current directory " \
-                  "from a template."
     example = "pyttman new app <app name>"
+    help_string = "Creates a new Pyttman app project in current directory " \
+                  "from a template.\n" \
+                  f"Example: {example}"
 
     class EntityParser:
         app_name = ValueParser()
@@ -82,11 +82,12 @@ class RunAppInDevMode(Intent):
     lead = ("dev",)
     ordered = True
     example = "pyttman dev <app name>"
-    description = "Run a Pyttman app in dev mode. Dev mode sets " \
+    help_string = "Run a Pyttman app in dev mode. Dev mode sets " \
                   "'pyttman.DEBUG' to True, enabling verbose outputs " \
-                  "as defined in your app. The app is started using " \
+                  "as defined in your app.\nThe app is started using " \
                   "a CliClient for you to start chatting with your app " \
-                  "with minimal overhead."
+                  "with minimal overhead.\n" \
+                  f"Example: {example}"
 
     class EntityParser:
         app_name = ValueParser()
@@ -118,10 +119,11 @@ class RunAppInClientMode(Intent):
     lead = ("runclient",)
     ordered = True
     example = "pyttman runclient <app name>"
-    description = "Run a Pyttman app in client mode. This is the " \
-                  "standard production mode for Pyttman apps. The " \
+    help_string = "Run a Pyttman app in client mode. This is the " \
+                  "standard production mode for Pyttman apps.\nThe " \
                   "app will be started using the client defined in " \
-                  "settings.py under 'CLIENT'."
+                  "settings.py under 'CLIENT'.\n" \
+                  f"Example: {example}"
 
     class EntityParser:
         app_name = ValueParser()
@@ -150,8 +152,9 @@ class CreateNewAbilityIntent(Intent):
     trail = ("ability",)
     ordered = True
     example = "pyttman new ability <ability name> app <app name>"
-    description = "Create a new file with an Ability class as " \
-                  "a template for new Ability classes for your app."
+    help_string = "Create a new file with an Ability class as " \
+                  "a template for new Ability classes for your app.\n" \
+                  f"Example: {example}"
 
     class EntityParser:
         ability_name = ValueParser()
@@ -166,9 +169,13 @@ class PyttmanCli(Ability):
     Encapsulates the Pyttman CLI tool 'pyttman'
     used in the terminal by framework users.
     """
-    intents = (CreateNewApp, RunAppInDevMode, RunAppInClientMode)
-    description = f"Pyttman v{pyttman.__version__}" \
-                  f"\nSupported commands:"
+    intents = (CreateNewApp,
+               RunAppInDevMode,
+               RunAppInClientMode)
+
+    description = f"\nPyttman v{pyttman.__version__}\n\n" \
+                  "For help about a commend, type pyttman help [command]" \
+                  f"\n\nSupported commands:\n"
 
     def configure(self):
         responses = {"NO_APP_NAME_MSG": "Please provide a name "
@@ -196,7 +203,7 @@ class PyttmanCli(Ability):
                                "Exiting...")
 
 
-def run(argv=None, dev_args: List = None):
+def run(argv=None, dev_args: typing.List = None):
     """
     This function utilized the Pyttman framework itself,
     to administrate, bootstrap and create Pyttman apps.
@@ -225,9 +232,8 @@ def run(argv=None, dev_args: List = None):
     dot = "\u2022"
     default_response = [pyttman_cli.description]
     default_response.extend([f"\n{dot} {i.example}"
-                             f"\n\t{i.description}"
                              for i in pyttman_cli.intents])
-    default_response = str(" ").join(default_response)
+    default_response = str(" ").join(default_response) + "\n"
 
     router = FirstMatchingRouter(abilities=[pyttman_cli], help_keyword="help",
                                  intent_unknown_responses=[default_response])
