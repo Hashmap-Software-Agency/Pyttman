@@ -1,8 +1,9 @@
 # Pyttman 
 ![Logo image](.github/cover.png)
 
+
 ## The Python chatbot framework with batteries included
-[![PyPI version](https://badge.fury.io/py/Pyttman.svg)](https://badge.fury.io/py/Pyttman)
+[![PyPI version](https://badge.fury.io/py/Pyttman.svg)](https://badge.fury.io/py/Pyttman) [![CodeQL](https://github.com/dotchetter/Pyttman/actions/workflows/codeql-analysis.yml/badge.svg)](https://github.com/dotchetter/Pyttman/actions/workflows/codeql-analysis.yml) [![Python package](https://github.com/dotchetter/Pyttman/actions/workflows/python-package.yml/badge.svg)](https://github.com/dotchetter/Pyttman/actions/workflows/python-package.yml)
 
 ### About
 The Pyttman Framework aims to provide a similar experience as Django and Flask does for web, but for chatbots and digital assistants.
