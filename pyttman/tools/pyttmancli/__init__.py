@@ -76,7 +76,6 @@ class RunAppInDevMode(Intent):
     and the CliClient is used as the primary front end.
     """
     lead = ("dev",)
-    ordered = True
     example = "pyttman dev <app name>"
     help_string = "Run a Pyttman app in dev mode. Dev mode sets " \
                   "'pyttman.DEBUG' to True, enabling verbose outputs " \
@@ -113,7 +112,6 @@ class RunAppInClientMode(Intent):
     in Client mode.
     """
     lead = ("runclient",)
-    ordered = True
     example = "pyttman runclient <app name>"
     help_string = "Run a Pyttman app in client mode. This is the " \
                   "standard production mode for Pyttman apps.\nThe " \
@@ -126,20 +124,21 @@ class RunAppInClientMode(Intent):
 
     def respond(self, message: Message) -> typing.Union[Reply, ReplyStream]:
         if (app_name := message.entities.get("app_name")) is None:
-            app_name = app_name.value
-            if not pathlib.Path(app_name).exists():
-                return Reply(f"- App '{app_name}' was not found here, "
-                             f"verify that a Pyttman app directory named "
-                             f"'{app_name}' exists.")
-            try:
-                runner = bootstrap_environment(devmode=False, module=app_name)
-            except Exception as e:
-                print("errors occurred:")
-                return Reply(f"\t{e.__class__.__name__}: {e}")
-            self.storage.put("runner", runner)
-            self.storage.put("ready", True)
-            return Reply(f"- Starting app '{app_name}' in client mode...")
-        return Reply(self.storage.get("NO_APP_NAME_MSG"))
+            return Reply(self.storage.get("NO_APP_NAME_MSG"))
+
+        app_name = app_name.value
+        if not pathlib.Path(app_name).exists():
+            return Reply(f"- App '{app_name}' was not found here, "
+                         f"verify that a Pyttman app directory named "
+                         f"'{app_name}' exists.")
+        try:
+            runner = bootstrap_environment(devmode=False, module=app_name)
+        except Exception as e:
+            print("errors occurred:")
+            return Reply(f"\t{e.__class__.__name__}: {e}")
+        self.storage.put("runner", runner)
+        self.storage.put("ready", True)
+        return Reply(f"- Starting app '{app_name}' in client mode...")
 
 
 # TODO - Not finished in 1.1.9
@@ -175,8 +174,7 @@ class PyttmanCli(Ability):
 
     def configure(self):
         responses = {"NO_APP_NAME_MSG": "Please provide a name "
-                                        "for your app. For help, "
-                                        "type: 'pyttman help new app'"}
+                                        "for your app."}
         self.storage.put("runner", None)
         self.storage.put("ready", False)
         self.storage |= responses
