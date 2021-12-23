@@ -12,7 +12,12 @@ class EntityFieldBase(ValueParser):
     identifier_cls = None
 
     def __init__(self, valid_strings: Sequence = None, **kwargs):
-        super().__init__(identifier=self.identifier_cls, **kwargs)
+        try:
+            identifier_cls = kwargs.pop("identifier")
+        except KeyError:
+            identifier_cls = self.identifier_cls
+
+        super().__init__(identifier=identifier_cls, **kwargs)
 
         if valid_strings and isinstance(valid_strings, Sequence) is False:
             raise AttributeError("'valid_strings' must be a collection of "

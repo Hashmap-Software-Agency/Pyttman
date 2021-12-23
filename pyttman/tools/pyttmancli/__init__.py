@@ -13,12 +13,12 @@ classes, since they provide essential data for users when
 using the tool in the terminal.
 
 """
-import pyttman
 import argparse
 import pathlib
 import sys
 import typing
 
+import pyttman
 from pyttman.core.ability import Ability
 from pyttman.core.communication.models.containers import Message, Reply, \
     ReplyStream
@@ -26,14 +26,10 @@ from pyttman.core.intent import Intent
 from pyttman.core.parsing.parsers import ValueParser
 from pyttman.core.parsing.routing import FirstMatchingRouter
 from pyttman.tools.pyttmancli.executor import Runner
-from pyttman.tools.pyttmancli.executor import Runner
-from pyttman.tools.pyttmancli.executor import Runner
 from pyttman.tools.pyttmancli.terraforming import TerraFormer, \
     bootstrap_environment
 from pyttman.tools.pyttmancli.terraforming import bootstrap_environment, \
     TerraFormer
-
-
 
 
 class CreateNewApp(Intent):
