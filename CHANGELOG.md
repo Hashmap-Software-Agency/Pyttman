@@ -1,5 +1,14 @@
 # Pyttman Changelog
 
+# v 1.1.9.1
+2021-12-24
+
+This release is a hotfix release of a critical bug in the Pyttman cli, 
+rendering apps unable to start in client mode, rendering them unusable.
+
+### **🐛 Splatted bugs and corrected issues** 
+* Fixes [#55](https://github.com/dotchetter/Pyttman/issues/55) - pyttmancli runclient not working
+
 # v 1.1.9
 2021-12-11
 
@@ -14,7 +23,6 @@ This release includes bug fixes but also some new cool features.
   values of interest in messages from users. 
 
 ### **🐛 Splatted bugs and corrected issues** 
-* Fixes [#46](https://github.com/dotchetter/Pyttman/issues/46) - Incorrect error message when bootstrapping fails
 * Fixes [#47](https://github.com/dotchetter/Pyttman/issues/47) - Strings with different case from otherwise identical values in lead/trail/exclude are not truncated
 * Fixes [#48](https://github.com/dotchetter/Pyttman/issues/48) - ChoiceParser can't parse choices when capitalized
 * Fixes an issue with type hinting referring to the `MessageMixin` in `Intent.respond()` implementation -> Corrected to now hinting `Message`.
