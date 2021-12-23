@@ -13,7 +13,7 @@ README = (HERE / "README.md").read_text()
 setup(
     name="Pyttman",
     version=__version__,
-    description="The virtual assistant framework made for developers with ideas",
+    description="The Python chatbot framework with batteries included",
     long_description=README,
     long_description_content_type="text/markdown",
     url="https://github.com/dotchetter/Pyttman",
