@@ -3,7 +3,7 @@ import inspect
 import time
 from datetime import datetime, timedelta
 from threading import Thread
-from typing import Callable
+from typing import Callable, Any
 
 import pyttman
 
@@ -38,8 +38,8 @@ class TimeTrigger:
         "second": timedelta(seconds=1),
     }
 
-    def __init__(self, at: str=None, every: str=None,
-                 delay=None, exactly_at: datetime=None):
+    def __init__(self, at: str = None, every: str = None,
+                 delay=None, exactly_at: datetime = None):
         """
         Configures the TimeTrigger object according
         to provided arguments.
@@ -185,7 +185,7 @@ class Job(Thread):
                  trigger: TimeTrigger,
                  recipient: Callable,
                  func_name: str,
-                 async_loop = None,
+                 async_loop: Any =None,
                  return_self: bool = False):
         super().__init__()
         self.kwargs = None
@@ -202,6 +202,10 @@ class Job(Thread):
         self._running = False
 
     def __repr__(self):
+        error = self.error if self.error else None
+        name = type(self.error).__name__
+        error_str = f"{name}({error})"
+
         return f"Job(" \
                f"func_name={self.func_name}, " \
                f"is_async={self.is_async}, " \
@@ -210,8 +214,7 @@ class Job(Thread):
                f"native_id={self.native_id}, " \
                f"trigger={self.trigger}, " \
                f"result='{self.result}', " \
-               f"error={f'{type(self.error).__name__}({self.error})' if self.error else None}" \
-               f")"
+               f"error={error_str}"
 
     def run(self) -> None:
         """
@@ -234,8 +237,8 @@ class Job(Thread):
             if self.trigger.is_pulled():
                 try:
                     # Evaluate whether main callable and/or recipient is async
-                    # Run it with async.run if no loop is defined, otherwise add
-                    # it to existing loop as a created task
+                    # Run it with async.run if no loop is defined, otherwise
+                    # add it to existing loop as a created task
                     if self.is_async:
                         if not self.async_loop:
                             self.result = asyncio.run(self.func())
@@ -245,8 +248,9 @@ class Job(Thread):
                         self.result = self.func()
                 except Exception as e:
                     pyttman.logger.log(f"The schedule job '{self.name}' "
-                                       f"raised {type(e).__name__}('{str(e)}') "
-                                       f"upon executing it", level="error")
+                                       f"raised {type(e).__name__}"
+                                       f"('{str(e)}') upon executing it",
+                                       level="error")
                     self.error = e
                     break
 
@@ -263,7 +267,8 @@ class Job(Thread):
                 except Exception as e:
                     pyttman.logger.log(f"The schedule job '{self.name}' "
                                        f"ran OK but the recipient function "
-                                       f"{self.recipient} raised {type(e).__name__}"
+                                       f"{self.recipient} raised "
+                                       f"{type(e).__name__}"
                                        f"('{str(e)}') ", level="error")
                     break
             if not self.trigger.reoccurring and self.trigger.amount_of_runs > 0:

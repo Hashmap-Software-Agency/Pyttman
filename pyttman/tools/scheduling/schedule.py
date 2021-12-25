@@ -28,14 +28,14 @@ class schedule:
     outputs: Queue[Job] = Queue()
 
     @staticmethod
-    def method(func, at: str=None, every: str=None,
-               delay=None, exactly_at: datetime=None,
-               recipient: Callable=None, start_now=True,
+    def method(func, at: str = None, every: str = None,
+               delay=None, exactly_at: datetime = None,
+               recipient: Callable = None, start_now=True,
                async_loop=None, **kwargs) -> Job:
         """
         Registers a new schedule Job. Provide strings
         to define when to execute the job, if it is
-        reccurring and whether to pass the output to
+        recurring and whether to pass the output to
         another callable as 'recipient'.
 
         example:
@@ -43,7 +43,7 @@ class schedule:
                             func=some_func,
                             some_arg="hello world")
 
-        With defined recipient which will recieve the
+        With defined recipient which will receive the
         output from the job as the first arg:
 
         example:
@@ -74,10 +74,10 @@ class schedule:
         @return: Job instance
 
         """
-        async_warn = "\nThe callable '{0}' is asynchronous but the 'async_loop' "        \
-                     "argument was omitted, and no async loop is running.\n"             \
-                     "This will cause the job to be executed through 'asyncio.run().'\n" \
-
+        async_warn = "\nThe callable '{0}' is asynchronous but the " \
+                     "'async_loop' argument was omitted, and no async " \
+                     "loop is running.\nThis will cause the job to be " \
+                     "executed through 'asyncio.run().'\n"
         return_self = False
 
         # Create a TimeTrigger for the Job

@@ -143,9 +143,9 @@ class BaseIntent(AbstractIntent, ABC):
     def __init__(self, **kwargs):
         if not isinstance(self.lead, tuple) or \
                 not isinstance(self.trail, tuple):
-            raise AttributeError(f"'lead' and 'trail' fields must me tuples "
-                                 f"containing strings for parsing to work "
-                                 f"correctly")
+            raise AttributeError("'lead' and 'trail' fields must me tuples "
+                                 "containing strings for parsing to work "
+                                 "correctly")
         [setattr(self, k, v) for k, v in kwargs.items()]
         self._entities = {}
         self.name = _generate_name(self.__class__.__name__)
@@ -265,7 +265,7 @@ class BaseIntent(AbstractIntent, ABC):
                 help_string += f"[{'|'.join(self.trail)}]\n"
 
             if input_string_parser_fields:
-                help_string += f"\n\t> Entities (information you can provide):"
+                help_string += "\n\t> Entities (information you can provide):"
                 for field_name, parser in input_string_parser_fields.items():
                     help_string += f"\n\t\t * {field_name}"
                     if isinstance(parser, ChoiceParser):

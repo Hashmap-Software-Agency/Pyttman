@@ -78,7 +78,6 @@ class DiscordClient(discord.Client, BaseClient):
         # Add the client to the attributes, passed on to the message object
         attrs = {"created": datetime.now(), "client": self}
 
-        # Vacuum all attributes found in __slots__ in the discord.Message object
         for attr_name in message.__slots__:
             try:
                 attrs[attr_name] = getattr(message, attr_name)
@@ -90,15 +89,15 @@ class DiscordClient(discord.Client, BaseClient):
         discord_message = DiscordMessage(state=attrs.get("_state"),
                                          data=attrs, **attrs)
 
-        # Verify that the conditions as set by the user are fulilled with pre- and/or suffixes
         msg_as_str: str = discord_message.as_str()
-        if self.message_startswith and not msg_as_str.startswith(self.message_startswith) \
-                or self.message_endswith and not msg_as_str.endswith(self.message_endswith):
+        if self.message_startswith and not msg_as_str.startswith(
+                self.message_startswith) \
+                or self.message_endswith and not msg_as_str.endswith(
+                self.message_endswith):
             return
 
-        # Get the reply from the application logic developed by the user and send it in
-        # the channel from the original message
-        reply: Union[Reply, ReplyStream] = self.message_router.get_reply(discord_message)
+        reply: Union[Reply, ReplyStream] = self.message_router.get_reply(
+            discord_message)
         try:
             if isinstance(reply, ReplyStream):
                 while reply.qsize():
@@ -124,6 +123,7 @@ class DiscordClient(discord.Client, BaseClient):
         try:
             self.run(_token)
         except Exception as e:
-            raise RuntimeError("DiscordClient ran in to a problem. Please ensure "
-                               f"that all data is provided correctly in settings.py."
+            raise RuntimeError("DiscordClient ran in to a problem. "
+                               "Please ensure that all data is provided "
+                               "correctly in settings.py."
                                f"Excact error message: \"{e}\"")

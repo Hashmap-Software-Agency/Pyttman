@@ -6,7 +6,8 @@ from typing import List, Union
 import pyttman
 from pyttman.core.ability import Ability
 from pyttman.core.intent import Intent
-from pyttman.core.communication.models.containers import MessageMixin, Reply, ReplyStream
+from pyttman.core.communication.models.containers import MessageMixin, \
+    Reply, ReplyStream
 from pyttman.core.internals import _generate_error_entry
 
 
@@ -96,8 +97,8 @@ class FirstMatchingRouter(AbstractMessageRouter):
         # Take the first matching one and use it to reply to the Message.
         chosen_intent = matching_intents.pop()
 
-        # Return the auto-generated help segment for the Intent if the HELP keyword
-        # is the first occurring word in the message.
+        # Return the auto-generated help segment for the Intent if the
+        # HELP keyword is the first occurring word in the message.
         try:
             first_word = message.sanitized_content(preserve_case=False)[0]
         except IndexError:
@@ -109,7 +110,8 @@ class FirstMatchingRouter(AbstractMessageRouter):
                 # else:
                 #  TODO - Return help chapter for ability
         try:
-            reply: Union[Reply, ReplyStream] = chosen_intent.process(message=message)
+            reply: Union[Reply, ReplyStream] = chosen_intent.process(
+                message=message)
         except Exception as e:
             reply: Reply = _generate_error_entry(message, e)
         return reply
@@ -117,7 +119,7 @@ class FirstMatchingRouter(AbstractMessageRouter):
     def get_matching_intent(self, message: MessageMixin) -> List[Intent]:
         """
         Perform a linear search over intents for abilities.
-        The matchinf one first in the sequence is chosen to
+        The matching one first in the sequence is chosen to
         reply the user.
 
         If more than one Intent would match, the user is notified
@@ -136,5 +138,6 @@ class FirstMatchingRouter(AbstractMessageRouter):
                         matching_intents.append(intent)
                 except TypeError as e:
                     raise TypeError(f"The intent {intent} did not behave"
-                                    f" as expected - see full traceback.") from e
+                                    f" as expected - see full traceback.") \
+                        from e
         return matching_intents

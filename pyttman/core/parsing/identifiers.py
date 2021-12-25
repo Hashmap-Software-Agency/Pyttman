@@ -59,7 +59,8 @@ class Identifier:
                 (len(value) < self.max_length
                  if self.max_length is not None else True))
 
-    def try_identify_entity(self, message: MessageMixin) -> Union[Entity, None]:
+    def try_identify_entity(self, message: MessageMixin) -> Union[Entity,
+                                                                  None]:
         """
         Evaluates if any element in the content of
         a Message object matches with its pattern.
@@ -70,8 +71,10 @@ class Identifier:
         for pattern in self.patterns:
             try:
                 for i, elem in enumerate(message.content[self.start_index:]):
-                    if re.match(pattern, elem) and self._assert_length_requirement(elem):
-                        return Entity(value=elem, index_in_message=self.start_index + i)
+                    if re.match(pattern, elem) and self\
+                            ._assert_length_requirement(elem):
+                        return Entity(value=elem,
+                                      index_in_message=self.start_index + i)
             except IndexError:
                 return None
         return None
