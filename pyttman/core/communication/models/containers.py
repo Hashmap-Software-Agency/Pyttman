@@ -40,6 +40,12 @@ class MessageMixin:
                f"{self.author}, created={self.created}, " \
                f"content={self.content})"
 
+    def __getitem__(self, index: int) -> str:
+        return self.content[index]
+
+    def __getitem__(self, index: int) -> str:
+        return self.content[index]
+
     @property
     def content(self):
         return self._content
