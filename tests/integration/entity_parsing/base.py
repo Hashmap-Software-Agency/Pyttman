@@ -1,6 +1,6 @@
 from abc import ABC
 from typing import Type, Any
-from unittest import TestCase
+from unittest import TestCase, skip
 
 from pyttman.core.communication.models.containers import Message, ReplyStream, \
     Reply
@@ -21,7 +21,7 @@ class ImplementedTestIntent(Intent):
         return Reply(f"'{self.__class__.__name__}' matched a message")
 
 
-class PyttmanInternalTestCase(TestCase):
+class PyttmanInternalTestBaseCase(TestCase):
     """
     Base class for a test case testing EntityParser configurations
     """
@@ -30,19 +30,11 @@ class PyttmanInternalTestCase(TestCase):
     expected_entities: dict[str: str] = {}
 
     class IntentClass(Intent, ABC):
-        """
-        Test cases overload this inner class
-        """
         pass
 
     def setUp(self) -> None:
         self.mock_intent = self.IntentClass()
         self.intent_reply = None
-
-        # Show the test explanation in the log output
-        print(f"'{self.__class__.__name__}':\n"
-              f'\t\t"""{self.IntentClass.__doc__}"""',
-              end="\n\n")
 
     def get_entity_value(self, entity_name):
         try:
@@ -60,9 +52,12 @@ class PyttmanInternalTestCase(TestCase):
         :return:
         """
         if not self.expected_entities:
-            print("\t\t(!) Warning: 'expected_entities' dict is empty; "
-                  "skipping EntityParser assertion for this test suite.")
             return
+
+        # Show the test explanation in the log output
+        print(f"\n'{self.__class__.__name__}':\n"
+              f'\t\t"""{self.IntentClass.__doc__}"""',
+              end="\n\n")
 
         print("\t\tChecking EntityParser...")
         self.parse_message_for_entities()
