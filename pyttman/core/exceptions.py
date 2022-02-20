@@ -16,3 +16,12 @@ class TypeConversionFailed(BaseException):
     def __init__(self, from_type, to_type):
         message = f"Type '{from_type}' could not be converted to '{to_type}'."
         super().__init__(message)
+
+
+class InvalidPyttmanObjectException(BaseException):
+    """
+    This error is thrown when a user-implementation of a component within
+    the Pyttman API is not correctly configured by the developer.
+    """
+    def __init__(self, message):
+        super().__init__(message)
