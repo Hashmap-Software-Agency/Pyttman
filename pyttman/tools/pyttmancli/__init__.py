@@ -23,8 +23,8 @@ from pyttman.core.ability import Ability
 from pyttman.core.communication.models.containers import Message, Reply, \
     ReplyStream
 from pyttman.core.intent import Intent
-from pyttman.core.parsing.parsers import ValueParser
-from pyttman.core.parsing.routing import FirstMatchingRouter
+from pyttman.core.entity_parsing.parsers import ValueParser
+from pyttman.core.entity_parsing.routing import FirstMatchingRouter
 from pyttman.tools.pyttmancli.executor import Runner
 from pyttman.tools.pyttmancli.terraforming import TerraFormer, \
     bootstrap_environment
@@ -49,7 +49,7 @@ class CreateNewApp(Intent):
     class EntityParser:
         app_name = ValueParser()
 
-    def respond(self, message: Message) -> typing.Union[Reply, ReplyStream]:
+    def respond(self, message: Message) -> typing.Reply | ReplyStream:
         if (app_name := message.entities.get("app_name")) is None:
             return Reply(self.storage.get("NO_APP_NAME_MSG"))
 
@@ -87,7 +87,7 @@ class RunAppInDevMode(Intent):
     class EntityParser:
         app_name = ValueParser()
 
-    def respond(self, message: Message) -> typing.Union[Reply, ReplyStream]:
+    def respond(self, message: Message) -> typing.Reply | ReplyStream:
         if (app_name := message.entities.get("app_name")) is None:
             return Reply(self.storage.get("NO_APP_NAME_MSG"))
 
@@ -122,7 +122,7 @@ class RunAppInClientMode(Intent):
     class EntityParser:
         app_name = ValueParser()
 
-    def respond(self, message: Message) -> typing.Union[Reply, ReplyStream]:
+    def respond(self, message: Message) -> typing.Reply | ReplyStream:
         if (app_name := message.entities.get("app_name")) is None:
             return Reply(self.storage.get("NO_APP_NAME_MSG"))
 
@@ -155,7 +155,7 @@ class CreateNewAbilityIntent(Intent):
         ability_name = ValueParser()
         app_name = ValueParser(prefixes=("app",))
 
-    def respond(self, message: Message) -> typing.Union[Reply, ReplyStream]:
+    def respond(self, message: Message) -> typing.Reply | ReplyStream:
         raise NotImplementedError
 
 

@@ -22,7 +22,7 @@ class CliClient(BaseClient):
                   end="\n\n")
             while True:
                 message = Message(input("Say something: "), client=self)
-                reply: Union[Reply, ReplyStream] = self.\
+                reply: Reply | ReplyStream = self.\
                     message_router.get_reply(message)
 
                 if isinstance(reply, ReplyStream):

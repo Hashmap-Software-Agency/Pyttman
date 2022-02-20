@@ -96,7 +96,7 @@ class DiscordClient(discord.Client, BaseClient):
                 self.message_endswith):
             return
 
-        reply: Union[Reply, ReplyStream] = self.message_router.get_reply(
+        reply: Reply | ReplyStream = self.message_router.get_reply(
             discord_message)
         try:
             if isinstance(reply, ReplyStream):
