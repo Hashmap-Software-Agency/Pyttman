@@ -82,6 +82,9 @@ class EntityFieldBase(EntityFieldValueParser, ABC):
         :param value: Any
         :return: Any
         """
+        if value is None:
+            return value
+
         if self.as_list:
             value_as_list = value.split()
             for i, _ in enumerate(value_as_list):
