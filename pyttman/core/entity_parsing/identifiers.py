@@ -2,7 +2,7 @@ import re
 from typing import Union
 
 from pyttman.core.communication.models.containers import MessageMixin
-from pyttman.core.parsing.entity import Entity
+from pyttman.core.entity_parsing.entity import Entity
 
 
 class Identifier:
@@ -104,5 +104,13 @@ class IntegerIdentifier(Identifier):
 
 
 class CapitalizedIdentifier(Identifier):
-    """ identifies names by looking for capitalized strings """
+    """
+    This identifier class will target strings which
+    are capitalized, meaning they begin with a capital
+    letter.
+    """
     patterns = (r"\b[A-Z][a-zA-Z]*\b",)
+
+
+NumberIdentifier = IntegerIdentifier
+FloatIdentifier = IntegerIdentifier
