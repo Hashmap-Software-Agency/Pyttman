@@ -110,7 +110,7 @@ class FirstMatchingRouter(AbstractMessageRouter):
                 # else:
                 #  TODO - Return help chapter for ability
         try:
-            reply: Union[Reply, ReplyStream] = chosen_intent.process(
+            reply: Reply | ReplyStream = chosen_intent.process(
                 message=message)
         except Exception as e:
             reply: Reply = _generate_error_entry(message, e)
