@@ -1,5 +1,6 @@
 
 import logging
+import sys
 from pathlib import Path
 from unittest import TestCase
 
@@ -21,16 +22,22 @@ class TestPyttmanLogger(TestCase):
     settings.APP_NAME = "PyttmanTests"
     settings.LOG_FORMAT = logging.BASIC_FORMAT
     pyttman.settings = settings
+    settings.LOG_TO_STDOUT = True
     pyttman.is_configured = True
 
     def setUp(self) -> None:
-        handler = logging.FileHandler(filename=self.log_file_name,
-                                      encoding="utf-8",
-                                      mode="w")
-        handler.setFormatter(logging.Formatter(self.settings.LOG_FORMAT))
+        file_handler = logging.FileHandler(filename=self.log_file_name,
+                                           encoding="utf-8",
+                                           mode="w")
+        shell_handler = logging.StreamHandler(sys.stdout)
+        file_handler.setFormatter(logging.Formatter(self.settings.LOG_FORMAT))
         logger = logging.getLogger("PyttmanTestLogger")
         logger.setLevel(logging.DEBUG)
-        logger.addHandler(handler)
+        logger.addHandler(file_handler)
+
+        if self.settings.LOG_TO_STDOUT:
+            logger.addHandler(shell_handler)
+
         pyttman.logger.LOG_INSTANCE = logger
 
     def test_logger_as_class(self):
