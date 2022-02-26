@@ -55,9 +55,8 @@ class Ability(AbilityABC):
     def __init__(self, **kwargs):
         self.storage = Storage()
         self.name = _generate_name(self.__class__.__name__)
-        self._callbacks = ()
         self.configure()
-        [setattr(self, k, v) for k, v in kwargs]
+        [setattr(self, k, v) for k, v in kwargs.items()]
 
         if self.intents is not None:
             self.__validate_intents()
