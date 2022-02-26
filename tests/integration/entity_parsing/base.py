@@ -2,6 +2,8 @@ from abc import ABC
 from typing import Type, Any
 from unittest import TestCase, skip
 
+from core.ability import Ability
+from core.entity_parsing.routing import FirstMatchingRouter
 from pyttman.core.communication.models.containers import Message, ReplyStream, \
     Reply
 from pyttman.core.intent import Intent
@@ -35,6 +37,10 @@ class PyttmanInternalTestBaseCase(TestCase):
     def setUp(self) -> None:
         self.mock_intent = self.IntentClass()
         self.intent_reply = None
+        self.main_ability = Ability(intents=(self.IntentClass,))
+        self.router = FirstMatchingRouter(abilities=[self.main_ability],
+                                          help_keyword="",
+                                          intent_unknown_responses=["unknown"])
 
     def get_entity_value(self, entity_name):
         try:
@@ -77,3 +83,14 @@ class PyttmanInternalTestBaseCase(TestCase):
         # Truncate 'lead' and 'trail' from the message before parsing
         self.intent_reply = self.mock_intent.process(self.mock_message)
         print(f"\t\tResult: {self.mock_message.entities}")
+
+    def test_intent_message_matching(self):
+        """
+        Tests that the Intent class matches a given message, as expected.
+        """
+        if len(self.mock_intent.lead):
+            expected_matching_intent = self.mock_intent
+            matching_intent = self.router.get_matching_intent(
+                self.mock_message).pop()
+            self.assertIs(expected_matching_intent.__class__,
+                          matching_intent.__class__)

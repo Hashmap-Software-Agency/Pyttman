@@ -71,8 +71,7 @@ class PyttmanInternalEntityParserTestTranslatorApp(PyttmanInternalTestBaseCase):
     expected_entities = {
         "text_to_translate": "I Love You",
         "from_language": "english",
-        "to_language": "swedish"
-    }
+        "to_language": "swedish"}
 
     class IntentClass(ImplementedTestIntent):
         """
@@ -101,6 +100,8 @@ class PyttmanInternalEntityParserTestContactApp(PyttmanInternalTestBaseCase):
         This test checks DateTimeStringIdentifier used for text, and
         CellphoneIdentifier used for text while simulating a contact app.
         """
+        lead = ("create",)
+
         class EntityParser:
             contact = TextEntityField(identifier=CapitalizedIdentifier, span=2)
             phone_number = TextEntityField(identifier=CellPhoneNumberIdentifier)
@@ -145,8 +146,7 @@ class PyttmanInternalEntityParserTestWebscraperApp(PyttmanInternalTestBaseCase):
         This test checks The TextEntityField, and asserts that the 'default'
         argument works as expected.
         """
-        lead = ("new", "add")
-        trail = ("expense", "purchase")
+        lead = ("Search",)
 
         class EntityParser:
             exclude = ("search", "for", "on")
