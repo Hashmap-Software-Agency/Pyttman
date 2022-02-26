@@ -52,6 +52,7 @@ class Settings:
     LOG_FILE_DIR: str
     APP_NAME: str
     LOG_FORMAT: str
+    LOG_TO_STDOUT: bool = False
 
     def __init__(self, **kwargs):
         [setattr(self, k, v) for k, v in kwargs.items()
