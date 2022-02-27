@@ -19,12 +19,12 @@ import sys
 import typing
 
 import pyttman
+from core.entity_parsing.fields import TextEntityField
 from pyttman.core.ability import Ability
 from pyttman.core.communication.models.containers import Message, Reply, \
     ReplyStream
-from pyttman.core.intent import Intent
-from pyttman.core.entity_parsing.parsers import ValueParser
 from pyttman.core.entity_parsing.routing import FirstMatchingRouter
+from pyttman.core.intent import Intent
 from pyttman.tools.pyttmancli.executor import Runner
 from pyttman.tools.pyttmancli.terraforming import TerraFormer, \
     bootstrap_environment
@@ -47,7 +47,7 @@ class CreateNewApp(Intent):
                   f"Example: {example}"
 
     class EntityParser:
-        app_name = ValueParser()
+        app_name = TextEntityField()
 
     def respond(self, message: Message) -> typing.Reply | ReplyStream:
         if (app_name := message.entities.get("app_name")) is None:
@@ -85,7 +85,7 @@ class RunAppInDevMode(Intent):
                   f"Example: {example}"
 
     class EntityParser:
-        app_name = ValueParser()
+        app_name = TextEntityField()
 
     def respond(self, message: Message) -> typing.Reply | ReplyStream:
         if (app_name := message.entities.get("app_name")) is None:
@@ -120,7 +120,7 @@ class RunAppInClientMode(Intent):
                   f"Example: {example}"
 
     class EntityParser:
-        app_name = ValueParser()
+        app_name = TextEntityField()
 
     def respond(self, message: Message) -> typing.Reply | ReplyStream:
         if (app_name := message.entities.get("app_name")) is None:
@@ -152,8 +152,8 @@ class CreateNewAbilityIntent(Intent):
                   f"Example: {example}"
 
     class EntityParser:
-        ability_name = ValueParser()
-        app_name = ValueParser(prefixes=("app",))
+        ability_name = TextEntityField()
+        app_name = TextEntityField(prefixes=("app",))
 
     def respond(self, message: Message) -> typing.Reply | ReplyStream:
         raise NotImplementedError
