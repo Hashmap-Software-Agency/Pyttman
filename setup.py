@@ -21,15 +21,15 @@ setup(
     project_urls={
         "Bug Tracker": "https://github.com/dotchetter/Pyttman/issues",
     },
-    author_email="dotchetter@protonmail.ch",
+    author_email="simon@dotchetter.se",
     license="MIT",
     classifiers=[
         "License :: OSI Approved :: MIT License",
         "Programming Language :: Python :: 3 :: Only",
-        "Programming Language :: Python :: 3.9",
+        "Programming Language :: Python :: 3.10",
         "Operating System :: OS Independent",
     ],
-    python_requires=">=3.9",
+    python_requires=">=3.10",
     packages=find_packages(exclude=["*.tests", "*.tests.*", "tests.*", "tests"]),
     include_package_data=True,
     data_files=[('', ['pyttman/core/terraform_template/project_template.7z'])],

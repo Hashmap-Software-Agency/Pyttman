@@ -22,7 +22,7 @@ This release further improves the new Plug-And-Play EntityField classes used in 
       
       class EntityParser:
          answer_in_spanish = BoolEntityField(message_contains=("spanish",))
-    ```
+     ```
   
 * Added 2 new Identifier classes: 
   * `FloatIdentifier` and `NumberIdentifier` are both Identifier classes to 
@@ -39,8 +39,13 @@ This release further improves the new Plug-And-Play EntityField classes used in 
   > apps to also log to STDOUT: `LOG_TO_STDOUT = True` in `settings.py` in a 
   > Pyttman app will resolve this issue.
 
-
 ### 👀 Changes
+
+* **Pyttman 1.1.10 requires Python 3.10 at minimum.** 
+
+  Changes to the type hinting in several places in the source code means that Python versions below 3.10 are not supported. 
+
+  > Note! This is a breaking change.
 
 * The usage of `Parser` classes in `EntityParser` classes in `Intent` 
   classes have been deprecated and are no longer supported. Refer to the 
@@ -56,6 +61,8 @@ This release further improves the new Plug-And-Play EntityField classes used in 
   exceptions.
   
     > Note! This is a breaking change.
+  
+  
 
 
 # v 1.1.9.1
