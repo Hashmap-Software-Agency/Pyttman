@@ -1,5 +1,5 @@
 import abc
-from pyttman.core.entity_parsing.routing import AbstractMessageRouter
+from pyttman.core.middleware.routing import AbstractMessageRouter
 
 
 class BaseClient(abc.ABC):

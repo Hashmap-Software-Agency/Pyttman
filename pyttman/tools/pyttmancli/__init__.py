@@ -18,7 +18,7 @@ import sys
 import typing
 
 from pyttman.core.communication.models.containers import Message
-from pyttman.core.entity_parsing.routing import FirstMatchingRouter
+from pyttman.core.middleware.routing import FirstMatchingRouter
 from pyttman.tools.pyttmancli.executor import Runner
 from pyttman.tools.pyttmancli.terraforming import TerraFormer, \
     bootstrap_environment
