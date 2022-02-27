@@ -1,5 +1,6 @@
 
 import logging
+import os
 import sys
 from pathlib import Path
 from unittest import TestCase
@@ -22,23 +23,24 @@ class TestPyttmanLogger(TestCase):
     settings.APP_NAME = "PyttmanTests"
     settings.LOG_FORMAT = logging.BASIC_FORMAT
     pyttman.settings = settings
-    settings.LOG_TO_STDOUT = True
     pyttman.is_configured = True
 
     def setUp(self) -> None:
-        file_handler = logging.FileHandler(filename=self.log_file_name,
-                                           encoding="utf-8",
-                                           mode="w")
-        shell_handler = logging.StreamHandler(sys.stdout)
-        file_handler.setFormatter(logging.Formatter(self.settings.LOG_FORMAT))
-        logger = logging.getLogger("PyttmanTestLogger")
-        logger.setLevel(logging.DEBUG)
-        logger.addHandler(file_handler)
+        self.file_handler = logging.FileHandler(filename=self.log_file_name,
+                                                encoding="utf-8",
+                                                mode="w")
+        self.file_handler.setFormatter(logging.Formatter(
+            self.settings.LOG_FORMAT))
+        self.logger = logging.getLogger("PyttmanTestLogger")
+        self.logger.setLevel(logging.DEBUG)
+        self.logger.addHandler(self.file_handler)
 
-        if self.settings.LOG_TO_STDOUT:
-            logger.addHandler(shell_handler)
+        pyttman.logger.LOG_INSTANCE = self.logger
 
-        pyttman.logger.LOG_INSTANCE = logger
+    def tearDown(self) -> None:
+        self.file_handler.close()
+        if Path(self.log_file_name).exists():
+            os.remove(self.log_file_name)
 
     def test_logger_as_class(self):
         expected_output_in_file = "DEBUG:PyttmanTestLogger:This is a log message"
@@ -52,6 +54,13 @@ class TestPyttmanLogger(TestCase):
         self.assertTrue(Path(self.log_file_name).exists())
         self.logfile_meets_expectation(expected_output_in_file)
 
+    def test_shell_handler(self):
+        shell_handler = logging.StreamHandler(sys.stdout)
+        self.settings.LOG_TO_STDOUT = True
+        if self.settings.LOG_TO_STDOUT:
+            self.logger.addHandler(shell_handler)
+        pyttman.logger.log("This is a shell output")
+
     def logfile_meets_expectation(self, expected_output_in_file):
         self.assertTrue(Path(self.log_file_name).exists())
         with open(self.log_file_name, "r") as file:
@@ -60,3 +69,4 @@ class TestPyttmanLogger(TestCase):
                 if line.strip() == expected_output_in_file:
                     match = True
         self.assertTrue(match)
+
