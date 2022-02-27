@@ -1,5 +1,63 @@
 # Pyttman Changelog
 
+# v 1.1.10
+2022-02-??
+
+This release further improves the new Plug-And-Play EntityField classes used in the EntityParser API in Pyttman; further empowering developers to quickly find words of interest in Messages from users, using the declarative API. 
+
+### :star2: News
+* Major refactoring of internal API algorithms to improve speed and 
+  functionality of the EntityParser API.
+
+* New EntityField: `BoolEntityField`
+  
+   The `BoolEntityField` provides a boolean entity on whether a pattern 
+    was matched in an incoming message, or not. This is useful for 
+    scenarios when the word itself in the message is not of interest, but 
+    only the fact if it occurred in the message at all.
+   
+     ```python
+      # message.entities["answer_in_spanish"] will be True or False
+      # depending on whether the message contains the word 'spanish'
+      
+      class EntityParser:
+         answer_in_spanish = BoolEntityField(message_contains=("spanish",))
+    ```
+  
+* Added 2 new Identifier classes: 
+  * `FloatIdentifier` and `NumberIdentifier` are both Identifier classes to 
+    find numbers, and are direct references to `IntegerIdentifier` but 
+    offers more naming options.
+  
+* New settings.py option
+  The option to log to STDOUT in addition to the default log file has been added. To use it, define `LOG_TO_STDOUT = True` in the Pyttman app `settings.py` file.
+### **🐛 Splatted bugs and corrected issues** 
+* Fixes [#57](https://github.com/dotchetter/Pyttman/issues/57) - Logs don't show in Heroku
+  
+  > This issue traces back to the way certain platform log the STDOUT and 
+  > STDERR streams by default. We added a new optional setting which allows 
+  > apps to also log to STDOUT: `LOG_TO_STDOUT = True` in `settings.py` in a 
+  > Pyttman app will resolve this issue.
+
+
+### 👀 Changes
+
+* The usage of `Parser` classes in `EntityParser` classes in `Intent` 
+  classes have been deprecated and are no longer supported. Refer to the 
+  `EntityField` types for direct replacements. `EntityField` classes 
+  implement the same interface as the `Parser` classes.
+  
+   > Note! This is a breaking change.
+  
+* Reverts the change made in `1.1.9` with Entities: `message.entities` is 
+  now back to being a dict of direct entity values, not `Entity` classes. 
+  The reason for this revert was the repetitive pattern of using the 
+  `.value` property in apps on properties, and not doing so would cause 
+  exceptions.
+  
+    > Note! This is a breaking change.
+
+
 # v 1.1.9.1
 2021-12-24
 
