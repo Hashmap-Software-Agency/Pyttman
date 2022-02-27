@@ -68,7 +68,7 @@ class RunAppInDevMode(Intent):
         if (app_name := message.entities.get("app_name")) is None:
             return Reply(self.storage.get("NO_APP_NAME_MSG"))
 
-        app_name = app_name.value
+        app_name = app_name
         if not pathlib.Path(app_name).exists():
             return Reply(f"- App '{app_name}' was not found here, "
                          f"verify that a Pyttman app directory named "
