@@ -6,7 +6,7 @@ import logging
 from pathlib import Path
 from unittest import TestCase
 
-from core.internals import Settings
+from pyttman.core.internals import Settings
 
 
 class PyttmanInternalBaseTestCase(TestCase):
