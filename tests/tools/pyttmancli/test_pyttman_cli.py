@@ -1,5 +1,5 @@
-from core.communication.models.containers import Message
-from core.entity_parsing.fields import TextEntityField, BoolEntityField
+from pyttman.core.communication.models.containers import Message
+from pyttman.core.entity_parsing.fields import TextEntityField, BoolEntityField
 from tests.integration.entity_parsing.base import PyttmanInternalTestBaseCase, \
     ImplementedTestIntent
 

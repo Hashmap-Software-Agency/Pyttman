@@ -1,4 +1,4 @@
-from core.communication.models.containers import Message
+from pyttman.core.communication.models.containers import Message
 from tests.integration.entity_parsing.base import PyttmanInternalTestBaseCase, \
     ImplementedTestIntent
 

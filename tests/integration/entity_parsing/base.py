@@ -2,8 +2,8 @@ from abc import ABC
 from typing import Type, Any
 from unittest import TestCase, skip
 
-from core.ability import Ability
-from core.entity_parsing.routing import FirstMatchingRouter
+from pyttman.core.ability import Ability
+from pyttman.core.entity_parsing.routing import FirstMatchingRouter
 from pyttman.core.communication.models.containers import Message, ReplyStream, \
     Reply
 from pyttman.core.intent import Intent

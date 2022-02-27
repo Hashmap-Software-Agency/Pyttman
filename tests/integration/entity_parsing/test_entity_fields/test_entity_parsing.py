@@ -1,6 +1,7 @@
-from core.entity_parsing.fields import BoolEntityField, TextEntityField, \
+from pyttman.core.entity_parsing.fields import BoolEntityField, \
+    TextEntityField, \
     FloatEntityField, IntegerEntityField
-from core.entity_parsing.identifiers import NumberIdentifier, \
+from pyttman.core.entity_parsing.identifiers import NumberIdentifier, \
     CapitalizedIdentifier, CellPhoneNumberIdentifier, DateTimeStringIdentifier
 from pyttman.core.communication.models.containers import Message
 from tests.integration.entity_parsing.base import PyttmanInternalTestBaseCase, \
