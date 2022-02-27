@@ -1,53 +1,27 @@
+import pyttman.tools.pyttmancli.intents as pyttman_cli_intents
 from pyttman.core.communication.models.containers import Message
-from pyttman.core.entity_parsing.fields import TextEntityField, BoolEntityField
-from tests.integration.entity_parsing.base import PyttmanInternalTestBaseCase, \
-    ImplementedTestIntent
+from tests.integration.entity_parsing.base import PyttmanInternalTestBaseCase
 
 
-class PyttmanInternalEntityParserTestPyttmanCliCreate(
-    PyttmanInternalTestBaseCase):
+class TestPyttmanCLICreateApp(PyttmanInternalTestBaseCase):
+    test_intent_matching = True
+
     mock_message = Message("new app my_app_name")
     expected_entities = {"app_name": "my_app_name"}
-
-    class IntentClass(ImplementedTestIntent):
-        """
-        This tests the Pyttman CLI command for creating new apps.
-        """
-        lead = ("new",)
-        trail = ("app",)
-        ordered = True
-
-        class EntityParser:
-            app_name = TextEntityField()
+    IntentClass = pyttman_cli_intents.CreateNewApp
 
 
-class PyttmanInternalEntityParserTestPyttmanCliRunClient(PyttmanInternalTestBaseCase):
-    mock_message = Message("run client app_name")
+class TestPyttmanCLIRunClientMode(PyttmanInternalTestBaseCase):
+    test_intent_matching = True
+
+    mock_message = Message("runclient app_name")
     expected_entities = {"app_name": "app_name"}
-
-    class IntentClass(ImplementedTestIntent):
-        """
-        This tests the Pyttman CLI command for running apps.
-        """
-        lead = ("run",)
-        trail = ("client",)
-        ordered = True
-
-        class EntityParser:
-            app_name = TextEntityField()
+    IntentClass = pyttman_cli_intents.RunAppInClientMode
 
 
-class PyttmanInternalEntityParserTestPyttmanCliRunDev(PyttmanInternalTestBaseCase):
-    mock_message = Message("run dev app_name")
+class TestPyttmanCLIRunDevMode(PyttmanInternalTestBaseCase):
+    test_intent_matching = True
+
+    mock_message = Message("dev app_name")
     expected_entities = {"app_name": "app_name"}
-
-    class IntentClass(ImplementedTestIntent):
-        """
-        This tests the Pyttman CLI command for running apps.
-        """
-        lead = ("run",)
-        trail = ("dev",)
-        ordered = True
-
-        class EntityParser:
-            app_name = TextEntityField()
+    IntentClass = pyttman_cli_intents.RunAppInDevMode

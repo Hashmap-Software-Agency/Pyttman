@@ -4,8 +4,7 @@ from tests.integration.entity_parsing.base import PyttmanInternalTestBaseCase, \
 
 
 class PyttmanInternalEntityParserTestWebscraperApp(PyttmanInternalTestBaseCase):
-    lead = ("search",)
-
+    test_intent_matching = True
     mock_message = Message("add new purchase SomeItem 100")
 
     class IntentClass(ImplementedTestIntent):

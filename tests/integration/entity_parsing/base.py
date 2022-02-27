@@ -1,12 +1,12 @@
 from abc import ABC
-from typing import Type, Any
-from unittest import TestCase, skip
+from typing import Type
 
 from pyttman.core.ability import Ability
-from pyttman.core.entity_parsing.routing import FirstMatchingRouter
 from pyttman.core.communication.models.containers import Message, ReplyStream, \
     Reply
+from pyttman.core.entity_parsing.routing import FirstMatchingRouter
 from pyttman.core.intent import Intent
+from tests.module_helper import PyttmanInternalBaseTestCase
 
 
 class ImplementedTestIntent(Intent):
@@ -23,10 +23,13 @@ class ImplementedTestIntent(Intent):
         return Reply(f"'{self.__class__.__name__}' matched a message")
 
 
-class PyttmanInternalTestBaseCase(TestCase):
+class PyttmanInternalTestBaseCase(PyttmanInternalBaseTestCase):
     """
     Base class for a test case testing EntityParser configurations
     """
+    test_entities = False
+    test_intent_matching = False
+
     mock_intent_cls: Type[Intent]
     mock_message: Message
     expected_entities: dict[str: str] = {}
@@ -57,8 +60,10 @@ class PyttmanInternalTestBaseCase(TestCase):
         parsed by the EntityParser to a set of expected values.
         :return:
         """
-        if not self.expected_entities:
-            return
+        if self.test_entities is False:
+            self.skipTest(
+                f"EntityParser API test is disabled for "
+                f"'{self.__class__.__name__}' -- Skipping ")
 
         # Show the test explanation in the log output
         print(f"\n'{self.__class__.__name__}':\n"
@@ -88,9 +93,20 @@ class PyttmanInternalTestBaseCase(TestCase):
         """
         Tests that the Intent class matches a given message, as expected.
         """
-        if len(self.mock_intent.lead):
-            expected_matching_intent = self.mock_intent
-            matching_intent = self.router.get_matching_intent(
-                self.mock_message).pop()
-            self.assertIs(expected_matching_intent.__class__,
-                          matching_intent.__class__)
+        if self.test_intent_matching is False:
+            self.skipTest(
+                f"Intent matching test is disabled for "
+                f"'{self.__class__.__name__}' -- Skipping ")
+
+        expected_matching_intent = self.mock_intent
+        matching_intents = self.router.get_matching_intent(self
+                                                           .mock_message)
+
+        self.assertNotEqual(len(matching_intents), 0,
+                            msg=f"\n'{self.mock_intent}' didn't "
+                                f"match '{self.mock_message.content}'")
+
+        first_matching = matching_intents.pop()
+
+        self.assertIs(expected_matching_intent.__class__,
+                      first_matching.__class__)

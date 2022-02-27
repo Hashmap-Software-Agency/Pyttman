@@ -9,6 +9,7 @@ from tests.integration.entity_parsing.base import PyttmanInternalTestBaseCase, \
 
 
 class PyttmanInternalEntityParserTestMusicPlayerApp(PyttmanInternalTestBaseCase):
+    test_entities = True
     mock_message = Message("Play 29 Palms by Robert Plant on Spotify or "
                            "soundCloud and shuffle songs")
     expected_entities = {
@@ -41,6 +42,7 @@ class PyttmanInternalEntityParserTestMusicPlayerApp(PyttmanInternalTestBaseCase)
 
 
 class PyttmanInternalEntityParserTestBookKeeperApp(PyttmanInternalTestBaseCase):
+    test_entities = True
     mock_message = Message("add expense Groceries at Whole Foods price 695,"
                            "5684")
     expected_entities = {
@@ -68,6 +70,7 @@ class PyttmanInternalEntityParserTestBookKeeperApp(PyttmanInternalTestBaseCase):
 
 
 class PyttmanInternalEntityParserTestTranslatorApp(PyttmanInternalTestBaseCase):
+    test_entities = True
     mock_message = Message("Translate I Love You from english to swedish")
     expected_entities = {
         "text_to_translate": "I Love You",
@@ -88,6 +91,7 @@ class PyttmanInternalEntityParserTestTranslatorApp(PyttmanInternalTestBaseCase):
 
 
 class PyttmanInternalEntityParserTestContactApp(PyttmanInternalTestBaseCase):
+    test_entities = True
     mock_message = Message("create a new contact Will Byers on mobile with "
                            "0805552859 and do it on 2021-09-20-10:40")
     expected_entities = {
@@ -113,6 +117,7 @@ class PyttmanInternalEntityParserTestContactApp(PyttmanInternalTestBaseCase):
 
 
 class PyttmanInternalEntityParserTestExpenseApp(PyttmanInternalTestBaseCase):
+    test_entities = True
     mock_message = Message("add expense Clothes price 695,5684")
     expected_entities = {
         "item": "Clothes",
@@ -133,6 +138,7 @@ class PyttmanInternalEntityParserTestExpenseApp(PyttmanInternalTestBaseCase):
 
 
 class PyttmanInternalEntityParserTestWebscraperApp(PyttmanInternalTestBaseCase):
+    test_entities = True
     mock_message = Message("Search for ManufacturerA ManufacturerB Model123 "
                            "on page_a and page_b price 45000 60 results")
     expected_entities = {
