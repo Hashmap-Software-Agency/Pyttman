@@ -1,50 +1,168 @@
-
+from pyttman.core.entity_parsing.fields import BoolEntityField, \
+    TextEntityField, \
+    FloatEntityField, IntegerEntityField
+from pyttman.core.entity_parsing.identifiers import NumberIdentifier, \
+    CapitalizedIdentifier, CellPhoneNumberIdentifier, DateTimeStringIdentifier
 from pyttman.core.communication.models.containers import Message
-from tests.integration.entity_parsing.base import _TestEntityParsingBaseCase
-from tests.integration.entity_parsing.mockups import *
+from tests.integration.entity_parsing.base import PyttmanInternalTestBaseCase, \
+    ImplementedTestIntent
 
 
-class TestEntityParserWithEmptyValueParserLowerCase_ShouldSucceed(
-    _TestEntityParsingBaseCase):
-    mock_intent_cls = TestableEntityParserWithIntAndStringField
+class PyttmanInternalEntityParserTestMusicPlayerApp(PyttmanInternalTestBaseCase):
+    test_entities = True
+    mock_message = Message("Play 29 Palms by Robert Plant on Spotify or "
+                           "soundCloud and shuffle songs")
+    expected_entities = {
+        "song": "29 Palms",
+        "artist": "Robert Plant",
+        "shuffle_songs": True,
+        "platform_all": ["Spotify", "soundCloud"],
+    }
 
-    # Lowercase
-    mock_message = Message("add expense some shopped item price 695,5684")
+    class IntentClass(ImplementedTestIntent):
+        """
+        Test a combination of custom Identifier class for a TextEntityField
+        with valid_strings, message_contains all in combinations.
+        """
+        lead = ("play",)
 
-    def test_respond(self):
-        self.parse_message_for_entities()
-        item = self.get_entity_value("item").value
-        price = self.get_entity_value("price").value
-        self.assertEqual("some shopped item", item)
-        self.assertEqual(695.5684, price)
-        self.assertIsInstance(price, float)
+        class EntityParser:
+            exclude = ("on",)
+            song = TextEntityField(span=5)
+            artist = TextEntityField(prefixes=("by", "with"), span=10,
+                                     identifier=CapitalizedIdentifier)
 
+            shuffle_songs = BoolEntityField(message_contains=("shuffle",))
 
-class TestEntityFieldWithValidStrings(_TestEntityParsingBaseCase):
-    mock_intent_cls = TestableEntityParserValidStrings
-
-    # Lowercase
-    mock_message = Message("add expense food price 695,5684")
-
-    def test_respond(self):
-        self.parse_message_for_entities()
-        item = self.get_entity_value("item").value
-        price = self.get_entity_value("price").value
-        self.assertEqual("food", item)
-        self.assertEqual(695.5684, price)
-        self.assertIsInstance(price, float)
+            # Test that both SoundCloud and Spotify are found despite being
+            # misspelled in comparison to the mock message above
+            platform_all = TextEntityField(as_list=True,
+                                           valid_strings=("spOtifY",
+                                                          "soundcloud"))
 
 
-class TestEntityFieldWithInvalidStrings(_TestEntityParsingBaseCase):
-    mock_intent_cls = TestableEntityParserValidStrings
+class PyttmanInternalEntityParserTestBookKeeperApp(PyttmanInternalTestBaseCase):
+    test_entities = True
+    mock_message = Message("add expense Groceries at Whole Foods price 695,"
+                           "5684")
+    expected_entities = {
+        "item": "Groceries",
+        "store": "Whole Foods",
+        "price": 695.5684,
+        "some_undefined": "default"
+    }
 
-    # Lowercase
-    mock_message = Message("add expense something else price 695,5684")
+    class IntentClass(ImplementedTestIntent):
+        """
+        Tests the Text and Float EntityField classes and performs
+        type assertion with prefixes and valid_strings with various
+        case miss-matching
+        """
+        lead = ("new", "add")
+        trail = ("expense", "purchase")
 
-    def test_respond(self):
-        self.parse_message_for_entities()
-        item = self.get_entity_value("item").value
-        price = self.get_entity_value("price").value
-        self.assertIsNone(item)
-        self.assertEqual(695.5684, price)
-        self.assertIsInstance(price, float)
+        class EntityParser:
+            item = TextEntityField(valid_strings=("groceries", "clothes"))
+            store = TextEntityField(prefixes=("in", "at", "on"), span=3)
+            price = FloatEntityField(prefixes=("price",))
+            some_undefined = TextEntityField(prefixes=("none",),
+                                             default="default")
+
+
+class PyttmanInternalEntityParserTestTranslatorApp(PyttmanInternalTestBaseCase):
+    test_entities = True
+    mock_message = Message("Translate I Love You from english to swedish")
+    expected_entities = {
+        "text_to_translate": "I Love You",
+        "from_language": "english",
+        "to_language": "swedish"}
+
+    class IntentClass(ImplementedTestIntent):
+        """
+        This test checks using an EntityField as a prefix.
+        """
+        lead = ("translate",)
+
+        class EntityParser:
+            exclude = ("to",)
+            text_to_translate = TextEntityField(span=100)
+            from_language = TextEntityField(prefixes=("from",))
+            to_language = TextEntityField(prefixes=(from_language,))
+
+
+class PyttmanInternalEntityParserTestContactApp(PyttmanInternalTestBaseCase):
+    test_entities = True
+    mock_message = Message("create a new contact Will Byers on mobile with "
+                           "0805552859 and do it on 2021-09-20-10:40")
+    expected_entities = {
+        "contact": "Will Byers",
+        "phone_number": "0805552859",
+        "phone_standard": "mobile",
+        "date_change": "2021-09-20-10:40"}
+
+    class IntentClass(ImplementedTestIntent):
+        """
+        This test checks DateTimeStringIdentifier used for text, and
+        CellphoneIdentifier used for text while simulating a contact app.
+        """
+        lead = ("create",)
+
+        class EntityParser:
+            contact = TextEntityField(identifier=CapitalizedIdentifier, span=2)
+            phone_number = TextEntityField(identifier=CellPhoneNumberIdentifier)
+            date_change = TextEntityField(identifier=DateTimeStringIdentifier)
+            phone_standard = TextEntityField(valid_strings=("mobile",
+                                                            "cell",
+                                                            "landline"))
+
+
+class PyttmanInternalEntityParserTestExpenseApp(PyttmanInternalTestBaseCase):
+    test_entities = True
+    mock_message = Message("add expense Clothes price 695,5684")
+    expected_entities = {
+        "item": "Clothes",
+        "price": 695.5684}
+
+    class IntentClass(ImplementedTestIntent):
+        """
+        This test checks The TextEntityField, and asserts that the 'default'
+        argument works as expected.
+        """
+        lead = ("new", "add")
+        trail = ("expense", "purchase")
+
+        class EntityParser:
+            item = TextEntityField(valid_strings=("food", "clothes"),
+                                   default="default")
+            price = FloatEntityField(prefixes=("price",))
+
+
+class PyttmanInternalEntityParserTestWebscraperApp(PyttmanInternalTestBaseCase):
+    test_entities = True
+    mock_message = Message("Search for ManufacturerA ManufacturerB Model123 "
+                           "on page_a and page_b price 45000 60 results")
+    expected_entities = {
+        "manufacturer": "ManufacturerA ManufacturerB",
+        "model": "Model123",
+        "pages": ["page_a", "page_b"],
+        "minimum_price": 45000,
+        "maximum_results": 60}
+
+    class IntentClass(ImplementedTestIntent):
+        """
+        This test checks The TextEntityField, and asserts that the 'default'
+        argument works as expected.
+        """
+        lead = ("Search",)
+
+        class EntityParser:
+            exclude = ("search", "for", "on")
+            manufacturer = TextEntityField(span=2)
+            model = TextEntityField(prefixes=(manufacturer,))
+            pages = TextEntityField(as_list=True,
+                                    valid_strings=("all", "page_a",
+                                                   "page_b", "page_c"))
+            minimum_price = IntegerEntityField(identifier=NumberIdentifier,
+                                               prefixes=("price",))
+            maximum_results = IntegerEntityField(suffixes=("results",),
+                                                 identifier=NumberIdentifier)

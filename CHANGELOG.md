@@ -1,5 +1,94 @@
 # Pyttman Changelog
 
+# v 1.1.10
+**2022-02-28**
+
+This release further improves the new Plug-And-Play EntityField classes used in the EntityParser API in Pyttman; further empowering developers to quickly find words of interest in Messages from users, using the declarative EntityParser API. 
+
+### :star2: News
+* **Major refactoring of internal API algorithms to improve speed and** 
+  **functionality of the EntityParser API.**
+
+* **New EntityField: `BoolEntityField`**
+  
+   The `BoolEntityField` provides a boolean entity on whether a pattern 
+    was matched in an incoming message, or not. This is useful for 
+    scenarios when the word itself in the message is not of interest, but 
+    only the fact if it occurred in the message at all.
+   
+     ```python
+      # message.entities["answer_in_spanish"] will be True or False
+      # depending on whether the message contains the word 'spanish'
+      
+      class EntityParser:
+         answer_in_spanish = BoolEntityField(message_contains=("spanish",))
+     ```
+  
+  
+  
+* **Added 2 new Identifier classes** 
+  
+  * `FloatIdentifier` and `NumberIdentifier` are both Identifier classes to 
+    find numbers, and are direct references to `IntegerIdentifier` but 
+    offers more naming options.
+    
+    
+  
+* **New settings.py option**
+  The option to log to STDOUT in addition to the default log file has been added. To use it, define `LOG_TO_STDOUT = True` in the Pyttman app `settings.py` file.
+  
+  
+  
+* **Introducing Pyttman Middleware**
+
+  The Pyttman framework is growing. To make it easier to extend functionality for developers using Pyttman, we have abstracted the layer for message routing to a new layer; the Middleware layer. 
+
+  This allows for future extension of the Middleware layer, adding options for message filtering and reply relaying through event schedulers and much more. As of this release, nothing has really changed in the usagae experience, except for the deprecation warning on importing the `FirstMatchingRouter` through the legacy import path, since it was moved. No direct action is required for apps upgrading from older versions.
+
+### **🐛 Splatted bugs and corrected issues** 
+* **Fixes [#57](https://github.com/dotchetter/Pyttman/issues/57) - Logs don't show in Heroku**
+  
+  > This issue traces back to the way certain platform log the STDOUT and 
+  > STDERR streams by default. We added a new optional setting which allows 
+  > apps to also log to STDOUT: `LOG_TO_STDOUT = True` in `settings.py` in a 
+  > Pyttman app will resolve this issue.
+
+### 👀 Changes
+
+* **Pyttman 1.1.10 requires Python 3.10 at minimum.** 
+
+  Changes to the type hinting in several places in the source code means that Python versions below 3.10 are not supported. 
+
+  > Note! This is a breaking change.
+
+* **The usage of `Parser` classes in `EntityParser` classes in `Intent`** 
+  **classes have been deprecated and are no longer supported.** Refer to the 
+  `EntityField` types for direct replacements. `EntityField` classes 
+  implement the same interface as the `Parser` classes.
+  
+   > Note! This is a breaking change.
+  
+* **`Identifier` classes are moved from `pyttman.core.parsing.identifiers` to `pyttman.core.entity_parsing.identifiers` module.**
+
+  > Note! This is a breaking change.
+
+* **The `ChoiceParser` class is deleted, in favor of using `TextEntityField` with `valid_strings` as the subset of available options.**
+
+  > Note! This is a breaking change.
+
+* **Reverts the change made in** `1.1.9` with Entities: `message.entities` is 
+  now back to being a dict of direct entity values, not `Entity` classes. 
+  The reason for this revert was the repetitive pattern of using the 
+  `.value` property in apps on properties, and not doing so would cause 
+  exceptions.
+  
+    > Note! This is a breaking change.
+
+* **The Middleware API in Pyttman results in a move of the** `FirstMatchingRouter` class, commonly referenced in Pyttman apps in `settings.py` under `ROUTER_CLASS`. The class is now available under `pyttman.core.middleware.routing.FirstMatchingRouter` but is still available for import at the older import path, `pyttman.core.parsing.routing.FirstMatchingRouter` for the time being, which results in a deprecation warning to STDOUT.
+
+
+
+
 # v 1.1.9.1
 2021-12-24
 
@@ -79,6 +168,8 @@ Although the points listed below may seem minor, we've rewired and tested this r
 
 * Fixes [#35](https://github.com/dotchetter/Pyttman/issues/35)  with internal improvements to the EntityParser algorithm in how it considers the resolution order of how entity strings are parsed, identified and later stored in `self.entities` in `Intent` classes.
 * Fixes [#40](https://github.com/dotchetter/Pyttman/issues/40) - `pyttman dev <app name>` now works without providing a Client class.
+
+
 
 
 

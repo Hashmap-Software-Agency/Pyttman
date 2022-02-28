@@ -4,13 +4,12 @@ from typing import Tuple
 
 from pyttman.core.intent import Intent
 from pyttman.core.internals import _generate_name
-from pyttman.core.parsing.parsers import EntityParserBase
 from pyttman.core.storage.basestorage import Storage
 
 
 class AbilityABC(ABC):
-    """ 
-    Represent the template for a complete and 
+    """
+    Represent the template for a complete and
     ready-to-use ability.
     """
 
@@ -56,9 +55,8 @@ class Ability(AbilityABC):
     def __init__(self, **kwargs):
         self.storage = Storage()
         self.name = _generate_name(self.__class__.__name__)
-        self._callbacks = ()
         self.configure()
-        [setattr(self, k, v) for k, v in kwargs]
+        [setattr(self, k, v) for k, v in kwargs.items()]
 
         if self.intents is not None:
             self.__validate_intents()
@@ -84,22 +82,26 @@ class Ability(AbilityABC):
             if not isinstance(self.intents, Tuple):
                 raise TypeError
         except TypeError:
-            raise TypeError(f"The 'intents' property must be tuple, got {type(self.intents)}'.")
+            raise TypeError(f"The 'intents' property must be tuple, "
+                            f"got {type(self.intents)}'.")
         else:
             for intent_class in self.intents:
-                if not inspect.isclass(intent_class) or not issubclass(intent_class, Intent):
-                    raise TypeError(f"Intent '{intent_class}' is not defined correctly. "
-                                    f"Intents must be class references, and must inherit "
-                                    "from the 'Intent' base class.\nBe sure to only mention "
-                                    "the name of the class, and not instantiate it when "
-                                    "defining the 'intents' property in your Ability class.\n"
-                                    "Hint: Change '(FooIntent(), BarIntent())' to "
-                                    "'(FooIntent, BarIntent).")
+                if not inspect.isclass(intent_class) or not \
+                        issubclass(intent_class, Intent):
+                    raise TypeError(
+                        f"Intent '{intent_class}' is not defined correctly. "
+                        f"Intents must be class references, and must inherit "
+                        "from the 'Intent' base class.\nBe sure to only "
+                        "mention the name of the class, and not instantiate "
+                        "it when defining the 'intents' property in your "
+                        "Ability class.\nHint: Change '(FooIntent(), "
+                        "BarIntent())' to '(FooIntent, BarIntent).")
 
                 # Validate the EntityParser by calling constructor
                 if intent_class.EntityParser is not None:
                     try:
                         intent_class().EntityParser()
                     except Exception as e:
-                        raise AttributeError("An error occurred with the EntityParser "
-                                             f"in Intent class '{intent_class}': {e}")
+                        raise AttributeError(
+                            "An error occurred with the EntityParser "
+                            f"in Intent class '{intent_class}': {e}")

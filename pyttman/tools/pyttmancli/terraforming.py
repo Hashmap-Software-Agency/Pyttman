@@ -14,7 +14,7 @@ from pyttman.clients.builtin.cli import CliClient
 from pyttman.core.ability import Ability
 from pyttman.core.exceptions import PyttmanProjectInvalidException
 from pyttman.core.internals import Settings
-from pyttman.core.parsing.routing import AbstractMessageRouter
+from pyttman.core.middleware.routing import AbstractMessageRouter
 from pyttman.tools.pyttmancli import Runner
 
 

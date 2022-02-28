@@ -8,7 +8,7 @@ from typing import Tuple, Union
 from pyttman.core.communication.models.containers import Reply, ReplyStream, \
     Message
 from pyttman.core.internals import _generate_name, _generate_error_entry
-from pyttman.core.parsing.parsers import ChoiceParser, EntityParserBase
+from pyttman.core.entity_parsing.parsers import ChoiceParser, EntityParserBase
 from pyttman.core.storage.basestorage import Storage
 
 
@@ -19,7 +19,7 @@ class AbstractIntent(abc.ABC):
         pass
 
     @abc.abstractmethod
-    def respond(self, message: Message) -> Union[Reply, ReplyStream]:
+    def respond(self, message: Message) -> Reply | ReplyStream:
         """
         Subclasses overload this method to respond
         to a given Intent upon a match.
@@ -79,7 +79,7 @@ class AbstractIntent(abc.ABC):
 
 class BaseIntent(AbstractIntent, ABC):
     """
-    Base class for a Intent, containing configuration
+    Base class for an Intent, containing configuration
     on which criteria are set for a message to match
     it, as well as methods to make understanding and
     retrieving data from a message easier.
@@ -99,7 +99,7 @@ class BaseIntent(AbstractIntent, ABC):
         Optional: define the 'trail' tuple.
         Similar to the 'lead' tuple - define a single, or
         a sequence of strings which will dictate which
-        messages matches the Intent. All strings defined
+        messages match the Intent. All strings defined
         in the 'trail' tuple must occur AFTER all strings
         defined in 'lead', for the Intent to match.
         This is useful to steer things such as 'search'
@@ -143,11 +143,11 @@ class BaseIntent(AbstractIntent, ABC):
     def __init__(self, **kwargs):
         if not isinstance(self.lead, tuple) or \
                 not isinstance(self.trail, tuple):
-            raise AttributeError(f"'lead' and 'trail' fields must me tuples "
-                                 f"containing strings for parsing to work "
-                                 f"correctly")
+            raise AttributeError("'lead' and 'trail' fields must me tuples "
+                                 "containing strings for parsing to work "
+                                 "correctly")
         [setattr(self, k, v) for k, v in kwargs.items()]
-        self._entities = {}
+
         self.name = _generate_name(self.__class__.__name__)
         self.lead = tuple([i.lower() for i in self.lead])
         self.trail = tuple([i.lower() for i in self.trail])
@@ -164,23 +164,11 @@ class BaseIntent(AbstractIntent, ABC):
         return f"{self.__class__.__name__}(lead={self.lead}, " \
                f"trail={self.trail}, ordered={self.ordered})"
 
-    @property
-    def entities(self) -> dict:
-        # Todo - remove deprecation warning after 1.2.0
-        warnings.warn("'entities' will be removed from the Intent level in "
-                      "Pyttman 1.2.0. Since 1.1.9, entities are accessed on "
-                      "the Message object: 'message.entities'")
-        return self._entities
-
-    @entities.setter
-    def entities(self, value: dict) -> None:
-        self._entities = value
-
     def matches(self, message: Message) -> bool:
         """
         Boolean indicator to whether the Intent
         matches a given message, without returning
-        the function itself as with the .Parse method.
+        the function itself as with the Parse method.
 
         To begin with, the message has to match at least
         one word in the self.lead property. This is asserted
@@ -192,7 +180,7 @@ class BaseIntent(AbstractIntent, ABC):
         The self.trail string / collection of strings has to,
         by definition, appear delay the words in self.lead.
         This is asserted by first identifying the words that
-        matches the trail in the message. The words that also
+        match the trail in the message. The words that also
         are present in the lead are removed by subtraction.
         Next, by iterating over the two collections the order
         of appearance can now be determined by identifying
@@ -256,7 +244,7 @@ class BaseIntent(AbstractIntent, ABC):
         return ordered_trail and ordered_lead
 
     def generate_help(self) -> str:
-        input_string_parser_fields = self._entity_parser.get_parsers()
+        input_string_parser_fields = self._entity_parser.get_entity_fields()
         if not self.help_string:
             help_string = f"\n\n> Help section for Intent '{self.name}'\n" \
                           f"\n\t> Description:\n\t\t{self.description}" \
@@ -265,7 +253,7 @@ class BaseIntent(AbstractIntent, ABC):
                 help_string += f"[{'|'.join(self.trail)}]\n"
 
             if input_string_parser_fields:
-                help_string += f"\n\t> Entities (information you can provide):"
+                help_string += "\n\t> Entities (information you can provide):"
                 for field_name, parser in input_string_parser_fields.items():
                     help_string += f"\n\t\t * {field_name}"
                     if isinstance(parser, ChoiceParser):
@@ -283,7 +271,7 @@ class BaseIntent(AbstractIntent, ABC):
             help_string = self.help_string
         return help_string
 
-    def process(self, message: Message) -> Union[Reply, ReplyStream]:
+    def process(self, message: Message) -> Reply | ReplyStream:
         """
         Iterate over all Parser objects and the name
         of the field it's allocated as.
@@ -294,17 +282,18 @@ class BaseIntent(AbstractIntent, ABC):
         :param message: MessageMixin object
         :return: Reply, logic defined in the 'respond' method
         """
+        #  TODO - Move this to the middleware section
         joined_patterns = set(self.lead + self.trail)
         truncated_content = [i for i in message.content
                              if i.casefold() not in joined_patterns]
         truncated_message = Message(content=truncated_content)
 
         self._entity_parser.parse_message(truncated_message)
-        self.entities = self._entity_parser.value
-        message.entities = self._entity_parser.value
+        message.entities = {k: v.value for k, v in
+                            self._entity_parser.value.items()}
 
         try:
-            reply: Union[Reply, ReplyStream] = self.respond(message=message)
+            reply: Reply | ReplyStream = self.respond(message=message)
         except Exception as e:
             reply = _generate_error_entry(message, e)
 
@@ -321,13 +310,13 @@ class BaseIntent(AbstractIntent, ABC):
 
         # Purge entities values and all parser instances
         # from their local values
-        for parser_name in self._entity_parser.get_parsers():
+        for parser_name in self._entity_parser.get_entity_fields():
             parser = getattr(self._entity_parser, parser_name)
             parser.reset()
         return reply
 
 
 class Intent(BaseIntent):
-    def respond(self, message: Message) -> Union[Reply, ReplyStream]:
+    def respond(self, message: Message) -> Reply | ReplyStream:
         raise NotImplementedError("The 'respond' method must be "
                                   "defined when subclassing Intent")

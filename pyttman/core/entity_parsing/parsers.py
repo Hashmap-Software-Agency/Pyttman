@@ -19,8 +19,8 @@ from typing import Tuple, Type, Dict, Union
 from ordered_set import OrderedSet
 
 from pyttman.core.communication.models.containers import MessageMixin
-from pyttman.core.parsing.entity import Entity
-from pyttman.core.parsing.identifiers import Identifier
+from pyttman.core.entity_parsing.entity import Entity
+from pyttman.core.entity_parsing.identifiers import Identifier
 
 
 class AbstractParser(abc.ABC):
@@ -46,7 +46,7 @@ class AbstractParser(abc.ABC):
 class Parser(AbstractParser, ABC):
     """
     Base class for the Parser API in Pyttman.
-    The various parsers in Pyttman inherit from this
+    The various entity_fields in Pyttman inherit from this
     base class.
     Subclass this class when creating a custom Parser.
 
@@ -97,14 +97,14 @@ class EntityParserBase(Parser):
 
     # EntityParser classes have Parser fields which help them
     # find entities in messages.
-    parsers: Dict[str, typing.Any] = {}
+    entity_fields: Dict[str, typing.Any] = {}
 
     def __repr__(self):
         return f"{self.__class__.__name__}(" \
                f"value={self.value}, " \
                f"exclude={self.exclude}, " \
                f"identifier={self.identifier}, " \
-               f"parsers={self.parsers})"
+               f"entity_fields={self.entity_fields})"
 
     def parse_message(self, message: MessageMixin,
                       memoization: dict = None) -> None:
@@ -123,34 +123,38 @@ class EntityParserBase(Parser):
         # in order for them to avoid catching a string, previously
         # caught by a predecessor in iterations.
         parsers_memoization: Dict[int, Entity] = {}
-        parser_classes: Dict[str, Parser] = self.get_parsers()
+        entity_fields = self.get_entity_fields()
         parser_joined_suffixes_and_prefixes: typing.Set[str] = set()
 
-        for field_name, parser_object in parser_classes.items():
+        for field_name, entity_field_instance in entity_fields.items():
 
             # Collect all parser pre- and suffixes
             parser_joined_suffixes_and_prefixes.update(
-                parser_object.prefixes + parser_object.suffixes)
+                entity_field_instance.prefixes + entity_field_instance.suffixes)
 
             # Share the 'exclude' tuple assigned by the developer in the
             # application code to each Parser instance
-            parser_object.exclude = self.exclude
-            parser_object.parse_message(message,
-                                        memoization=parsers_memoization)
+            entity_field_instance.exclude = self.exclude
+            entity_field_instance.parse_message(
+                message,
+                memoization=parsers_memoization)
 
             # See what the parser found - Entity or None.
             # Ignore entities in self.exclude.
-            parsed_entity: Union[Entity, None] = parser_object.value
+            parsed_entity: Union[Entity, None] = entity_field_instance.value
 
             if parsed_entity is None or parsed_entity.value in self.exclude:
-                self.value[field_name] = None
+                # Use the developer declared fallback value (None, by default)
+                self.value[field_name] = Entity(entity_field_instance.default,
+                                                is_fallback_default=True)
             else:
                 self.value[field_name] = parsed_entity
 
                 # Store the entity for memoization to
                 # prohibit multiple occurrences
-                parsers_memoization[
-                    parsed_entity.index_in_message] = parsed_entity
+                if entity_field_instance.truncates_message_in_parsing:
+                    parsers_memoization[
+                        parsed_entity.index_in_message] = parsed_entity
 
         """
         Walk the message backwards and truncate entities which 
@@ -165,23 +169,19 @@ class EntityParserBase(Parser):
             parser_joined_suffixes_and_prefixes)
 
         for field_name, entity in reversed(self.value.items()):
-            iter_parser = self.parsers.get(field_name)
-            duplicate_cache.update(iter_parser.case_preserved_cache)
+            entity_field = self.entity_fields.get(field_name)
+            duplicate_cache.update(entity_field.case_preserved_cache)
+            value_for_type_conversion = entity_field.default
 
             # Assess only Parsers which have successfully parsed entities.
-            if entity is not None:
-                # Work with OrderedSet's from ChoiceParsers with
-                # 'multiple=True' differently.
-                if isinstance(entity.value, OrderedSet):
-                    duplicate_cache.update(entity.value)
-                    duplicate_cache.update(set([i.casefold()
-                                                for i in entity.value]))
-                    self.value[field_name] = entity.value
-                    continue
-
-                # Value is a string - split the entity value by space
+            if entity.value is not None and entity.is_fallback_default is \
+                    False:
+                # Value is a string - split the entity value by space,
                 # so we can work with it
-                split_value = entity.value.split()
+                try:
+                    split_value = entity.value.split()
+                except AttributeError:
+                    split_value = entity.value
 
                 # Truncate prefixes, suffixes and cached strings
                 # from the entity
@@ -192,33 +192,30 @@ class EntityParserBase(Parser):
                 duplicate_cache.update(split_value)
                 duplicate_cache.update(set([i.casefold()
                                             for i in split_value]))
-                concatenated_value = str(" ").join(split_value)
+                value_for_type_conversion = str(" ").join(split_value)
 
-                # New in 1.1.9 - If this is an EntityField class, convert
-                # the value in the Entity with it.
-                try:
-                    entity.value = iter_parser.convert_value(
-                        concatenated_value)
-                except AttributeError:
-                    entity.value = concatenated_value
-                self.value[field_name] = entity
-            else:
-                self.value[field_name] = None
+            # New in 1.1.9 - If this is an EntityField class, convert
+            # the value in the Entity with it.
+            try:
+                entity.value = entity_field.convert_value(
+                    value_for_type_conversion)
+            except AttributeError:
+                entity.value = value_for_type_conversion
+            self.value[field_name] = entity
 
-    def get_parsers(self) -> Dict:
+    def get_entity_fields(self) -> Dict:
         """
         Returns a collection of fields on the instance of
-        type Parser.
-        :return: Tuple, instances of Parser.
+        type AbstractParser.
         """
-        parser_fields = {}
+        entity_fields = {}
 
-        for field_name in self.parsers:
+        for field_name in self.entity_fields:
             field_value = getattr(self, field_name)
             if not field_name.startswith("__") and \
                     issubclass(field_value.__class__, AbstractParser):
-                parser_fields[field_name] = field_value
-        return parser_fields
+                entity_fields[field_name] = field_value
+        return entity_fields
 
     @classmethod
     def from_meta_class(cls, metaclass):
@@ -250,31 +247,38 @@ class EntityParserBase(Parser):
         :return: EntityParserBase subclass instance
                  with merged __dict__ fields
         """
-        user_defined_parsers = {name: parser for name, parser
-                                in metaclass.__dict__.items()
-                                if issubclass(parser.__class__,
-                                              AbstractParser)}
+        user_defined_entity_fields = {name: parser for name, parser
+                                      in metaclass.__dict__.items()
+                                      if issubclass(parser.__class__,
+                                                    AbstractParser)}
 
         # Use the EntityParserBase as metaclass for an EntityParser class with
         # the fields configured in the user Intent.EntityParser class.
         merged_subclass = type(metaclass.__class__.__name__,
                                (EntityParserBase,),
-                               {"parsers": user_defined_parsers})
+                               {"entity_fields": user_defined_entity_fields})
         entity_parser_instance = merged_subclass()
         entity_parser_instance.__dict__ |= metaclass.__dict__
-        entity_parser_instance.__dict__ |= user_defined_parsers
+        entity_parser_instance.__dict__ |= user_defined_entity_fields
         return entity_parser_instance
 
 
-class ValueParser(Parser):
+class EntityFieldValueParser(Parser):
     """
-    TODO
+    This class is used by EntityField classes primarily,
+    as the inner-working engine for identifying and finding
+    values which match the pattern provided in the declarative
+    EntityParser Api component: 'EntityField'.
     """
+    truncates_message_in_parsing = True
 
-    def __init__(self, prefixes: Tuple = None,
+    def __init__(self,
+                 prefixes: Tuple = None,
                  suffixes: Tuple = None,
+                 valid_strings: typing.Sequence = None,
                  identifier: Type[Identifier] = None,
                  span: int = 0,
+                 default: typing.Any = None,
                  **kwargs):
         super().__init__(**kwargs)
 
@@ -287,16 +291,27 @@ class ValueParser(Parser):
         self.suffixes = suffixes
         self.identifier: Type[Identifier] = identifier
         self.span = span
+        self.default = default
 
         # Validate that the object was constructed properly
         if not isinstance(self.prefixes, tuple) or \
                 not isinstance(self.suffixes, tuple):
-            raise AttributeError("\n\n'prefixes' and 'suffixes' "
+            raise AttributeError(f"'{self}' "
+                                 f"is incorrectly configured: "
+                                 f"'prefixes' and 'suffixes' "
                                  f"must be tuples.\nDo you have "
-                                 f"a tuple with only "
-                                 f"one item? Don't forget "
-                                 f"the trailing comma, "
+                                 f"a tuple with only one item? "
+                                 f"Don't forget the trailing comma, "
                                  f"example: '(1,)' instead of '(1)'.")
+
+        if valid_strings and isinstance(valid_strings, typing.Sequence) is \
+                False:
+            raise AttributeError("'valid_strings' must be a collection of "
+                                 "strings")
+        elif valid_strings is not None:
+            self.valid_strings = [i.casefold() for i in valid_strings]
+        else:
+            self.valid_strings = []
 
     def __repr__(self):
         return f"{self.__class__.__name__}(value='{self.value}', " \
@@ -311,6 +326,29 @@ class ValueParser(Parser):
         traverse on until value is returned or the
         message is exhausted.
         """
+        if self.valid_strings:
+            output = []
+            word_index = 0
+
+            casefolded_msg = message.lowered_content()
+            common_occurrences = tuple(
+                OrderedSet(casefolded_msg).intersection(self.valid_strings))
+
+            for word in common_occurrences:
+                word_index = casefolded_msg.index(word)
+                output.append(message.content[word_index])
+
+            if len(output) > 1:
+                self.value = Entity(output, index_in_message=word_index)
+            elif len(output) == 1:
+                self.value = Entity(output.pop())
+            else:
+                self.value = Entity(self.default, is_fallback_default=True)
+            return
+
+        if self.truncates_message_in_parsing is False:
+            return
+
         for i, _ in enumerate(message.content):
             parsed_entity: Entity = self._identify_value(message,
                                                          start_index=i)
@@ -469,12 +507,12 @@ class ValueParser(Parser):
         # for each span iteration as the walk in the message progresses.
         # If an Identifier is does not comply with a string, the walk is
         # cancelled.
-        if parsed_entity is not None and self.span:
+        if parsed_entity is not None:
             while parsed_entity.value.casefold() in self.exclude:
                 parsed_entity.index_in_message += 1
-                # Traverse the message for as long as the current found entity is
-                # in the 'exclude' tuple. If the end of message is reached, quietly
-                # break the loop.
+                # Traverse the message for as long as the current found
+                # entity is in the 'exclude' tuple. If the end of message
+                # is reached, quietly break the loop.
                 try:
                     parsed_entity.value = message.content[
                         parsed_entity.index_in_message]
@@ -498,8 +536,8 @@ class ValueParser(Parser):
                     else:
                         span_value = message.content[current_index]
 
-                # There are not enough elements in message.content to walk as far as
-                # the span property requests. Abort.
+                # There are not enough elements in message.content to walk
+                # as far as the span property requests - abort.
                 except IndexError:
                     break
                 else:
@@ -549,7 +587,7 @@ class ChoiceParser(Parser):
 
         :param message: MessageMixin object from front end client
         :param memoization: An incrementing dictionary of previously added
-                            input strings by other parsers
+                            input strings by other entity_fields
         :return: None
         """
         casefolded_choices = [i.casefold() for i in self._choices]
@@ -596,3 +634,8 @@ class ChoiceParser(Parser):
                 raise ValueError(
                     f"Spaces in Choices is not supported at this time: '{i}'")
         self._choices = tuple(value)
+
+
+#   Backwards compatibility, Pyttman<=1.1.9.1
+if __name__ != "__main__":
+    ValueParser = EntityFieldValueParser

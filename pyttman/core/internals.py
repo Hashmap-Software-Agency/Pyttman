@@ -1,28 +1,14 @@
 import inspect
-import logging
 import traceback
 import uuid
 import warnings
 from dataclasses import dataclass
 from datetime import datetime
-from pathlib import Path
 
 import pytz
 
 import pyttman
 from pyttman.core.communication.models.containers import MessageMixin, Reply
-
-"""
-Details:
-    2020-07-05
-    
-    pyttman framework internal source file
-
-Module details:
-    
-    data containers and functions used by objects in
-    the pyttman package.
-"""
 
 
 def is_dst(timezone: str):
@@ -66,6 +52,7 @@ class Settings:
     LOG_FILE_DIR: str
     APP_NAME: str
     LOG_FORMAT: str
+    LOG_TO_STDOUT: bool = False
 
     def __init__(self, **kwargs):
         [setattr(self, k, v) for k, v in kwargs.items()
@@ -137,9 +124,28 @@ def _generate_error_entry(message: MessageMixin, exc: BaseException) -> Reply:
     warnings.warn(f"{datetime.now()} - A critical error occurred in the "
                   f"application logic. Error id: {error_id}")
     pyttman.logger.log(level="error",
-                       message=f"CRICITAL ERROR: ERROR ID={error_id} - "
+                       message=f"CRITICAL ERROR: ERROR ID={error_id} - "
                                f"The error was caught while processing "
                                f"message: '{message}'. Error message: '{exc}'")
 
     return Reply(f"{pyttman.settings.FATAL_EXCEPTION_AUTO_REPLY} - "
                  f"Error id: {error_id}")
+
+
+class PrettyReprMixin:
+    """
+    Mixin providing a common interface for
+    __repr__ methods which represents classes
+    in a very readable way.
+
+    - How to use:
+    Define which fields to include when printing the
+    class or calling repr(some_object), by adding their
+    names to the 'repr_fields' tuple.
+    """
+    repr_fields = ()
+
+    def __repr__(self):
+        name = self.__class__.__name__
+        attrs = [f"{i}={getattr(self, i)}" for i in self.repr_fields]
+        return f"{name}({', '.join(attrs)})"

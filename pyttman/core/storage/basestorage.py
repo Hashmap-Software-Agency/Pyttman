@@ -73,7 +73,7 @@ class BaseStorage(AbstractStorage, ABC):
         """
         try:
             return self.data[item]
-        except KeyError as e:
+        except KeyError:
             raise KeyError("Pyttman.Storage: No item stored "
                            f"under key which matches '{item}'")
 
@@ -107,9 +107,9 @@ class Storage(BaseStorage):
         in storage.engines
         :return:
         """
-        raise NotImplementedError("Dumping the Storage object is not implemented "
-                                  "in this version of Pyttman, but will "
-                                  "be available in a future release.")
+        raise NotImplementedError("Dumping the Storage object is not "
+                                  "implemented in this version of Pyttman, "
+                                  "but will be available in a future release.")
 
     def synchronize(self):
         """

@@ -1,9 +1,7 @@
 import re
-from copy import copy
 from datetime import datetime
 from queue import Queue
 from typing import List, Iterable
-from ordered_set import OrderedSet
 
 
 class MessageMixin:
@@ -39,6 +37,9 @@ class MessageMixin:
         return f"{self.__class__.__name__}(author=" \
                f"{self.author}, created={self.created}, " \
                f"content={self.content})"
+
+    def __getitem__(self, index: int) -> str:
+        return self.content[index]
 
     @property
     def content(self):
