@@ -1,9 +1,9 @@
 # Pyttman Changelog
 
 # v 1.1.10
-2022-02-??
+**2022-02-28**
 
-This release further improves the new Plug-And-Play EntityField classes used in the EntityParser API in Pyttman; further empowering developers to quickly find words of interest in Messages from users, using the declarative API. 
+This release further improves the new Plug-And-Play EntityField classes used in the EntityParser API in Pyttman; further empowering developers to quickly find words of interest in Messages from users, using the declarative EntityParser API. 
 
 ### :star2: News
 * **Major refactoring of internal API algorithms to improve speed and** 
@@ -23,7 +23,6 @@ This release further improves the new Plug-And-Play EntityField classes used in 
       class EntityParser:
          answer_in_spanish = BoolEntityField(message_contains=("spanish",))
      ```
-  
   
   
   
@@ -47,7 +46,7 @@ This release further improves the new Plug-And-Play EntityField classes used in 
   This allows for future extension of the Middleware layer, adding options for message filtering and reply relaying through event schedulers and much more. As of this release, nothing has really changed in the usagae experience, except for the deprecation warning on importing the `FirstMatchingRouter` through the legacy import path, since it was moved. No direct action is required for apps upgrading from older versions.
 
 ### **🐛 Splatted bugs and corrected issues** 
-* Fixes [#57](https://github.com/dotchetter/Pyttman/issues/57) - Logs don't show in Heroku
+* **Fixes [#57](https://github.com/dotchetter/Pyttman/issues/57) - Logs don't show in Heroku**
   
   > This issue traces back to the way certain platform log the STDOUT and 
   > STDERR streams by default. We added a new optional setting which allows 
@@ -62,14 +61,22 @@ This release further improves the new Plug-And-Play EntityField classes used in 
 
   > Note! This is a breaking change.
 
-* The usage of `Parser` classes in `EntityParser` classes in `Intent` 
-  classes have been deprecated and are no longer supported. Refer to the 
+* **The usage of `Parser` classes in `EntityParser` classes in `Intent`** 
+  **classes have been deprecated and are no longer supported.** Refer to the 
   `EntityField` types for direct replacements. `EntityField` classes 
   implement the same interface as the `Parser` classes.
   
    > Note! This is a breaking change.
   
-* Reverts the change made in `1.1.9` with Entities: `message.entities` is 
+* **`Identifier` classes are moved from `pyttman.core.parsing.identifiers` to `pyttman.core.entity_parsing.identifiers` module.**
+
+  > Note! This is a breaking change.
+
+* **The `ChoiceParser` class is deleted, in favor of using `TextEntityField` with `valid_strings` as the subset of available options.**
+
+  > Note! This is a breaking change.
+
+* **Reverts the change made in** `1.1.9` with Entities: `message.entities` is 
   now back to being a dict of direct entity values, not `Entity` classes. 
   The reason for this revert was the repetitive pattern of using the 
   `.value` property in apps on properties, and not doing so would cause 
@@ -77,7 +84,7 @@ This release further improves the new Plug-And-Play EntityField classes used in 
   
     > Note! This is a breaking change.
 
-* The Middleware API in Pyttman results in a move of the `FirstMatchingRouter` class, commonly referenced in Pyttman apps in `settings.py` under `ROUTER_CLASS`. The class is now available under `pyttman.core.middleware.routing.FirstMatchingRouter` but is still available for import at the older import path, `pyttman.core.parsing.routing.FirstMatchingRouter` for the time being, which results in a deprecation warning to STDOUT.
+* **The Middleware API in Pyttman results in a move of the** `FirstMatchingRouter` class, commonly referenced in Pyttman apps in `settings.py` under `ROUTER_CLASS`. The class is now available under `pyttman.core.middleware.routing.FirstMatchingRouter` but is still available for import at the older import path, `pyttman.core.parsing.routing.FirstMatchingRouter` for the time being, which results in a deprecation warning to STDOUT.
 
 
 
