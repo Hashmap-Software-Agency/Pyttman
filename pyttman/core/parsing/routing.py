@@ -3,7 +3,7 @@ import warnings
 from pyttman.core.middleware.routing import FirstMatchingRouter
 warnings.filterwarnings("default")
 warnings.warn(
-    "Your settings.py file needs updating."
+    "Hi there. Your settings.py file needs updating. "
     "MessageRouter classes were moved with release "
     "1.1.10, in order to expand the Middleware "
     "layer of Pyttman. This import is still working for "
