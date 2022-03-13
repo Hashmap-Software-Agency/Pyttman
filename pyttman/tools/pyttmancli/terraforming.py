@@ -118,7 +118,12 @@ def bootstrap_environment(module: str = None, devmode: bool = False) -> Runner:
         file_name = Path(
             f"{app_name}-{datetime.now().strftime('%y%m%d-%H-%M-%S')}.log")
 
-    log_file_name = Path(pyttman.settings.LOG_FILE_DIR) / file_name
+    log_file_dir = Path(pyttman.settings.LOG_FILE_DIR)
+    if not log_file_dir.is_dir():
+        os.mkdir(log_file_dir.as_posix())
+
+    log_file_name = log_file_dir / file_name
+
     logging_handle = logging.FileHandler(
         filename=log_file_name, encoding="utf-8",
         mode="a+" if pyttman.settings.APPEND_LOG_FILES else "w")
