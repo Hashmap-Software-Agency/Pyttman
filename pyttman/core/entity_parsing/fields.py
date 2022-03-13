@@ -86,10 +86,15 @@ class EntityFieldBase(EntityFieldValueParser, ABC):
             return value
 
         if self.as_list:
-            value_as_list = value.split()
+            if not isinstance(value, list):
+                value_as_list = value.split()
+            else:
+                value_as_list = value
+
             for i, _ in enumerate(value_as_list):
                 value_as_list[i] = self.type_cls(value_as_list[i])
             return value_as_list
+
         converted = self.type_cls(value)
         return converted
 
