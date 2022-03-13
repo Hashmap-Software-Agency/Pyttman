@@ -36,7 +36,7 @@ setup(
     install_requires=[
         "multidict",
         "pytz",
-        "discord",
+        "discord.py",
         "requests",
         "py7zr",
         "ordered_set"
