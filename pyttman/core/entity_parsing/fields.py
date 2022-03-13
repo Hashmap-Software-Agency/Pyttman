@@ -107,6 +107,10 @@ class IntegerEntityField(EntityFieldBase):
     type_cls = int
     identifier_cls = IntegerIdentifier
 
+    @classmethod
+    def perform_type_conversion(cls, value: str) -> Any:
+        return cls.type_cls("".join(i for i in value if i.isdigit()))
+    
 
 class FloatEntityField(EntityFieldBase):
     """
