@@ -39,7 +39,8 @@ setup(
         "discord.py",
         "requests",
         "py7zr",
-        "ordered_set"
+        "ordered_set",
+        "GitPython"
     ],
     entry_points={
         "console_scripts": [
