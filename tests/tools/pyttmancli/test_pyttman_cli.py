@@ -1,11 +1,10 @@
-import os
 import shutil
 from pathlib import Path
 
 import pyttman.tools.pyttmancli.intents as pyttman_cli_intents
 from pyttman.core.communication.models.containers import Message
 from tests.integration.entity_parsing.base import PyttmanInternalTestBaseCase
-from tools.pyttmancli import PyttmanCli
+from pyttman.tools.pyttmancli import PyttmanCli
 
 
 class TestPyttmanCLICreateApp(PyttmanInternalTestBaseCase):
