@@ -1,15 +1,14 @@
-import sys
 import logging
 import os
 import shutil
+import sys
 import traceback
+import requests
+import pyttman
+
 from datetime import datetime
 from importlib import import_module
 from pathlib import Path
-
-from py7zr import unpack_7zarchive
-
-import pyttman
 from pyttman.clients.builtin.cli import CliClient
 from pyttman.core.ability import Ability
 from pyttman.core.exceptions import PyttmanProjectInvalidException
@@ -21,44 +20,45 @@ from pyttman.tools.pyttmancli import Runner
 class TerraFormer:
     """
     Terraform a directory to start developing
-    a Pyttman project.
+    a Pyttman project by cloning it from GitHub.
     """
 
-    def __init__(self, app_name: str, source=None):
-
+    def __init__(self, app_name: str, url: str):
         self.app_name = app_name
-        self.extraction_dir = Path.cwd() / Path(app_name)
-
-        application_path = Path(os.path.dirname(os.path.abspath(__file__)))
-
-        if source is None:
-            self.source = Path(application_path).parent.parent / \
-                          Path("core") / Path("terraform_template") / \
-                          Path("project_template.7z")
-            if not os.path.isfile(self.source):
-                raise FileNotFoundError("Pyttman could not locate the "
-                                        "template .7z archive for "
-                                        "terraforming. It was expected to be "
-                                        f"here: '{self.source}' To "
-                                        "solve this problem, reinstall "
-                                        "Pyttman. If you think this error "
-                                        "is our fault - please submit an "
-                                        "issue on GitHub!")
-        else:
-            self.source = source
+        self.url = url
+        self.new_template_name = Path.cwd() / app_name
+        self.template_file_name = Path("pyttman-template.zip")
+        self.settings_file_path = self.new_template_name / Path("settings.py")
+        self.template_dir_name = "pyttman-project-template-main"
 
     def terraform(self):
+        """
+        Clone the Pyttman template repository from GitHub
+        and configure settings.py with the user provided app name.
+        """
+        old_template_name = Path.cwd() / self.template_dir_name
+        scratch_file_name = Path.cwd() / self.template_file_name
+        stream = requests.get(self.url, allow_redirects=True)
 
-        shutil.register_unpack_format('7zip', ['.7z'], unpack_7zarchive)
-        shutil.unpack_archive(self.source, self.extraction_dir)
-        settings_file_path = Path(self.extraction_dir) / Path("settings.py")
+        with open(scratch_file_name, "wb") as f:
+            f.write(stream.content)
 
-        with open(settings_file_path, "a", encoding="utf-8") as settings_file:
+        try:
+            shutil.unpack_archive(scratch_file_name, Path.cwd())
+            os.rename(old_template_name, self.new_template_name)
+        except FileExistsError as e:
+            if scratch_file_name.exists():
+                os.remove(scratch_file_name)
+            if old_template_name.exists():
+                shutil.rmtree(old_template_name)
+            raise FileExistsError("There is already an app with "
+                                  "that name in this project.") from e
+
+        with open(self.settings_file_path, "a", encoding="utf-8") \
+                as settings_file:
             settings_file.write(f"\nAPP_NAME = \"{self.app_name}\"\n")
 
-    def get_info(self):
-        return f"Extraction dir: {self.extraction_dir}, " \
-               f"Source: {self.source}"
+        os.remove(self.template_file_name)
 
 
 def bootstrap_environment(module: str = None, devmode: bool = False) -> Runner:

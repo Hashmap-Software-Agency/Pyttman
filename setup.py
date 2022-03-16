@@ -32,7 +32,6 @@ setup(
     python_requires=">=3.10",
     packages=find_packages(exclude=["*.tests", "*.tests.*", "tests.*", "tests"]),
     include_package_data=True,
-    data_files=[('', ['pyttman/core/terraform_template/project_template.7z'])],
     install_requires=[
         "multidict",
         "pytz",

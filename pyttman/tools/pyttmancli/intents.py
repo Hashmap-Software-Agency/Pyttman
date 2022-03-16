@@ -1,5 +1,7 @@
+import os
 import pathlib
-import typing
+import shutil
+import traceback
 
 from pyttman.core.communication.models.containers import Message, \
     ReplyStream, \
@@ -30,19 +32,24 @@ class CreateNewApp(Intent):
         if (app_name := message.entities.get("app_name")) is None:
             return Reply(self.storage.get("NO_APP_NAME_MSG"))
 
-        app_name = app_name
         print(f"- Creating project '{app_name}'...", end=" ")
+
         try:
-            terraformer = TerraFormer(app_name=app_name)
+            terraformer = TerraFormer(app_name=app_name,
+                                      url=self.storage["template_url"])
             terraformer.terraform()
         except Exception as e:
-            print("errors occurred.")
-            return Reply(f"{e.__class__.__name__}: {e}")
-        print("done.")
-        return Reply(f"- Check out your new app '{app_name}' in "
-                     f"the current directory. Feel free to visit the "
-                     f"Pyttman Wiki to follow our Get Started guide at "
-                     f"https://github.com/dotchetter/Pyttman/wiki/Tutorial")
+            print(f"errors occurred: '{e}'. See full traceback below.",
+                  traceback.format_exc(),
+                  end="\n\n", sep="\n\n")
+
+            return Reply("App could not be created.")
+        else:
+            print("success!")
+            return Reply(
+                f"Wondering what to do next? Visit the "
+                f"Pyttman Wiki to follow our Get Started guide at "
+                f"https://github.com/dotchetter/Pyttman/wiki/Tutorial")
 
 
 class RunAppInDevMode(Intent):

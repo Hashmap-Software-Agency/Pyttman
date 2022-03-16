@@ -24,6 +24,9 @@ class PyttmanCli(Ability):
                                         "for your app."}
         self.storage.put("runner", None)
         self.storage.put("ready", False)
+        self.storage.put("template_url",
+                         "https://github.com/dotchetter/pyttman-"
+                         "project-template/archive/refs/heads/main.zip")
         self.storage |= responses
 
     def run_application(self) -> None:
