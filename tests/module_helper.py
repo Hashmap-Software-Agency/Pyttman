@@ -43,7 +43,15 @@ class PyttmanInternalBaseTestCase(TestCase):
         self.logger = logger
         super().__init__(*args, **kwargs)
 
+    def cleanup(self):
+        """
+        Optional hook to execute after test completes (tearDown is
+        already overloaded)
+        """
+        pass
+
     def tearDown(self) -> None:
         self.file_handler.close()
         if Path(self.log_file_name).exists():
             os.remove(self.log_file_name)
+        self.cleanup()
