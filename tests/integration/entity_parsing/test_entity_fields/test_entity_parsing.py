@@ -118,7 +118,7 @@ class PyttmanInternalEntityParserTestContactApp(PyttmanInternalTestBaseCase):
 
 class PyttmanInternalEntityParserTestExpenseApp(PyttmanInternalTestBaseCase):
     test_entities = True
-    mock_message = Message("add expense Clothes price 695,5684")
+    mock_message = Message("add expense Clothes price 695,5684:-")
     expected_entities = {
         "item": "Clothes",
         "price": 695.5684}
