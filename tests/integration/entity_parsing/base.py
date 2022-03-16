@@ -29,7 +29,7 @@ class PyttmanInternalTestBaseCase(PyttmanInternalBaseTestCase):
     """
     test_entities = False
     test_intent_matching = False
-
+    ability_cls = Ability
     mock_intent_cls: Type[Intent]
     mock_message: Message
     expected_entities: dict[str: str] = {}
@@ -40,7 +40,7 @@ class PyttmanInternalTestBaseCase(PyttmanInternalBaseTestCase):
     def setUp(self) -> None:
         self.mock_intent = self.IntentClass()
         self.intent_reply = None
-        self.main_ability = Ability(intents=(self.IntentClass,))
+        self.main_ability = self.ability_cls(intents=(self.IntentClass,))
         self.router = FirstMatchingRouter(abilities=[self.main_ability],
                                           help_keyword="",
                                           intent_unknown_responses=["unknown"])
@@ -86,6 +86,7 @@ class PyttmanInternalTestBaseCase(PyttmanInternalBaseTestCase):
 
     def parse_message_for_entities(self):
         # Truncate 'lead' and 'trail' from the message before parsing
+        self.mock_intent.storage = self.main_ability.storage
         self.intent_reply = self.mock_intent.process(self.mock_message)
         print(f"\t\tResult: {self.mock_message.entities}")
 
