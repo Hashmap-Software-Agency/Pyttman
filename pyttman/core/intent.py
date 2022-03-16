@@ -271,49 +271,13 @@ class BaseIntent(AbstractIntent, ABC):
             help_string = self.help_string
         return help_string
 
-    def process(self, message: Message) -> Reply | ReplyStream:
+    def process_entities(self, message: Message) -> dict:
         """
-        Iterate over all Parser objects and the name
-        of the field it's allocated as.
-
-        The strings present in 'lead' and 'trail' in the Intent are
-        filtered out as for them not to be parsed by the Entity parser.
-
-        :param message: MessageMixin object
-        :return: Reply, logic defined in the 'respond' method
+        Use the EntityParser class designated to this instance to
+        identify entities in a message.
         """
-        #  TODO - Move this to the middleware section
-        joined_patterns = set(self.lead + self.trail)
-        truncated_content = [i for i in message.content
-                             if i.casefold() not in joined_patterns]
-        truncated_message = Message(content=truncated_content)
-
-        self._entity_parser.parse_message(truncated_message)
-        message.entities = {k: v.value for k, v in
-                            self._entity_parser.value.items()}
-
-        try:
-            reply: Reply | ReplyStream = self.respond(message=message)
-        except Exception as e:
-            reply = _generate_error_entry(message, e)
-
-        constraints = {
-            bool(reply is not None),
-            bool(isinstance(reply, Reply) or isinstance(reply, ReplyStream))
-        }
-
-        if False in constraints:
-            raise ValueError(f"Improperly configured Intent class: "
-                             f"{self.__class__.__name__}."
-                             f"respond method returned '{type(reply)}', "
-                             f"expected Reply or ReplyStream")
-
-        # Purge entities values and all parser instances
-        # from their local values
-        for parser_name in self._entity_parser.get_entity_fields():
-            parser = getattr(self._entity_parser, parser_name)
-            parser.reset()
-        return reply
+        self._entity_parser.parse_message(message)
+        return self._entity_parser.value
 
 
 class Intent(BaseIntent):

@@ -87,7 +87,8 @@ class PyttmanInternalTestBaseCase(PyttmanInternalBaseTestCase):
     def parse_message_for_entities(self):
         # Truncate 'lead' and 'trail' from the message before parsing
         self.mock_intent.storage = self.main_ability.storage
-        self.intent_reply = self.mock_intent.process(self.mock_message)
+        self.intent_reply = self.router.process(self.mock_message,
+                                                self.mock_intent)
         print(f"\t\tResult: {self.mock_message.entities}")
 
     def test_intent_message_matching(self):
