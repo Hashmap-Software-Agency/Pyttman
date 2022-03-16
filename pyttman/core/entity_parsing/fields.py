@@ -110,7 +110,7 @@ class IntegerEntityField(EntityFieldBase):
     @classmethod
     def perform_type_conversion(cls, value: str) -> Any:
         return cls.type_cls("".join(i for i in value if i.isdigit()))
-    
+
 
 class FloatEntityField(EntityFieldBase):
     """
@@ -124,6 +124,7 @@ class FloatEntityField(EntityFieldBase):
     def perform_type_conversion(cls, value) -> Any:
         if value is None:
             return 0.0
+        value = "".join(i for i in value if i.isdigit() or i in ".,")
         try:
             value = value.replace(",", ".")
         except AttributeError:
