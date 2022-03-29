@@ -1,5 +1,6 @@
 
 import logging
+import os
 import sys
 from pathlib import Path
 
@@ -42,3 +43,10 @@ class TestPyttmanLogger(PyttmanInternalBaseTestCase):
                     match = True
         self.assertTrue(match)
 
+    def cleanup(self):
+        print(Path().cwd())
+        for logfile in Path().cwd().parent.parent.glob("*.log"):
+            try:
+                os.remove(logfile)
+            except PermissionError:
+                pass
