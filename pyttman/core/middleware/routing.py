@@ -62,12 +62,14 @@ class AbstractMessageRouter(abc.ABC):
 
         If the command contains help, return the help
         string for the matching command.
-        :return: Reply
+        :param message: MessageMixin subclassed object, from client
         """
         pass
 
     @staticmethod
-    def process(message: Message, intent: Intent) -> Reply | ReplyStream:
+    def process(message: Message,
+                intent: Intent,
+                keep_alive_on_exc=True) -> Reply | ReplyStream:
         """
         Iterate over all Parser objects and the name
         of the field it's allocated as.
@@ -121,7 +123,6 @@ class FirstMatchingRouter(AbstractMessageRouter):
     """
 
     def get_reply(self, message: Message) -> Reply:
-
         try:
             if not (matching_intents := self.get_matching_intent(message)):
                 return Reply(random.choice(self.intent_unknown_responses))
