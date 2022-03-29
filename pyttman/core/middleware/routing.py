@@ -91,9 +91,13 @@ class AbstractMessageRouter(abc.ABC):
         message.entities = {k: v.value for k, v in entities.items()}
 
         try:
+            intent.before_respond(message)
             reply: Reply | ReplyStream = intent.respond(message=message)
+            intent.after_respond(message, reply)
         except Exception as e:
             reply = _generate_error_entry(message, e)
+            if keep_alive_on_exc is False:
+                raise e
 
         constraints = {
             bool(reply is not None),
