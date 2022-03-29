@@ -279,8 +279,20 @@ class BaseIntent(AbstractIntent, ABC):
         self._entity_parser.parse_message(message)
         return self._entity_parser.value
 
+    def before_respond(self, message: Message) -> None:
+        """
+        Implement this method to execute code before an Intent starts
+        and goes online to users.
+        """
+        pass
 
-class Intent(BaseIntent):
-    def respond(self, message: Message) -> Reply | ReplyStream:
-        raise NotImplementedError("The 'respond' method must be "
-                                  "defined when subclassing Intent")
+    def after_respond(self, message: Message, reply: Reply) -> None:
+        """
+        Implement this method to execute code before the App starts
+        and goes online to users.
+        """
+        pass
+
+
+if __name__ != "__main__":
+    Intent = BaseIntent
