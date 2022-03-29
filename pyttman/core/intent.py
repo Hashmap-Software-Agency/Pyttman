@@ -1,9 +1,10 @@
 
 import abc
+import functools
 import warnings
 from abc import ABC
 from itertools import zip_longest
-from typing import Tuple, Union
+from typing import Tuple, Union, Any
 
 from pyttman.core.communication.models.containers import Reply, ReplyStream, \
     Message
@@ -35,7 +36,7 @@ class AbstractIntent(abc.ABC):
     @abc.abstractmethod
     def matches(self, message: Message) -> bool:
         """
-        Determine whether a MessageMixin matches a
+        Determine whether a MessageMixin matches an
         Intent instance's pattern config.
         The 'lead' and 'trail'
 
@@ -243,7 +244,8 @@ class BaseIntent(AbstractIntent, ABC):
         return ordered_trail and ordered_lead
 
     def generate_help(self) -> str:
-        input_string_parser_fields = self._entity_parser.get_entity_fields()
+        #  TODO - Extract
+        entity_field_instances = self._entity_parser.get_entity_fields()
         if not self.help_string:
             help_string = f"\n\n> Help section for Intent '{self.name}'\n" \
                           f"\n\t> Description:\n\t\t{self.description}" \
@@ -251,15 +253,15 @@ class BaseIntent(AbstractIntent, ABC):
             if self.trail:
                 help_string += f"[{'|'.join(self.trail)}]\n"
 
-            if input_string_parser_fields:
+            if entity_field_instances:
                 help_string += "\n\t> Entities (information you can provide):"
-                for field_name, parser in input_string_parser_fields.items():
+                for field_name, parser in entity_field_instances.items():
                     help_string += f"\n\t\t * {field_name}"
                     if isinstance(parser, ChoiceParser):
                         help_string += f" - Valid choices: {parser.choices}"
                 help_string += "\n"
 
-            if parsers := list(input_string_parser_fields.values()):
+            if parsers := list(entity_field_instances.values()):
                 for parser in parsers:
                     if isinstance(parser, ChoiceParser):
                         help_string += ""
