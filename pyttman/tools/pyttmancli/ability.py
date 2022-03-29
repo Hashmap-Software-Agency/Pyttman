@@ -1,7 +1,7 @@
 import pyttman
+from pyttman.core.internals import PyttmanApp
 
 from pyttman.core.ability import Ability
-from pyttman.tools.pyttmancli import Runner
 from pyttman.tools.pyttmancli.intents import CreateNewApp, RunAppInDevMode, \
     RunAppInClientMode
 
@@ -22,7 +22,7 @@ class PyttmanCli(Ability):
     def configure(self):
         responses = {"NO_APP_NAME_MSG": "Please provide a name "
                                         "for your app."}
-        self.storage.put("runner", None)
+        self.storage.put("app", None)
         self.storage.put("ready", False)
         self.storage.put("template_url",
                          "https://github.com/dotchetter/pyttman-"
@@ -37,11 +37,11 @@ class PyttmanCli(Ability):
         """
         # noinspection PyTypeChecker, PyUnusedLocal
         # #(used for attribute access in completion)
-        runner: Runner = None
-        if (runner := self.storage.get("runner")) is not None:
+        app: PyttmanApp = None
+        if (app := self.storage.get("app")) is not None:
             print(f"- Ability classes loaded: "
-                  f"{runner.client.message_router.abilities}")
-            runner.run()
+                  f"{app.client.message_router.abilities}")
+            app.start()
         else:
             raise RuntimeError("No Runner provided, app cannot start. "
                                "Exiting...")

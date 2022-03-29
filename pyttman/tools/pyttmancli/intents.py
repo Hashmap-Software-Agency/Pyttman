@@ -1,14 +1,19 @@
-import os
 import pathlib
-import shutil
 import traceback
 
-from pyttman.core.communication.models.containers import Message, \
-    ReplyStream, \
-    Reply
+from time import sleep
+
+import requests
+
+from pyttman.core.decorators import LifeCycleHookType
 from pyttman.core.entity_parsing.fields import TextEntityField
 from pyttman.core.intent import Intent
-from pyttman.tools.pyttmancli import TerraFormer, bootstrap_environment
+from pyttman.tools.pyttmancli import TerraFormer, bootstrap_app
+from pyttman.core.communication.models.containers import (
+    Message,
+    ReplyStream,
+    Reply
+)
 
 
 class CreateNewApp(Intent):
@@ -99,11 +104,12 @@ class RunAppInDevMode(Intent):
                          f"verify that a Pyttman app directory named "
                          f"'{app_name}' exists.")
         try:
-            runner = bootstrap_environment(devmode=True, module=app_name)
+            app = bootstrap_app(devmode=True, module=app_name)
+            app.hooks.trigger(LifeCycleHookType.before_start)
         except Exception as e:
             print("errors occurred:")
             return Reply(f"\t{e.__class__.__name__}: {e}")
-        self.storage.put("runner", runner)
+        self.storage.put("app", app)
         self.storage.put("ready", True)
         return Reply(f"- Starting app '{app_name}' in dev mode...")
 
@@ -134,11 +140,11 @@ class RunAppInClientMode(Intent):
                          f"verify that a Pyttman app directory named "
                          f"'{app_name}' exists.")
         try:
-            runner = bootstrap_environment(devmode=False, module=app_name)
+            app = bootstrap_app(devmode=False, module=app_name)
         except Exception as e:
             print("errors occurred:")
             return Reply(f"\t{e.__class__.__name__}: {e}")
-        self.storage.put("runner", runner)
+        self.storage.put("app", app)
         self.storage.put("ready", True)
         return Reply(f"- Starting app '{app_name}' in client mode...")
 
