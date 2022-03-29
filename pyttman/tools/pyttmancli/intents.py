@@ -29,27 +29,45 @@ class CreateNewApp(Intent):
         app_name = TextEntityField()
 
     def respond(self, message: Message) -> Reply | ReplyStream:
+        num_retries = 3
+        net_err = None
+
         if (app_name := message.entities.get("app_name")) is None:
             return Reply(self.storage.get("NO_APP_NAME_MSG"))
 
-        print(f"- Creating project '{app_name}'...", end=" ")
+        terraformer = TerraFormer(app_name=app_name,
+                                  url=self.storage["template_url"])
 
-        try:
-            terraformer = TerraFormer(app_name=app_name,
-                                      url=self.storage["template_url"])
-            terraformer.terraform()
-        except Exception as e:
-            print(f"errors occurred: '{e}'. See full traceback below.",
-                  traceback.format_exc(),
-                  end="\n\n", sep="\n\n")
+        print(f"- Creating project '{app_name}'.")
+        print(f"- Downloading the latest official project "
+              f"template from GitHub", end="\n")
 
-            return Reply("App could not be created.")
-        else:
-            print("success!")
-            return Reply(
-                f"Wondering what to do next? Visit the "
-                f"Pyttman Wiki to follow our Get Started guide at "
-                f"https://github.com/dotchetter/Pyttman/wiki/Tutorial")
+        for i in range(num_retries):
+            print(f"- Attempt [{i + 1}/{num_retries}]:", end=" ")
+            try:
+                terraformer.terraform()
+            except requests.exceptions.ConnectionError as e:
+                print("failed.",
+                      "Cannot connect to the server, "
+                      "trying again in 5 seconds...",
+                      end="\n",
+                      sep=" ")
+                sleep(5)
+                net_err = e
+                continue
+            except Exception as e:
+                print(f"errors occurred: '{e}'. See full traceback below.",
+                      traceback.format_exc(), end="\n\n", sep="\n\n")
+                raise e
+            else:
+                print("success!")
+                break
+
+        if net_err is not None:
+            raise RuntimeError(f"The project could not be created.")
+        return Reply(f"Wondering what to do next? Visit the "
+                     f"Pyttman Wiki to follow our Get Started guide at "
+                     f"https://github.com/dotchetter/Pyttman/wiki/Tutorial")
 
 
 class RunAppInDevMode(Intent):

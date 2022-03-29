@@ -3,18 +3,18 @@ import os
 import shutil
 import sys
 import traceback
-import requests
-import pyttman
-
 from datetime import datetime
 from importlib import import_module
 from pathlib import Path
+
+import requests
+
+import pyttman
 from pyttman.clients.builtin.cli import CliClient
 from pyttman.core.ability import Ability
 from pyttman.core.exceptions import PyttmanProjectInvalidException
-from pyttman.core.internals import Settings
+from pyttman.core.internals import Settings, PyttmanApp
 from pyttman.core.middleware.routing import AbstractMessageRouter
-from pyttman.tools.pyttmancli import Runner
 
 
 class TerraFormer:
@@ -61,7 +61,7 @@ class TerraFormer:
         os.remove(self.template_file_name)
 
 
-def bootstrap_environment(module: str = None, devmode: bool = False) -> Runner:
+def bootstrap_app(module: str = None, devmode: bool = False) -> PyttmanApp:
     """
     Bootstraps the framework with modules and configurations
     read from the settings.py found in the current path.
@@ -72,7 +72,6 @@ def bootstrap_environment(module: str = None, devmode: bool = False) -> Runner:
 
     :param module: Module in which the app source is located
     :param devmode: Provides only one runner with the CliClient in.
-    :return: Runner instance with a ready-to-run Client instance.
     """
 
     # This enables relative imports
@@ -196,13 +195,13 @@ def bootstrap_environment(module: str = None, devmode: bool = False) -> Runner:
 
         # Instantiate the ability class and traverse over its intents.
         # Validate.
-        intent_instance = ability_class()
+        ability = ability_class()
         assert issubclass(ability_class, Ability), \
-            f"'{intent_instance.__class__.__name__}' " \
+            f"'{ability.__class__.__name__}' " \
             f"is not a subclass of 'Ability'. " \
             f"Check your ABILITIES list in settings.py and verify that " \
             f"all classes defined are Ability subclasses."
-        ability_objects_set.add(intent_instance)
+        ability_objects_set.add(ability)
 
     assert len(ability_objects_set), "No Ability classes were provided the " \
                                      "ABILITIES list in settings.py"
@@ -217,7 +216,10 @@ def bootstrap_environment(module: str = None, devmode: bool = False) -> Runner:
     if devmode:
         pyttman.settings.DEV_MODE = True
         client = CliClient(message_router=message_router)
-        return Runner(settings.APP_NAME, client)
+        return PyttmanApp(client=client,
+                          name=settings.APP_NAME,
+                          abilities=ability_objects_set,
+                          settings=settings)
 
     # Start the client
     if not isinstance(settings.CLIENT, dict):
@@ -246,6 +248,12 @@ def bootstrap_environment(module: str = None, devmode: bool = False) -> Runner:
                            f"\n{e}") from e
     client = client_class(message_router=message_router, **settings.CLIENT)
 
+    # Purge the 'CLIENT' settings from the Settings object for protection
+    del settings.CLIENT
+
     # Create a log entry for app start
     pyttman.logger.log(f" -- App {app_name} started: {datetime.now()} -- ")
-    return Runner(settings.APP_NAME, client)
+    return PyttmanApp(client=client,
+                      name=settings.APP_NAME,
+                      abilities=ability_objects_set,
+                      settings=settings)
