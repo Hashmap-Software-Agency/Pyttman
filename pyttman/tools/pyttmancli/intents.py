@@ -1,9 +1,8 @@
 import pathlib
 import traceback
+import requests
 
 from time import sleep
-
-import requests
 
 from pyttman.core.decorators import LifeCycleHookType
 from pyttman.core.entity_parsing.fields import TextEntityField

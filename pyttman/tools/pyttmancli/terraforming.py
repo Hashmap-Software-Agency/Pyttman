@@ -216,10 +216,12 @@ def bootstrap_app(module: str = None, devmode: bool = False) -> PyttmanApp:
     if devmode:
         pyttman.settings.DEV_MODE = True
         client = CliClient(message_router=message_router)
-        return PyttmanApp(client=client,
-                          name=settings.APP_NAME,
-                          abilities=ability_objects_set,
-                          settings=settings)
+        app = PyttmanApp(client=client,
+                         name=settings.APP_NAME,
+                         abilities=ability_objects_set,
+                         settings=settings)
+        pyttman.app = app
+        return app
 
     # Start the client
     if not isinstance(settings.CLIENT, dict):
@@ -253,7 +255,9 @@ def bootstrap_app(module: str = None, devmode: bool = False) -> PyttmanApp:
 
     # Create a log entry for app start
     pyttman.logger.log(f" -- App {app_name} started: {datetime.now()} -- ")
-    return PyttmanApp(client=client,
-                      name=settings.APP_NAME,
-                      abilities=ability_objects_set,
-                      settings=settings)
+    app = PyttmanApp(client=client,
+                     name=settings.APP_NAME,
+                     abilities=ability_objects_set,
+                     settings=settings)
+    pyttman.app = app
+    return app

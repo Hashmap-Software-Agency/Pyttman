@@ -19,6 +19,7 @@ class _SettingsNotConfigured:
                                   "use 'pyttman shell <app name>'. ")
 
 
+app = None
 settings = _SettingsNotConfigured
 is_configured = False
 logger = PyttmanLogger
