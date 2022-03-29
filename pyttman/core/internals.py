@@ -2,20 +2,23 @@ import inspect
 import traceback
 import uuid
 import warnings
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from datetime import datetime
+from typing import Any
 
 import pytz
 
 import pyttman
+from pyttman.core.decorators import LifecycleHookRepository
+from pyttman.core.mixins import PrettyReprMixin
 from pyttman.core.communication.models.containers import MessageMixin, Reply
 
 
 def is_dst(timezone: str):
     """
-    method for returning a bool whether or not a timezone
+    method for returning a bool whether a timezone
     currently is in daylight savings time, useful for servers
-    that run systems outside of the user timezone.
+    that run systems outside the user timezone.
     :param timezone:
         string, timezone to give pytz for the dst query.
         look up available timezones at this url:
