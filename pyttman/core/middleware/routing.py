@@ -24,7 +24,7 @@ class AbstractMessageRouter(abc.ABC):
     Intent classes and select the first one
     matching - or they can be powered by internal
     caches, learn patterns and be powered by
-    Machine Leraning.
+    Machine learning.
 
     Users should rarely encounter this class as
     it's being used outside the scope of apps
@@ -77,6 +77,9 @@ class AbstractMessageRouter(abc.ABC):
 
         :param intent: The Intent class chosen to provide a Reply to the user.
         :param message: MessageMixin object
+        :param keep_alive_on_exc: Keeps the main loop running if exceptions
+        occur in the application logic, and replies with an error message
+        fetched from the application settings. Defaults to True.
         :return: Reply, logic defined in the 'respond' method
         """
         joined_patterns = set(intent.lead + intent.trail)

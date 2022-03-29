@@ -101,7 +101,7 @@ def _generate_error_entry(message: MessageMixin, exc: BaseException) -> Reply:
     to the log file entry, explaining the error. For the front
     end clients, a Reply object is returned to provide for
     end users who otherwise would experience a chatbot who
-    didn't reply back at all.
+    didn't reply at all.
     :param message: MessageMixin
     :param exc: Exception
     :return: Reply

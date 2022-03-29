@@ -186,7 +186,7 @@ def bootstrap_environment(module: str = None, devmode: bool = False) -> Runner:
         assert not isinstance(ability, Ability), \
             f"The ability '{ability}' is instantiated. Please redefine " \
             f"this ability as only the reference to the class, " \
-            f"as shown in the docs. "
+            f"as in 'MyClass', not 'MyClass()'. "
 
         ability_module_config = ability.split(".")
         ability_class_name = ability_module_config.pop()
