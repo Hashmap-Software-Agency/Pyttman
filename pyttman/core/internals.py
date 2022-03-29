@@ -64,19 +64,6 @@ class Settings:
         return f"Settings({_attrs})"
 
 
-@dataclass
-class _cim:
-    """
-    This class is only used as a namespace
-    for internal messages used by exceptions
-    or elsewhere by pyttman classes
-    and functions. Not for instantiating.
-    """
-    deprecated_warn: str = "pyttman DEPRECATED WARNING"
-    warn: str = "Pyttman WARNING"
-    err: str = "Pyttman ERROR"
-
-
 def load_settings(*args):
     raise DeprecationWarning("The function 'load_settings' is deprecated "
                              "deprecated as of version 1.1.4. Instead of "
