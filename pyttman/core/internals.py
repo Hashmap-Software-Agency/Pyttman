@@ -132,20 +132,29 @@ def _generate_error_entry(message: MessageMixin, exc: BaseException) -> Reply:
                  f"Error id: {error_id}")
 
 
-class PrettyReprMixin:
+@dataclass
+class PyttmanApp(PrettyReprMixin):
     """
-    Mixin providing a common interface for
-    __repr__ methods which represents classes
-    in a very readable way.
-
-    - How to use:
-    Define which fields to include when printing the
-    class or calling repr(some_object), by adding their
-    names to the 'repr_fields' tuple.
+    The highest point of abstraction for a Pyttman application.
+    This class holds the Settings, the Abilities and lifecycle hooks
+    for the application, including the Client class used to interface with
+    the platform of choice.
+    This singleton instance is available through 'from pyttman import app'.
     """
-    repr_fields = ()
+    __repr_fields__ = ("name", "client", "hooks")
 
-    def __repr__(self):
-        name = self.__class__.__name__
-        attrs = [f"{i}={getattr(self, i)}" for i in self.repr_fields]
-        return f"{name}({', '.join(attrs)})"
+    client: Any
+    name: str | None = field(default=None)
+    settings: Settings | None = field(default=None)
+    abilities: set = field(default_factory=set)
+    hooks: LifecycleHookRepository = field(
+        default_factory=lambda: LifecycleHookRepository())
+
+    def start(self):
+        """
+        Start a Pyttman application.
+        """
+        try:
+            self.client.run_client()
+        except Exception:
+            warnings.warn(traceback.format_exc())
