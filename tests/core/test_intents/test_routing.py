@@ -1,17 +1,8 @@
 from pyttman.core.ability import Ability
-from pyttman.core.communication.models.containers import Message
-from tests.core.entity_parsing.base import (
-    PyttmanIntentInternalTestCase,
-    ImplementedTestIntent
-)
-
-
-class IntentOne(ImplementedTestIntent):
-    """
-    This test checks matching on a single word, only by the 'lead'
-    property.
-    """
-    lead = ("new", "add")
+from pyttman.core.communication.models.containers import Message, ReplyStream, \
+    Reply
+from tests.core.entity_parsing.base import ImplementedTestIntent, \
+    PyttmanInternalTestBaseCase
 
 
 class IntentTwo(ImplementedTestIntent):
@@ -24,13 +15,16 @@ class IntentTwo(ImplementedTestIntent):
     ordered = True
 
 
-class TestAbility(Ability):
-    intents = (IntentOne, IntentTwo)
-
-
 class PyttmanIntentInternalEntityParserTestWebscraperApp(
-    PyttmanIntentInternalTestCase
+    PyttmanInternalTestBaseCase
 ):
+
+    class IntentClass(ImplementedTestIntent):
+        """
+        This test checks matching on a single word, only by the 'lead'
+        property.
+        """
+        lead = ("new", "add")
+
     test_intent_matching = True
     mock_message = Message("add new purchase SomeItem 100")
-    mock_intent_cls = IntentOne

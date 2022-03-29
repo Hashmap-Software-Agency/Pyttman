@@ -23,27 +23,26 @@ class ImplementedTestIntent(Intent):
         return Reply(f"'{self.__class__.__name__}' matched a message")
 
 
-class PyttmanIntentInternalTestCase(PyttmanInternalBaseTestCase):
+class PyttmanInternalTestBaseCase(PyttmanInternalBaseTestCase):
     """
     Base class for a test case testing EntityParser configurations
     """
-    class IntentClass(Intent, ABC):
-        pass
-
     test_entities = False
     test_intent_matching = False
     ability_cls = Ability
-    mock_intent_cls: Type[Intent] = IntentClass
-    mock_intent: Intent = None
+    mock_intent_cls: Type[Intent]
     mock_message: Message
     expected_entities: dict[str: str] = {}
 
+    class IntentClass(Intent, ABC):
+        pass
+
     def setUp(self) -> None:
-        self.mock_intent = self.mock_intent_cls()
+        self.mock_intent = self.IntentClass()
         self.intent_reply = None
-        self.main_ability = self.ability_cls(intents=(self.mock_intent_cls,))
+        self.main_ability = self.ability_cls(intents=(self.IntentClass,))
         self.router = FirstMatchingRouter(abilities=[self.main_ability],
-                                          help_keyword="help",
+                                          help_keyword="",
                                           intent_unknown_responses=["unknown"])
 
     def get_entity_value(self, entity_name):
@@ -108,7 +107,7 @@ class PyttmanIntentInternalTestCase(PyttmanInternalBaseTestCase):
 
         self.assertNotEqual(len(matching_intents), 0,
                             msg=f"\n'{self.mock_intent}' didn't "
-                                f"match message '{self.mock_message}'")
+                                f"match '{self.mock_message.content}'")
 
         first_matching = matching_intents.pop()
 

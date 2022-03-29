@@ -4,11 +4,13 @@ from pyttman.core.entity_parsing.fields import BoolEntityField, \
 from pyttman.core.entity_parsing.identifiers import NumberIdentifier, \
     CapitalizedIdentifier, CellPhoneNumberIdentifier, DateTimeStringIdentifier
 from pyttman.core.communication.models.containers import Message
-from tests.core.entity_parsing.base import PyttmanIntentInternalTestCase, \
-    ImplementedTestIntent
+from tests.core.entity_parsing.base import ImplementedTestIntent, \
+    PyttmanInternalTestBaseCase
 
 
-class PyttmanIntentInternalEntityParserTestMusicPlayerApp(PyttmanIntentInternalTestCase):
+class PyttmanIntentInternalEntityParserTestMusicPlayerApp(
+    PyttmanInternalTestBaseCase
+):
     test_entities = True
     mock_message = Message("Play 29 Palms by Robert Plant on Spotify or "
                            "soundCloud and shuffle songs")
@@ -41,7 +43,9 @@ class PyttmanIntentInternalEntityParserTestMusicPlayerApp(PyttmanIntentInternalT
                                                           "soundcloud"))
 
 
-class PyttmanIntentInternalEntityParserTestBookKeeperApp(PyttmanIntentInternalTestCase):
+class PyttmanIntentInternalEntityParserTestBookKeeperApp(
+    PyttmanInternalTestBaseCase
+):
     test_entities = True
     mock_message = Message("add expense Groceries at Whole Foods price 695,"
                            "5684")
@@ -69,7 +73,9 @@ class PyttmanIntentInternalEntityParserTestBookKeeperApp(PyttmanIntentInternalTe
                                              default="default")
 
 
-class PyttmanIntentInternalEntityParserTestTranslatorApp(PyttmanIntentInternalTestCase):
+class PyttmanIntentInternalEntityParserTestTranslatorApp(
+    PyttmanInternalTestBaseCase
+):
     test_entities = True
     mock_message = Message("Translate I Love You from english to swedish")
     expected_entities = {
@@ -90,7 +96,9 @@ class PyttmanIntentInternalEntityParserTestTranslatorApp(PyttmanIntentInternalTe
             to_language = TextEntityField(prefixes=(from_language,))
 
 
-class PyttmanIntentInternalEntityParserTestContactApp(PyttmanIntentInternalTestCase):
+class PyttmanIntentInternalEntityParserTestContactApp(
+    PyttmanInternalTestBaseCase
+):
     test_entities = True
     mock_message = Message("create a new contact Will Byers on mobile with "
                            "0805552859 and do it on 2021-09-20-10:40")
@@ -116,7 +124,9 @@ class PyttmanIntentInternalEntityParserTestContactApp(PyttmanIntentInternalTestC
                                                             "landline"))
 
 
-class PyttmanIntentInternalEntityParserTestExpenseApp(PyttmanIntentInternalTestCase):
+class PyttmanIntentInternalEntityParserTestExpenseApp(
+    PyttmanInternalTestBaseCase
+):
     test_entities = True
     test_intent_matching = True
     mock_message = Message("add expense Clothes price 695,5684:-")
@@ -141,7 +151,9 @@ class PyttmanIntentInternalEntityParserTestExpenseApp(PyttmanIntentInternalTestC
             print(f"\nThis was executed before respond")
 
 
-class PyttmanIntentInternalEntityParserTestWebscraperApp(PyttmanIntentInternalTestCase):
+class PyttmanIntentInternalEntityParserTestWebscraperApp(
+    PyttmanInternalTestBaseCase
+):
     test_entities = True
     mock_message = Message("Search for ManufacturerA ManufacturerB Model123 "
                            "on page_a and page_b price 45000 60 results")

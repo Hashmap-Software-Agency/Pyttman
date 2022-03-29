@@ -19,7 +19,7 @@ class PyttmanCli(Ability):
                   "For help about a commend, type pyttman help [command]" \
                   f"\n\nSupported commands:\n"
 
-    def configure(self):
+    def before_create(self):
         responses = {"NO_APP_NAME_MSG": "Please provide a name "
                                         "for your app."}
         self.storage.put("app", None)

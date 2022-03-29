@@ -79,7 +79,7 @@ class Ability(PrettyReprMixin):
                             "An error occurred with the EntityParser "
                             f"in Intent class '{intent_class}': {e}")
 
-    def before_create(self, *args, **kwargs):
+    def before_create(self):
         """
         Lifecycle hook. This hook method is executed before the
         ability is created, when the application starts, but it

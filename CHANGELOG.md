@@ -1,5 +1,31 @@
 # Pyttman Changelog
 
+
+
+
+# v 1.1.11
+**2022-**
+
+Lorem Ipsum Dolor Sit Amet 
+
+### :star2: News
+* 
+
+
+### **🐛 Splatted bugs and corrected issues** 
+* **Fixes [#?](url) __explanation__**
+  
+
+### 👀 Changes
+
+* **__title__** 
+
+  __explanation__ 
+
+  > Note! This is a breaking change.
+
+
+
 # v 1.1.10
 **2022-02-28**
 
