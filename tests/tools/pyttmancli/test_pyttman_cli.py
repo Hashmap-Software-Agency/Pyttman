@@ -3,11 +3,11 @@ from pathlib import Path
 
 import pyttman.tools.pyttmancli.intents as pyttman_cli_intents
 from pyttman.core.communication.models.containers import Message
-from tests.integration.entity_parsing.base import PyttmanInternalTestBaseCase
+from tests.core.entity_parsing.base import PyttmanIntentInternalTestCase
 from pyttman.tools.pyttmancli import PyttmanCli
 
 
-class TestPyttmanCLICreateApp(PyttmanInternalTestBaseCase):
+class TestPyttmanCLICreateAppIntent(PyttmanIntentInternalTestCase):
     test_intent_matching = True
     test_entities = True
     ability_cls = PyttmanCli
@@ -22,7 +22,7 @@ class TestPyttmanCLICreateApp(PyttmanInternalTestBaseCase):
             shutil.rmtree(stale_dir)
 
 
-class TestPyttmanCLIRunClientMode(PyttmanInternalTestBaseCase):
+class TestPyttmanCLIRunClientModeIntent(PyttmanIntentInternalTestCase):
     test_intent_matching = True
 
     mock_message = Message("runclient app_name")
@@ -30,7 +30,7 @@ class TestPyttmanCLIRunClientMode(PyttmanInternalTestBaseCase):
     IntentClass = pyttman_cli_intents.RunAppInClientMode
 
 
-class TestPyttmanCLIRunDevMode(PyttmanInternalTestBaseCase):
+class TestPyttmanCLIRunDevModeIntent(PyttmanIntentInternalTestCase):
     test_intent_matching = True
 
     mock_message = Message("dev app_name")
