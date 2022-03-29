@@ -18,7 +18,6 @@ class AbstractIntent(abc.ABC):
     def __repr__(self):
         pass
 
-    @abc.abstractmethod
     def respond(self, message: Message) -> Reply | ReplyStream:
         """
         Subclasses overload this method to respond
