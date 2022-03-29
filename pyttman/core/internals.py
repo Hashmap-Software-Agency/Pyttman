@@ -38,23 +38,24 @@ class Settings:
     of using the entire module as reference in 'pyttman.settings'
     throughout Pyttman apps.
 
-    The Settings class automatically omitts any instance
+    The Settings class automatically omits any instance
     in **kwargs being of instance <module> since modules
-    aren't picklable. It also omitts functions as callables
+    aren't picklable. It also omits functions as callables
     aren't valid settings.
     """
-    APPEND_LOG_FILES: bool
-    MESSAGE_ROUTER: dict
-    ABILITIES: list
-    FATAL_EXCEPTION_AUTO_REPLY: list
-    CLIENT: dict
-    APP_BASE_DIR: str
-    LOG_FILE_DIR: str
-    APP_NAME: str
-    LOG_FORMAT: str
-    LOG_TO_STDOUT: bool = False
 
     def __init__(self, **kwargs):
+        self.APPEND_LOG_FILES: bool = True
+        self.MESSAGE_ROUTER: dict | None = None
+        self.ABILITIES: list | None = None
+        self.FATAL_EXCEPTION_AUTO_REPLY: list | None = None
+        self.CLIENT: dict | None = None
+        self.APP_BASE_DIR: str | None = None
+        self.LOG_FILE_DIR: str | None = None
+        self.APP_NAME: str | None = None
+        self.LOG_FORMAT: str | None = None
+        self.LOG_TO_STDOUT: bool = False
+
         [setattr(self, k, v) for k, v in kwargs.items()
          if not inspect.ismodule(v)
          and not inspect.isfunction(v)]
