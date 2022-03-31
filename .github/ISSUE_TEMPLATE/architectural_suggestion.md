@@ -3,6 +3,7 @@ name: Architectural Suggestion
 about: Suggest an idea for this project
 title: "[ARC] "
 labels: enhancement
+assignees: ''
 
 ---
 
