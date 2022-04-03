@@ -214,7 +214,6 @@ def bootstrap_app(module: str = None, devmode: bool = False) -> PyttmanApp:
 
     # If devmode is active, return only one CliClient in a runner.
     if devmode:
-        pyttman.settings.DEV_MODE = True
         client = CliClient(message_router=message_router)
         app = PyttmanApp(client=client,
                          name=settings.APP_NAME,
