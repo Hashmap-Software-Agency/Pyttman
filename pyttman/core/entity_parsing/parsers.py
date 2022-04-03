@@ -18,6 +18,7 @@ from typing import Tuple, Type, Dict, Union
 
 from ordered_set import OrderedSet
 
+from pyttman.core.exceptions import InvalidPyttmanObjectException
 from pyttman.core.communication.models.containers import MessageMixin
 from pyttman.core.entity_parsing.entity import Entity
 from pyttman.core.entity_parsing.identifiers import Identifier
@@ -273,12 +274,13 @@ class EntityFieldValueParser(Parser):
     truncates_message_in_parsing = True
 
     def __init__(self,
-                 prefixes: Tuple = None,
-                 suffixes: Tuple = None,
-                 valid_strings: typing.Sequence = None,
+                 prefixes: tuple | typing.Callable = None,
+                 suffixes: tuple | typing.Callable = None,
+                 valid_strings: tuple | typing.Callable = None,
+                 exclude: tuple | typing.Callable = None,
+                 default:  typing.Any | typing.Callable = None,
+                 span: int | typing.Callable = 0,
                  identifier: Type[Identifier] = None,
-                 span: int = 0,
-                 default: typing.Any = None,
                  **kwargs):
         super().__init__(**kwargs)
 
@@ -286,12 +288,50 @@ class EntityFieldValueParser(Parser):
             prefixes = tuple()
         if suffixes is None:
             suffixes = tuple()
+        if valid_strings is None:
+            valid_strings = tuple()
 
         self.prefixes = prefixes
         self.suffixes = suffixes
         self.identifier: Type[Identifier] = identifier
         self.span = span
         self.default = default
+        self.exclude = exclude
+        self.valid_strings = valid_strings
+
+        self._properties_for_evaluation = {
+            "prefixes": self.prefixes,
+            "exclude": self.exclude,
+            "suffixes": self.suffixes,
+            "span": self.span,
+            "default": self.default,
+            "valid_strings": self.valid_strings
+        }
+
+    def __repr__(self):
+        return f"{self.__class__.__name__}(value='{self.value}', " \
+               f"identifier={self.identifier}, prefixes={self.prefixes}, " \
+               f"suffixes={self.suffixes}, span={self.span})"
+
+    def _prepare_params(self):
+        """
+        Prepares the arguments passed in the constructor.
+        This happens after init in order to allow developers to provide
+        callables as arguments, which should not be evaluated / executed
+        at __init__ time due to the risk of DB connections not being
+        established at that time.
+        :return:
+        """
+        for name, value in self._properties_for_evaluation.items():
+            if callable(value):
+                try:
+                    setattr(self, name, value())
+                except Exception as e:
+                    raise InvalidPyttmanObjectException(
+                        "An error occurred during preparation of field "
+                        f"'{name}' in '{self}'. If the callable takes "
+                        f"arguments without provided defaults, consider "
+                        f"using a partial.")
 
         # Validate that the object was constructed properly
         if not isinstance(self.prefixes, tuple) or \
@@ -304,19 +344,16 @@ class EntityFieldValueParser(Parser):
                                  f"Don't forget the trailing comma, "
                                  f"example: '(1,)' instead of '(1)'.")
 
-        if valid_strings and isinstance(valid_strings, typing.Sequence) is \
-                False:
+        if (
+            self.valid_strings is not None
+        ) and (
+            isinstance(self.valid_strings, typing.Sequence) is False
+        ):
             raise AttributeError("'valid_strings' must be a collection of "
-                                 "strings")
-        elif valid_strings is not None:
-            self.valid_strings = [i.casefold() for i in valid_strings]
+                                 f"strings, got: '{self.valid_strings}'")
         else:
-            self.valid_strings = []
-
-    def __repr__(self):
-        return f"{self.__class__.__name__}(value='{self.value}', " \
-               f"identifier={self.identifier}, prefixes={self.prefixes}, " \
-               f"suffixes={self.suffixes}, span={self.span})"
+            self.valid_strings = tuple(
+                [i.casefold() for i in self.valid_strings])
 
     def parse_message(self, message: MessageMixin,
                       memoization: dict = None) -> None:
@@ -326,6 +363,7 @@ class EntityFieldValueParser(Parser):
         traverse on until value is returned or the
         message is exhausted.
         """
+        self._prepare_params()
         if self.valid_strings:
             output = []
             word_index = 0
