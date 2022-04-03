@@ -19,10 +19,8 @@ import typing
 
 from pyttman.core.communication.models.containers import Message
 from pyttman.core.middleware.routing import FirstMatchingRouter
-from pyttman.tools.pyttmancli.terraforming import TerraFormer, \
-    bootstrap_app
-from pyttman.tools.pyttmancli.terraforming import bootstrap_app, \
-    TerraFormer
+from pyttman.tools.pyttmancli.terraforming import TerraFormer, bootstrap_app
+from pyttman.tools.pyttmancli.terraforming import bootstrap_app, TerraFormer
 from pyttman.tools.pyttmancli.ability import PyttmanCli
 
 
