@@ -277,7 +277,6 @@ class EntityFieldValueParser(Parser):
                  prefixes: tuple | typing.Callable = None,
                  suffixes: tuple | typing.Callable = None,
                  valid_strings: tuple | typing.Callable = None,
-                 exclude: tuple | typing.Callable = None,
                  default:  typing.Any | typing.Callable = None,
                  span: int | typing.Callable = 0,
                  identifier: Type[Identifier] = None,
@@ -296,12 +295,10 @@ class EntityFieldValueParser(Parser):
         self.identifier: Type[Identifier] = identifier
         self.span = span
         self.default = default
-        self.exclude = exclude
         self.valid_strings = valid_strings
 
         self._properties_for_evaluation = {
             "prefixes": self.prefixes,
-            "exclude": self.exclude,
             "suffixes": self.suffixes,
             "span": self.span,
             "default": self.default,
