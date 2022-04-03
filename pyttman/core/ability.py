@@ -2,9 +2,7 @@ import inspect
 from typing import Tuple
 
 from pyttman.core.intent import Intent
-from pyttman.core.internals import (
-    _generate_name
-)
+from pyttman.core.internals import _generate_name
 from pyttman.core.mixins import PrettyReprMixin
 from pyttman.core.storage.basestorage import Storage
 
