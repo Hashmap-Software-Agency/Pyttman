@@ -6,24 +6,68 @@
 # v 1.1.11
 **2022-**
 
-Lorem Ipsum Dolor Sit Amet 
+This release improves the **EntityParser** API, introduces a few new 
+features and bugfixes.
 
 ### :star2: News
-* 
+* New EntityField classes
 
+  * The `TextEntityField` can now also be used as `StringEntityField` and 
+    `StrEntityField`
+  * The `IntegerEntityField` can now also be used as `IntEntityField`
+
+
+* `pyttman.app` 
+
+  In Pyttman, you now have access to your application represented as the 
+  `app` object, which you can import from pyttman as:  `from pyttman import 
+  app` in any file inside your project. On this object you have access to 
+  `settings`, `abilities` and `hooks` (mentioned further down) - which 
+  empowers you to inspect and modify the state of your app down the road. 
+
+
+* **Project templates** 
+
+  The project template, used when creating new projects, is no longer shipped 
+  with the project through PyPi, but 
+  rather downloaded from an official GitHub repository, lowering the 
+  payload when installing the package and ensures distributions always use 
+  the latest templates.
+
+
+* **Lifecycle Hooks**
+
+  Lifecycle hooks allows you as a developer to have code executed in 
+  certain timepoints in the lifecycle of your application. 
+  * **Ability** lifecycle hook: 'before_create' allows you to execute code 
+    before a certain Ability is loaded. This is useful to pre-populate the 
+    `storage` object as `self.storage['foo'] = 'bar'` before the ability is 
+    loaded.
+  
+  * `app` lifecycle hooks allows you to import the app you've developed as: 
+    `from pyttman import app`, and then decorating any function in the 
+    application as `@app.hooks.run('before_start')` allows you to run a 
+    function before the entire app starts. This is useful for connecting to 
+    databases or performing other tasks necessary to the application.
+
+
+* **Introducing support for params in `EntityField` classes to be callable**
+  
+  A select set of arguments provided to EntityField classes such as 
+  `StringEntityField` and others, can now be callables. This allows you as 
+  a developer to have rules for EntityField classes evaluated at runtime, 
+  and not when the app starts. This is useful for scenarios where you'd 
+  want data from a dynamic source to control the behavior of an EntityField,
+  say the available users in your app. 
+ 
+  **Example**: `username = 
+  StringEntityField(valid_strings=get_enrolled_usernames)`
 
 ### **🐛 Splatted bugs and corrected issues** 
-* **Fixes [#?](url) __explanation__**
+* **Fixes [#58]((https://github.com/dotchetter/Pyttman/issues/58)**
+* **Fixes [#62]((https://github.com/dotchetter/Pyttman/issues/58)**
   
-
-### 👀 Changes
-
-* **__title__** 
-
-  __explanation__ 
-
-  > Note! This is a breaking change.
-
+  
 
 
 # v 1.1.10
