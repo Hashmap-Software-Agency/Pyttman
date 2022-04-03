@@ -30,7 +30,7 @@ class Ability(PrettyReprMixin):
     description = "Unavailable"
     intents: Tuple = None
 
-    __repr_fields__ = ("repository", "")
+    __repr_fields__ = ("name",)
 
     def __init__(self, **kwargs):
         super().__init__()
