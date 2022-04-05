@@ -1,3 +1,4 @@
+import os
 import pathlib
 import traceback
 import requests
@@ -132,9 +133,7 @@ class RunAppInClientMode(Intent):
     def respond(self, message: Message) -> Reply | ReplyStream:
         if (app_name := message.entities.get("app_name")) is None:
             return Reply(self.storage.get("NO_APP_NAME_MSG"))
-
-        app_name = app_name
-        if not pathlib.Path(app_name).exists():
+        elif not pathlib.Path(app_name).exists():
             return Reply(f"- App '{app_name}' was not found here, "
                          f"verify that a Pyttman app directory named "
                          f"'{app_name}' exists.")
@@ -159,7 +158,38 @@ class CreateNewAbilityIntent(Intent):
 
     class EntityParser:
         ability_name = TextEntityField()
-        app_name = TextEntityField(prefixes=("app",))
+        app_name = TextEntityField(prefixes=(ability_name,))
 
     def respond(self, message: Message) -> Reply | ReplyStream:
-        raise NotImplementedError
+        files_to_create = ("ability.py", "intents.py", "__init__.py")
+        ability_name = message.entities["ability_name"]
+
+        if (app_name := message.entities.get("app_name")) is None:
+            return Reply(self.storage.get("NO_APP_NAME_MSG"))
+        elif not pathlib.Path(app_name).exists():
+            return Reply(f"- App '{app_name}' was not found here, "
+                         f"verify that a Pyttman app directory named "
+                         f"'{app_name}' exists.")
+        else:
+            app_name = pathlib.Path(app_name)
+
+        abilities_parent_catalog = app_name / "abilities"
+        ability_catalog = abilities_parent_catalog / ability_name
+
+        if not abilities_parent_catalog.exists():
+            os.mkdir(abilities_parent_catalog)
+            init_file_path = abilities_parent_catalog / "__init__.py"
+            with open(init_file_path, "w", encoding="utf-8") as f:
+                # Empty file is OK
+                pass
+
+        if not ability_catalog.exists():
+            os.mkdir(ability_catalog)
+        else:
+            return Reply("There's already an ability with that name.")
+
+        for file in files_to_create:
+            rel_path = ability_catalog / file
+            with open(rel_path, "w", encoding="utf-8") as f:
+                f.write("\n # Created by Pyttman ")
+        return Reply(f"Created ability '{ability_name}'.")
