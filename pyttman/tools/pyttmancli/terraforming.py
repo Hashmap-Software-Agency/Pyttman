@@ -6,6 +6,7 @@ import traceback
 from datetime import datetime
 from importlib import import_module
 from pathlib import Path
+from types import ModuleType
 
 import requests
 
@@ -220,6 +221,7 @@ def bootstrap_app(module: str = None, devmode: bool = False) -> PyttmanApp:
                          abilities=ability_objects_set,
                          settings=settings)
         pyttman.app = app
+        prepare_globals(module)
         return app
 
     # Start the client
@@ -259,4 +261,17 @@ def bootstrap_app(module: str = None, devmode: bool = False) -> PyttmanApp:
                      abilities=ability_objects_set,
                      settings=settings)
     pyttman.app = app
+    prepare_globals(module)
     return app
+
+
+def prepare_globals(module) -> None:
+    """
+    Parses the app module for __all__ in the __init__ file. If the user
+    has defined any modules to import, they're imported. At this time in
+    the terraforming process, 'pyttman.app' is available to the modules
+    being imported.
+    """
+    imported_module: ModuleType = import_module(module)
+    if hasattr(imported_module, "__all__"):
+        [import_module(f"{module}.{i}") for i in imported_module.__all__]
