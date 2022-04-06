@@ -7,7 +7,9 @@ class PrettyReprMixin:
     - How to use:
     Define which fields to include when printing the
     class or calling repr(some_object), by adding their
-    names to the 'repr_fields' tuple.
+    names to the '__repr_fields__' tuple.
+
+    This is just too handy!
     """
     __repr_fields__ = ()
 
