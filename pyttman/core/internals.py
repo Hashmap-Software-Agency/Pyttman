@@ -14,6 +14,18 @@ from pyttman.core.mixins import PrettyReprMixin
 from pyttman.core.communication.models.containers import MessageMixin, Reply
 
 
+def _depr(message: str, version: str, graceful=True) -> None:
+    """
+    Raise DeprecationWarning with a message and version tag for users.
+    :param version: Pyttman version in which deprecation was declared
+    """
+    out = f"{message} - This was deprecated in version {version}."
+    if graceful:
+        warnings.warn(out, DeprecationWarning)
+    else:
+        raise DeprecationWarning(out)
+
+
 def is_dst(timezone: str):
     """
     method for returning a bool whether a timezone
