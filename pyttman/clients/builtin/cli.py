@@ -1,9 +1,8 @@
 import sys
 
 import pyttman
-from typing import Union
 from pyttman.clients.base import BaseClient
-from pyttman.core.communication.models.containers import Message, Reply, \
+from pyttman.core.containers import Message, Reply, \
     ReplyStream
 
 
@@ -21,14 +20,14 @@ class CliClient(BaseClient):
                   "\n(?) Use Ctrl-Z or Ctrl-C plus Return to exit",
                   end="\n\n")
             while True:
-                message = Message(input("Say something: "), client=self)
+                message = Message(input("[YOU]: "), client=self)
                 reply: Reply | ReplyStream = self.\
                     message_router.get_reply(message)
 
                 if isinstance(reply, ReplyStream):
                     while reply.qsize():
-                        print(f"{pyttman.settings.APP_NAME}:", reply.get()
-                              .as_str())
+                        print(f"[{pyttman.settings.APP_NAME.upper()}]: ",
+                              reply.get().as_str())
                 elif isinstance(reply, Reply):
                     print(f"{pyttman.settings.APP_NAME}:", reply.as_str())
                 print()

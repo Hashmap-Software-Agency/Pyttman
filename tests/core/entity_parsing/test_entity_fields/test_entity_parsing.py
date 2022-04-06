@@ -1,15 +1,17 @@
 from pyttman.core.entity_parsing.fields import BoolEntityField, \
     TextEntityField, \
-    FloatEntityField, IntegerEntityField
+    FloatEntityField, IntegerEntityField, StringEntityField, IntEntityField
 from pyttman.core.entity_parsing.identifiers import NumberIdentifier, \
     CapitalizedIdentifier, CellPhoneNumberIdentifier, DateTimeStringIdentifier
-from pyttman.core.communication.models.containers import Message
-from tests.integration.entity_parsing.base import PyttmanInternalTestBaseCase, \
-    ImplementedTestIntent
+from pyttman.core.containers import Message
+from tests.core.entity_parsing.base import ImplementedTestIntent, \
+    PyttmanInternalTestBaseCase
 
 
-class PyttmanInternalEntityParserTestMusicPlayerApp(PyttmanInternalTestBaseCase):
-    test_entities = True
+class PyttmanIntentInternalEntityParserTestMusicPlayerApp(
+    PyttmanInternalTestBaseCase
+):
+    process_message = True
     mock_message = Message("Play 29 Palms by Robert Plant on Spotify or "
                            "soundCloud and shuffle songs")
     expected_entities = {
@@ -41,8 +43,10 @@ class PyttmanInternalEntityParserTestMusicPlayerApp(PyttmanInternalTestBaseCase)
                                                           "soundcloud"))
 
 
-class PyttmanInternalEntityParserTestBookKeeperApp(PyttmanInternalTestBaseCase):
-    test_entities = True
+class PyttmanIntentInternalEntityParserTestBookKeeperApp(
+    PyttmanInternalTestBaseCase
+):
+    process_message = True
     mock_message = Message("add expense Groceries at Whole Foods price 695,"
                            "5684")
     expected_entities = {
@@ -69,8 +73,10 @@ class PyttmanInternalEntityParserTestBookKeeperApp(PyttmanInternalTestBaseCase):
                                              default="default")
 
 
-class PyttmanInternalEntityParserTestTranslatorApp(PyttmanInternalTestBaseCase):
-    test_entities = True
+class PyttmanIntentInternalEntityParserTestTranslatorApp(
+    PyttmanInternalTestBaseCase
+):
+    process_message = True
     mock_message = Message("Translate I Love You from english to swedish")
     expected_entities = {
         "text_to_translate": "I Love You",
@@ -90,8 +96,10 @@ class PyttmanInternalEntityParserTestTranslatorApp(PyttmanInternalTestBaseCase):
             to_language = TextEntityField(prefixes=(from_language,))
 
 
-class PyttmanInternalEntityParserTestContactApp(PyttmanInternalTestBaseCase):
-    test_entities = True
+class PyttmanIntentInternalEntityParserTestContactApp(
+    PyttmanInternalTestBaseCase
+):
+    process_message = True
     mock_message = Message("create a new contact Will Byers on mobile with "
                            "0805552859 and do it on 2021-09-20-10:40")
     expected_entities = {
@@ -116,9 +124,12 @@ class PyttmanInternalEntityParserTestContactApp(PyttmanInternalTestBaseCase):
                                                             "landline"))
 
 
-class PyttmanInternalEntityParserTestExpenseApp(PyttmanInternalTestBaseCase):
-    test_entities = True
-    mock_message = Message("add expense Clothes price 695,5684")
+class PyttmanIntentInternalEntityParserTestExpenseApp(
+    PyttmanInternalTestBaseCase
+):
+    process_message = True
+    test_intent_matching = True
+    mock_message = Message("add expense Clothes price 695,5684:-")
     expected_entities = {
         "item": "Clothes",
         "price": 695.5684}
@@ -136,9 +147,14 @@ class PyttmanInternalEntityParserTestExpenseApp(PyttmanInternalTestBaseCase):
                                    default="default")
             price = FloatEntityField(prefixes=("price",))
 
+        def before_respond(self, message: Message, *args, **kwargs):
+            print(f"\nThis was executed before respond")
 
-class PyttmanInternalEntityParserTestWebscraperApp(PyttmanInternalTestBaseCase):
-    test_entities = True
+
+class PyttmanIntentInternalEntityParserTestWebscraperApp(
+    PyttmanInternalTestBaseCase
+):
+    process_message = True
     mock_message = Message("Search for ManufacturerA ManufacturerB Model123 "
                            "on page_a and page_b price 45000 60 results")
     expected_entities = {
@@ -166,3 +182,75 @@ class PyttmanInternalEntityParserTestWebscraperApp(PyttmanInternalTestBaseCase):
                                                prefixes=("price",))
             maximum_results = IntegerEntityField(suffixes=("results",),
                                                  identifier=NumberIdentifier)
+
+
+def get_valid_strings() -> tuple:
+    return "all", "page_a", "page_b", "page_c"
+
+
+class PyttmanIntentInternalEntityParserTestWebscraperAppWithCallableFields(
+    PyttmanInternalTestBaseCase
+):
+    process_message = True
+    mock_message = Message("Search for ManufacturerA ManufacturerB Model123 "
+                           "on page_a and page_b price 45000 60 results")
+    expected_entities = {
+        "manufacturer": "ManufacturerA ManufacturerB",
+        "model": "Model123",
+        "pages": ["page_a", "page_b"],
+        "minimum_price": 45000,
+        "maximum_results": 60}
+
+    class IntentClass(ImplementedTestIntent):
+        """
+        This test checks The TextEntityField, and asserts that the 'default'
+        argument works as expected.
+        """
+        lead = ("Search",)
+
+        class EntityParser:
+            # Testing fields with callables instead of hard-coded values
+            exclude = ("search", "for", "on")
+            manufacturer = TextEntityField(span=2)
+            model = TextEntityField(prefixes=(manufacturer,))
+            pages = TextEntityField(as_list=True,
+                                    valid_strings=get_valid_strings)
+            minimum_price = IntegerEntityField(identifier=NumberIdentifier,
+                                               prefixes=("price",))
+            maximum_results = IntegerEntityField(suffixes=("results",),
+                                                 identifier=NumberIdentifier)
+            expect_0 = IntegerEntityField(default=0)
+
+
+class PyttmanIntentInternalEntityParserTestDefaultValues(
+    PyttmanInternalTestBaseCase
+):
+    process_message = True
+    mock_message = Message("My new shoes cost me 140:- retail")
+
+    expected_entities = {
+        "should_be_foo": "foo",
+        "should_be_int_140": 140,
+        "should_be_none_str": None,
+        "should_be_none_int": None,
+        "should_be_42_default_int": 42,
+        "should_be_str_1": "1",
+        "purchase_was_retail": True,
+    }
+
+    class IntentClass(ImplementedTestIntent):
+        """
+        This tests that the default values for EntityFields operate as expected.
+        """
+
+        class EntityParser:
+            exclude = ("My", "new", "shoes", "cost", "me")
+
+            should_be_foo = StringEntityField(default="foo")
+            should_be_int_140 = IntEntityField()
+            should_be_none_str = StringEntityField()
+            should_be_none_int = IntegerEntityField()
+            should_be_42_default_int = IntegerEntityField(default=42)
+            should_be_str_1 = StringEntityField(default="1")
+            purchase_was_retail = BoolEntityField(
+                message_contains=("retail",))

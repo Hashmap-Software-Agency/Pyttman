@@ -1,36 +1,14 @@
 import inspect
-from abc import ABC, abstractmethod
 from typing import Tuple
 
 from pyttman.core.intent import Intent
 from pyttman.core.internals import _generate_name
+from pyttman.core.mixins import PrettyReprMixin
 from pyttman.core.storage.basestorage import Storage
 
 
-class AbilityABC(ABC):
-    """
-    Represent the template for a complete and
-    ready-to-use ability.
-    """
+class Ability(PrettyReprMixin):
 
-    @abstractmethod
-    def configure(self):
-        """
-        Hook method which runs during the construction
-        of a Ability.
-        Configure things such as callback bindings (legacy),
-        set up the Storage object with data for your intents
-        to use, make external calls to a server,
-        and other settings. A way to abstract the
-        need to overload __init__ and just configure
-        instance variables without the overhead
-        of calling super() and passing *args and **kwargs.
-        @return: None
-        """
-        pass
-
-
-class Ability(AbilityABC):
     """
     Base class for an Ability.
 
@@ -52,30 +30,23 @@ class Ability(AbilityABC):
     description = "Unavailable"
     intents: Tuple = None
 
+    __repr_fields__ = ("name",)
+
     def __init__(self, **kwargs):
+        super().__init__()
+
         self.storage = Storage()
         self.name = _generate_name(self.__class__.__name__)
-        self.configure()
+        self.before_create()
         [setattr(self, k, v) for k, v in kwargs.items()]
 
         if self.intents is not None:
             self.__validate_intents()
-        else:
-            raise AttributeError(f"Ability {self.__class__.__name__} "
-                                 f"has no intents. Provide at least "
-                                 f"one Intent class in the 'intents' "
-                                 f"property tuple.")
-
-    def __repr__(self):
-        return f'Ability({type(self).__name__})'
-
-    def configure(self):
-        pass
 
     def __validate_intents(self):
         """
         Assert that the tuple contains references to
-        Intent subclasses and nothing else.
+        'Intent' subclasses and nothing else.
         """
         try:
             iter(self.intents)
@@ -105,3 +76,11 @@ class Ability(AbilityABC):
                         raise AttributeError(
                             "An error occurred with the EntityParser "
                             f"in Intent class '{intent_class}': {e}")
+
+    def before_create(self):
+        """
+        Lifecycle hook. This hook method is executed before the
+        ability is created, when the application starts, but it
+        does have access to the Storage object.
+        """
+        pass

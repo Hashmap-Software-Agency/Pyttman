@@ -1,13 +1,13 @@
 import abc
 import random
 import warnings
-from typing import List, Union
+from typing import List, Any
 
 import pyttman
 from pyttman.core.ability import Ability
 from pyttman.core.intent import Intent
-from pyttman.core.communication.models.containers import MessageMixin, \
-    Reply, ReplyStream
+from pyttman.core.containers import MessageMixin, \
+    Reply, ReplyStream, Message
 from pyttman.core.internals import _generate_error_entry
 
 
@@ -24,7 +24,7 @@ class AbstractMessageRouter(abc.ABC):
     Intent classes and select the first one
     matching - or they can be powered by internal
     caches, learn patterns and be powered by
-    Machine Leraning.
+    Machine learning.
 
     Users should rarely encounter this class as
     it's being used outside the scope of apps
@@ -62,9 +62,56 @@ class AbstractMessageRouter(abc.ABC):
 
         If the command contains help, return the help
         string for the matching command.
-        :return: Reply
+        :param message: MessageMixin subclassed object, from client
         """
         pass
+
+    @staticmethod
+    def process(message: Message,
+                intent: Intent,
+                keep_alive_on_exc=True) -> Reply | ReplyStream:
+        """
+        Iterate over all Parser objects and the name
+        of the field it's allocated as.
+
+        The strings present in 'lead' and 'trail' in the Intent are
+        filtered out as for them not to be parsed by the Entity parser.
+
+        :param intent: The Intent class chosen to provide a Reply to the user.
+        :param message: MessageMixin object
+        :param keep_alive_on_exc: Keeps the main loop running if exceptions
+        occur in the application logic, and replies with an error message
+        fetched from the application settings. Defaults to True.
+        :return: Reply, logic defined in the 'respond' method
+        """
+        joined_patterns = set(intent.lead + intent.trail)
+        truncated_content = [i for i in message.content
+                             if i.casefold() not in joined_patterns]
+        truncated_message = Message(content=truncated_content)
+
+        entities: dict[str: Any] = intent.process_entities(truncated_message)
+        message.entities = {k: v.value for k, v in entities.items()}
+
+        try:
+            intent.before_respond(message)
+            reply: Reply | ReplyStream = intent.respond(message=message)
+            intent.after_respond(message, reply)
+        except Exception as e:
+            reply = _generate_error_entry(message, e)
+            if keep_alive_on_exc is False:
+                raise e
+
+        constraints = {
+            bool(reply is not None),
+            bool(isinstance(reply, Reply) or isinstance(reply, ReplyStream))
+        }
+
+        if False in constraints:
+            raise ValueError(f"Improperly configured Intent class: "
+                             f"{intent.__class__.__name__}."
+                             f"respond method returned '{type(reply)}', "
+                             f"expected Reply or ReplyStream")
+        return reply
 
 
 class FirstMatchingRouter(AbstractMessageRouter):
@@ -75,8 +122,7 @@ class FirstMatchingRouter(AbstractMessageRouter):
     in order is chosen.
     """
 
-    def get_reply(self, message: MessageMixin) -> Reply:
-
+    def get_reply(self, message: Message) -> Reply:
         try:
             if not (matching_intents := self.get_matching_intent(message)):
                 return Reply(random.choice(self.intent_unknown_responses))
@@ -110,8 +156,8 @@ class FirstMatchingRouter(AbstractMessageRouter):
                 # else:
                 #  TODO - Return help chapter for ability
         try:
-            reply: Reply | ReplyStream = chosen_intent.process(
-                message=message)
+            reply: Reply | ReplyStream = self.process(message=message,
+                                                      intent=chosen_intent)
         except Exception as e:
             reply: Reply = _generate_error_entry(message, e)
         return reply

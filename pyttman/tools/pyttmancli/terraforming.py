@@ -1,67 +1,68 @@
-import sys
 import logging
 import os
 import shutil
+import sys
 import traceback
 from datetime import datetime
 from importlib import import_module
 from pathlib import Path
+from types import ModuleType
 
-from py7zr import unpack_7zarchive
+import requests
 
 import pyttman
 from pyttman.clients.builtin.cli import CliClient
 from pyttman.core.ability import Ability
 from pyttman.core.exceptions import PyttmanProjectInvalidException
-from pyttman.core.internals import Settings
+from pyttman.core.internals import Settings, PyttmanApp, _depr
 from pyttman.core.middleware.routing import AbstractMessageRouter
-from pyttman.tools.pyttmancli import Runner
 
 
 class TerraFormer:
     """
     Terraform a directory to start developing
-    a Pyttman project.
+    a Pyttman project by cloning it from GitHub.
     """
 
-    def __init__(self, app_name: str, source=None):
-
+    def __init__(self, app_name: str, url: str):
         self.app_name = app_name
-        self.extraction_dir = Path.cwd() / Path(app_name)
-
-        application_path = Path(os.path.dirname(os.path.abspath(__file__)))
-
-        if source is None:
-            self.source = Path(application_path).parent.parent / \
-                          Path("core") / Path("terraform_template") / \
-                          Path("project_template.7z")
-            if not os.path.isfile(self.source):
-                raise FileNotFoundError("Pyttman could not locate the "
-                                        "template .7z archive for "
-                                        "terraforming. It was expected to be "
-                                        f"here: '{self.source}' To "
-                                        "solve this problem, reinstall "
-                                        "Pyttman. If you think this error "
-                                        "is our fault - please submit an "
-                                        "issue on GitHub!")
-        else:
-            self.source = source
+        self.url = url
+        self.new_template_name = Path.cwd() / app_name
+        self.template_file_name = Path("pyttman-template.zip")
+        self.settings_file_path = self.new_template_name / Path("settings.py")
+        self.template_dir_name = "pyttman-project-template-main"
 
     def terraform(self):
+        """
+        Clone the Pyttman template repository from GitHub
+        and configure settings.py with the user provided app name.
+        """
+        old_template_name = Path.cwd() / self.template_dir_name
+        scratch_file_name = Path.cwd() / self.template_file_name
+        stream = requests.get(self.url, allow_redirects=True)
 
-        shutil.register_unpack_format('7zip', ['.7z'], unpack_7zarchive)
-        shutil.unpack_archive(self.source, self.extraction_dir)
-        settings_file_path = Path(self.extraction_dir) / Path("settings.py")
+        with open(scratch_file_name, "wb") as f:
+            f.write(stream.content)
 
-        with open(settings_file_path, "a", encoding="utf-8") as settings_file:
+        try:
+            shutil.unpack_archive(scratch_file_name, Path.cwd())
+            os.rename(old_template_name, self.new_template_name)
+        except FileExistsError as e:
+            if scratch_file_name.exists():
+                os.remove(scratch_file_name)
+            if old_template_name.exists():
+                shutil.rmtree(old_template_name)
+            raise FileExistsError("There is already an app with "
+                                  "that name in this project.") from e
+
+        with open(self.settings_file_path, "a", encoding="utf-8") \
+                as settings_file:
             settings_file.write(f"\nAPP_NAME = \"{self.app_name}\"\n")
 
-    def get_info(self):
-        return f"Extraction dir: {self.extraction_dir}, " \
-               f"Source: {self.source}"
+        os.remove(self.template_file_name)
 
 
-def bootstrap_environment(module: str = None, devmode: bool = False) -> Runner:
+def bootstrap_app(module: str = None, devmode: bool = False) -> PyttmanApp:
     """
     Bootstraps the framework with modules and configurations
     read from the settings.py found in the current path.
@@ -72,7 +73,6 @@ def bootstrap_environment(module: str = None, devmode: bool = False) -> Runner:
 
     :param module: Module in which the app source is located
     :param devmode: Provides only one runner with the CliClient in.
-    :return: Runner instance with a ready-to-run Client instance.
     """
 
     # This enables relative imports
@@ -92,7 +92,7 @@ def bootstrap_environment(module: str = None, devmode: bool = False) -> Runner:
     try:
         settings_module = import_module(f"{module}.settings")
         settings_names = [i for i in dir(settings_module)
-                          if not i.startswith("__")]
+                          if not i.startswith("_")]
         settings_config = {name: getattr(settings_module, name)
                            for name in settings_names}
         settings = Settings(**settings_config)
@@ -118,7 +118,12 @@ def bootstrap_environment(module: str = None, devmode: bool = False) -> Runner:
         file_name = Path(
             f"{app_name}-{datetime.now().strftime('%y%m%d-%H-%M-%S')}.log")
 
-    log_file_name = Path(pyttman.settings.LOG_FILE_DIR) / file_name
+    log_file_dir = Path(pyttman.settings.LOG_FILE_DIR)
+    if not log_file_dir.is_dir():
+        os.mkdir(log_file_dir.as_posix())
+
+    log_file_name = log_file_dir / file_name
+
     logging_handle = logging.FileHandler(
         filename=log_file_name, encoding="utf-8",
         mode="a+" if pyttman.settings.APPEND_LOG_FILES else "w")
@@ -137,9 +142,17 @@ def bootstrap_environment(module: str = None, devmode: bool = False) -> Runner:
     # Set the configured instance of logger to the pyttman.PyttmanLogger object
     pyttman.logger.LOG_INSTANCE = logger
 
-    # Import the router defined in MESSAGE_ROUTER in settings.py
-    message_router_config = settings.MESSAGE_ROUTER\
-        .get("ROUTER_CLASS").split(".")
+    # Import the router defined in MIDDLEWARE in settings.py
+    try:
+        message_router_config = settings.MIDDLEWARE.get(
+            "ROUTER_CLASS"
+        ).split(".")
+    except AttributeError:
+        _depr("Please rename 'MESSAGE_ROUTER' to 'MIDDLEWARE' in "
+              "'settings.py' for this application.",
+              "1.1.11",
+              False)
+
     message_router_class_name = message_router_config.pop()
     message_router_module = ".".join(message_router_config)
     message_router_module = import_module(message_router_module)
@@ -152,7 +165,7 @@ def bootstrap_environment(module: str = None, devmode: bool = False) -> Runner:
                           f"Verify the MESSAGE_ROUTER setting in settings.py.")
 
     # Retrieve the help keyword from settings
-    if not (help_keyword := settings.MESSAGE_ROUTER.get("HELP_KEYWORD")):
+    if not (help_keyword := settings.MIDDLEWARE.get("HELP_KEYWORD")):
         raise AttributeError("'HELP_KEYWORD' not defined in settings.py. "
                              "Please define a word for the automatic "
                              "help page generation to trigger on in your "
@@ -161,11 +174,11 @@ def bootstrap_environment(module: str = None, devmode: bool = False) -> Runner:
                              "'HELP_KEYWORD' = 'help'")
 
     # Retrieve command-unknown-responses from settings
-    if not (command_unknown_responses := settings.MESSAGE_ROUTER.
+    if not (command_unknown_responses := settings.MIDDLEWARE.
             get("COMMAND_UNKNOWN_RESPONSES")):
         raise ValueError("There are no responses provided for when "
                          "no intents match a query. Define these in "
-                         "MESSAGE_ROUTER['COMMAND_UNKNOWN_RESPONSES'] as "
+                         "MIDDLEWARE['COMMAND_UNKNOWN_RESPONSES'] as "
                          "a list of strings")
 
     # Import the client classes defined in CLIENTS in settings.py
@@ -181,7 +194,7 @@ def bootstrap_environment(module: str = None, devmode: bool = False) -> Runner:
         assert not isinstance(ability, Ability), \
             f"The ability '{ability}' is instantiated. Please redefine " \
             f"this ability as only the reference to the class, " \
-            f"as shown in the docs. "
+            f"as in 'MyClass', not 'MyClass()'. "
 
         ability_module_config = ability.split(".")
         ability_class_name = ability_module_config.pop()
@@ -191,13 +204,13 @@ def bootstrap_environment(module: str = None, devmode: bool = False) -> Runner:
 
         # Instantiate the ability class and traverse over its intents.
         # Validate.
-        intent_instance = ability_class()
+        ability = ability_class()
         assert issubclass(ability_class, Ability), \
-            f"'{intent_instance.__class__.__name__}' " \
+            f"'{ability.__class__.__name__}' " \
             f"is not a subclass of 'Ability'. " \
             f"Check your ABILITIES list in settings.py and verify that " \
             f"all classes defined are Ability subclasses."
-        ability_objects_set.add(intent_instance)
+        ability_objects_set.add(ability)
 
     assert len(ability_objects_set), "No Ability classes were provided the " \
                                      "ABILITIES list in settings.py"
@@ -210,9 +223,15 @@ def bootstrap_environment(module: str = None, devmode: bool = False) -> Runner:
 
     # If devmode is active, return only one CliClient in a runner.
     if devmode:
-        pyttman.settings.DEV_MODE = True
         client = CliClient(message_router=message_router)
-        return Runner(settings.APP_NAME, client)
+        app = PyttmanApp(client=client,
+                         name=settings.APP_NAME,
+                         abilities=ability_objects_set,
+                         settings=settings)
+        pyttman.app = app
+        prepare_app(module)
+        del settings.CLIENT
+        return app
 
     # Start the client
     if not isinstance(settings.CLIENT, dict):
@@ -229,11 +248,11 @@ def bootstrap_environment(module: str = None, devmode: bool = False) -> Runner:
                          "Client documentation for more help on this subject.")
     try:
         client_class_name = client_class_config.pop()
-        module_name = ".".join(client_class_config)
-        module = import_module(module_name)
+        client_module_name = ".".join(client_class_config)
+        client_module = import_module(client_module_name)
 
         # Provide the client with message_router and runner with client
-        client_class = getattr(module, client_class_name)
+        client_class = getattr(client_module, client_class_name)
     except Exception as e:
         raise RuntimeError(f"Cannot start client. Check "
                            f"the following error and correct "
@@ -243,4 +262,19 @@ def bootstrap_environment(module: str = None, devmode: bool = False) -> Runner:
 
     # Create a log entry for app start
     pyttman.logger.log(f" -- App {app_name} started: {datetime.now()} -- ")
-    return Runner(settings.APP_NAME, client)
+    app = PyttmanApp(client=client,
+                     name=settings.APP_NAME,
+                     abilities=ability_objects_set,
+                     settings=settings)
+    pyttman.app = app
+    prepare_app(module)
+    del settings.CLIENT
+    return app
+
+
+def prepare_app(module):
+    try:
+        import_module(f"{module}.app")
+    except ImportError:
+        # The app is missing this file; no problemo.
+        pass

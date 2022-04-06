@@ -1,7 +1,7 @@
 import re
 from typing import Union
 
-from pyttman.core.communication.models.containers import MessageMixin
+from pyttman.core.containers import MessageMixin
 from pyttman.core.entity_parsing.entity import Entity
 
 

@@ -1,7 +1,6 @@
-import unittest
 from unittest import TestCase
 
-from pyttman.core.communication.models.containers import Message
+from pyttman.core.containers import Message
 from pyttman.core.entity_parsing import identifiers
 from pyttman.core.entity_parsing.entity import Entity
 

@@ -1,5 +1,5 @@
 import discord
-from pyttman.core.communication.models.containers import MessageMixin
+from pyttman.core.containers import MessageMixin
 
 
 class DiscordMessage(MessageMixin, discord.Message):

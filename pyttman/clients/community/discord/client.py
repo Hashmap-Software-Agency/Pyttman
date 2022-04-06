@@ -3,10 +3,9 @@ import asyncio
 from datetime import datetime
 
 import discord
-from typing import Union
 from pyttman.clients.base import BaseClient
 from pyttman.clients.community.discord.misc import DiscordMessage
-from pyttman.core.communication.models.containers import Reply, ReplyStream
+from pyttman.core.containers import Reply, ReplyStream
 from pyttman.core.internals import _generate_error_entry
 
 

@@ -1,4 +1,3 @@
-
 class PyttmanProjectInvalidException(BaseException):
     """
     Exception class for internal use.
@@ -20,7 +19,7 @@ class TypeConversionFailed(BaseException):
 
 class InvalidPyttmanObjectException(BaseException):
     """
-    This error is thrown when a user-implementation of a component within
+    This error is raised when a user-implementation of a component within
     the Pyttman API is not correctly configured by the developer.
     """
     def __init__(self, message):

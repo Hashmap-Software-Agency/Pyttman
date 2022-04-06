@@ -17,13 +17,10 @@ import argparse
 import sys
 import typing
 
-from pyttman.core.communication.models.containers import Message
+from pyttman.core.containers import Message
 from pyttman.core.middleware.routing import FirstMatchingRouter
-from pyttman.tools.pyttmancli.executor import Runner
-from pyttman.tools.pyttmancli.terraforming import TerraFormer, \
-    bootstrap_environment
-from pyttman.tools.pyttmancli.terraforming import bootstrap_environment, \
-    TerraFormer
+from pyttman.tools.pyttmancli.terraforming import TerraFormer, bootstrap_app
+from pyttman.tools.pyttmancli.terraforming import bootstrap_app, TerraFormer
 from pyttman.tools.pyttmancli.ability import PyttmanCli
 
 
@@ -46,7 +43,7 @@ def run(argv=None, dev_args: typing.List = None):
     :param argv: Args from a terminal shell.
     :param dev_args: Optional developer args in a list of
                      strings, for unit testing the Pyttman CLI
-                     or otherwise using it outside of a terminal
+                     or otherwise using it outside a terminal
                      shell. Defining this argument will automatically
                      disregard the 'argv' arguments
     :return: None
@@ -82,8 +79,6 @@ def run(argv=None, dev_args: typing.List = None):
     elif dev_args is not None:
         terminal_message = Message(dev_args)
 
-    # Let the Pyttman cli parse the command. If a Runner is created,
-    # it's started.
     reply = router.get_reply(terminal_message)
     print(reply.as_str())
 

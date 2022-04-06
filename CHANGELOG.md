@@ -1,5 +1,117 @@
 # Pyttman Changelog
 
+
+
+
+# v 1.1.11
+**2022-**
+
+This release improves the **EntityParser** API, packs the new `create 
+ability` command for the `pyttman` cli tool, and introduces a 
+few new other features and bugfixes.
+
+### :star2: News
+* New EntityField classes
+
+  * The `TextEntityField` can now also be used as `StringEntityField` and 
+    `StrEntityField`
+  
+  * The `IntegerEntityField` can now also be used as `IntEntityField`
+
+
+* New command for `pyttman` cli: `create ability` 
+  
+  You can now create new ability modules with the Pyttman cli tool 
+  `pyttman` from your terminal shell. A new module is created with 
+  `ability.py`, `intents.py` and `__init__.py` file inside. Our ambition is 
+  that this further improves the simplicity of developing apps with Pyttman,
+  by streamlining the way applications grow.  
+
+
+* `pyttman.app` 
+
+  In Pyttman, you now have access to your application represented as the 
+  `app` object, which you can import from pyttman as:  `from pyttman import 
+  app` in any file inside your project. On this object you have access to 
+  `settings`, `abilities` and `hooks` (mentioned further down) - which 
+  empowers you to inspect and modify the state of your app down the road. 
+
+
+* **Project templates** 
+
+  The project template, used when creating new projects, is no longer shipped 
+  with the project through PyPi, but 
+  rather downloaded from an official GitHub repository, lowering the 
+  payload when installing the package and ensures distributions always use 
+  the latest templates.
+
+
+* **Lifecycle Hooks**
+
+  Lifecycle hooks allows you as a developer to have code executed in 
+  certain timepoints in the lifecycle of your application. 
+  * **Ability** lifecycle hook: 'before_create' allows you to execute code 
+    before a certain Ability is loaded. This is useful to pre-populate the 
+    `storage` object as `self.storage['foo'] = 'bar'` before the ability is 
+    loaded.
+  
+  * `app` lifecycle hooks allows you to import the app you've developed as: 
+    `from pyttman import app`, and then decorating any function in the 
+    application as `@app.hooks.run('before_start')` allows you to run a 
+    function before the entire app starts. This is useful for connecting to 
+    databases or performing other tasks necessary to the application. 
+    > **You can only decorate functions as app-lifecycle hooks from a 
+    special module in your app: `app.py`. This module is automatically 
+    imported at the start of the runtime, by Pyttman, if present in the app 
+    root directory.** 
+
+
+* **Introducing support for params in `EntityField` classes to be callable**
+  
+  A select set of arguments provided to EntityField classes such as 
+  `StringEntityField` and others, can now be callables. This allows you as 
+  a developer to have rules for EntityField classes evaluated at runtime, 
+  and not when the app starts. This is useful for scenarios where you'd 
+  want data from a dynamic source to control the behavior of an EntityField,
+  say the available users in your app. 
+ 
+  **Example**: `username = 
+  StringEntityField(valid_strings=get_enrolled_usernames)`
+
+
+### 👀 Changes
+
+  > Note! This is a breaking change.
+* **Further expansion of the Pyttman Middleware epic**
+
+  In applications, the `settings.py` setting called `MESSAGE_ROUTER` 
+  changes name to `MIDDLEWARE`. This is a part of the movement toward 
+  supporting more flexible and powerful plugins in Pyttman, where the 
+  MessageRouter belongs as a part of this Midde-ware ecosystem.
+  In new apps, this setting has the updated name automatically. In apps 
+  from previous versions of Pyttman, you must change this name in `settings.py.`
+
+
+* **Refactored the `Message`, `Reply` and `ReplyStream` classes import path**
+  
+  This update moves the above mentioned classes. Change imports 
+
+   **from:**
+    
+    `from pyttman.core.communication.models.containers import Reply, ReplyStream, Message`
+  
+    **to:**
+  
+     `from pyttman.core.containers import Reply,  ReplyStream, Message`
+* 
+
+### **🐛 Splatted bugs and corrected issues** 
+* **Fixes [#58]((https://github.com/dotchetter/Pyttman/issues/58)**
+* **Fixes [#62]((https://github.com/dotchetter/Pyttman/issues/58)**
+  
+  
+
+
 # v 1.1.10
 **2022-02-28**
 

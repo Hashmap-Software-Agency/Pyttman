@@ -1,5 +1,6 @@
 import inspect
 from abc import ABC
+from functools import singledispatchmethod
 from typing import Any, Sequence, Type
 
 from pyttman.core.entity_parsing.identifiers import IntegerIdentifier, \
@@ -66,14 +67,31 @@ class EntityFieldBase(EntityFieldValueParser, ABC):
         :param value: Any
         :return: Any
         """
+        if value is None:
+            return value
+
         try:
-            value = self.perform_type_conversion(value)
+            if self.as_list:
+                if not isinstance(value, list):
+                    converted_as_list = value.split()
+                else:
+                    converted_as_list = value
+
+                for i, _ in enumerate(converted_as_list):
+                    current_item = converted_as_list[i]
+                    custom_mutation = self.before_conversion(current_item)
+                    converted_value = self.type_cls(custom_mutation)
+                    converted_as_list[i] = converted_value
+                return converted_as_list
+            else:
+                custom_mutation = self.before_conversion(value)
+                converted_value = self.type_cls(custom_mutation)
         except Exception as e:
             raise TypeConversionFailed(from_type=type(value),
                                        to_type=self.type_cls) from e
-        return value
+        return converted_value
 
-    def perform_type_conversion(self, value: Any) -> Any:
+    def before_conversion(self, value: Any) -> str:
         """
         Perform the conversion from unknown type in 'value
         with the logic and constraints known only by the
@@ -82,16 +100,7 @@ class EntityFieldBase(EntityFieldValueParser, ABC):
         :param value: Any
         :return: Any
         """
-        if value is None:
-            return value
-
-        if self.as_list:
-            value_as_list = value.split()
-            for i, _ in enumerate(value_as_list):
-                value_as_list[i] = self.type_cls(value_as_list[i])
-            return value_as_list
-        converted = self.type_cls(value)
-        return converted
+        return value
 
 
 class IntegerEntityField(EntityFieldBase):
@@ -102,6 +111,11 @@ class IntegerEntityField(EntityFieldBase):
     type_cls = int
     identifier_cls = IntegerIdentifier
 
+    def before_conversion(self, value: str) -> str:
+        if isinstance(value, str):
+            return "".join(i for i in value if i.isdigit())
+        return value
+
 
 class FloatEntityField(EntityFieldBase):
     """
@@ -111,15 +125,13 @@ class FloatEntityField(EntityFieldBase):
     type_cls = float
     identifier_cls = IntegerIdentifier
 
-    @classmethod
-    def perform_type_conversion(cls, value) -> Any:
-        if value is None:
-            return 0.0
+    def before_conversion(self, value: str) -> str:
+        converted = "".join(i for i in value if i.isdigit() or i in ".,")
         try:
-            value = value.replace(",", ".")
+            converted = converted.replace(",", ".")
         except AttributeError:
             pass
-        return cls.type_cls(value)
+        return converted
 
 
 class TextEntityField(EntityFieldBase):
@@ -145,19 +157,8 @@ class BoolEntityField(EntityFieldBase):
                  **kwargs):
         super().__init__(*args, valid_strings=message_contains, **kwargs)
 
-    def perform_type_conversion(self, value: Any) -> Any:
-        """
-        Perform the conversion from unknown type in 'value
-        with the logic and constraints known only by the
-        subclass with knowledge about its typecast.
 
-        :param value: Any
-        :return: Any
-        """
-        if self.as_list:
-            value_as_list = value.split()
-            for i, _ in enumerate(value_as_list):
-                value_as_list[i] = self.type_cls(value_as_list[i])
-            return value_as_list
-        converted = self.type_cls(value)
-        return converted
+if __name__ != "__main__":
+    StringEntityField = TextEntityField
+    StrEntityField = TextEntityField
+    IntEntityField = IntegerEntityField

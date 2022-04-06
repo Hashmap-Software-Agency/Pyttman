@@ -2,20 +2,35 @@ import inspect
 import traceback
 import uuid
 import warnings
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from datetime import datetime
+from typing import Any
 
 import pytz
 
 import pyttman
-from pyttman.core.communication.models.containers import MessageMixin, Reply
+from pyttman.core.decorators import LifecycleHookRepository
+from pyttman.core.mixins import PrettyReprMixin
+from pyttman.core.containers import MessageMixin, Reply
+
+
+def _depr(message: str, version: str, graceful=True) -> None:
+    """
+    Raise DeprecationWarning with a message and version tag for users.
+    :param version: Pyttman version in which deprecation was declared
+    """
+    out = f"{message} - This was deprecated in version {version}."
+    if graceful:
+        warnings.warn(out, DeprecationWarning)
+    else:
+        raise DeprecationWarning(out)
 
 
 def is_dst(timezone: str):
     """
-    method for returning a bool whether or not a timezone
+    method for returning a bool whether a timezone
     currently is in daylight savings time, useful for servers
-    that run systems outside of the user timezone.
+    that run systems outside the user timezone.
     :param timezone:
         string, timezone to give pytz for the dst query.
         look up available timezones at this url:
@@ -38,23 +53,24 @@ class Settings:
     of using the entire module as reference in 'pyttman.settings'
     throughout Pyttman apps.
 
-    The Settings class automatically omitts any instance
+    The Settings class automatically omits any instance
     in **kwargs being of instance <module> since modules
-    aren't picklable. It also omitts functions as callables
+    aren't picklable. It also omits functions as callables
     aren't valid settings.
     """
-    APPEND_LOG_FILES: bool
-    MESSAGE_ROUTER: dict
-    ABILITIES: list
-    FATAL_EXCEPTION_AUTO_REPLY: list
-    CLIENT: dict
-    APP_BASE_DIR: str
-    LOG_FILE_DIR: str
-    APP_NAME: str
-    LOG_FORMAT: str
-    LOG_TO_STDOUT: bool = False
 
     def __init__(self, **kwargs):
+        self.APPEND_LOG_FILES: bool = True
+        self.MIDDLEWARE: dict | None = None
+        self.ABILITIES: list | None = None
+        self.FATAL_EXCEPTION_AUTO_REPLY: list | None = None
+        self.CLIENT: dict | None = None
+        self.APP_BASE_DIR: str | None = None
+        self.LOG_FILE_DIR: str | None = None
+        self.APP_NAME: str | None = None
+        self.LOG_FORMAT: str | None = None
+        self.LOG_TO_STDOUT: bool = False
+
         [setattr(self, k, v) for k, v in kwargs.items()
          if not inspect.ismodule(v)
          and not inspect.isfunction(v)]
@@ -62,19 +78,6 @@ class Settings:
     def __repr__(self):
         _attrs = {name: value for name, value in self.__dict__.items()}
         return f"Settings({_attrs})"
-
-
-@dataclass
-class _cim:
-    """
-    This class is only used as a namespace
-    for internal messages used by exceptions
-    or elsewhere by pyttman classes
-    and functions. Not for instantiating.
-    """
-    deprecated_warn: str = "pyttman DEPRECATED WARNING"
-    warn: str = "Pyttman WARNING"
-    err: str = "Pyttman ERROR"
 
 
 def load_settings(*args):
@@ -114,7 +117,7 @@ def _generate_error_entry(message: MessageMixin, exc: BaseException) -> Reply:
     to the log file entry, explaining the error. For the front
     end clients, a Reply object is returned to provide for
     end users who otherwise would experience a chatbot who
-    didn't reply back at all.
+    didn't reply at all.
     :param message: MessageMixin
     :param exc: Exception
     :return: Reply
@@ -132,20 +135,29 @@ def _generate_error_entry(message: MessageMixin, exc: BaseException) -> Reply:
                  f"Error id: {error_id}")
 
 
-class PrettyReprMixin:
+@dataclass
+class PyttmanApp(PrettyReprMixin):
     """
-    Mixin providing a common interface for
-    __repr__ methods which represents classes
-    in a very readable way.
-
-    - How to use:
-    Define which fields to include when printing the
-    class or calling repr(some_object), by adding their
-    names to the 'repr_fields' tuple.
+    The highest point of abstraction for a Pyttman application.
+    This class holds the Settings, the Abilities and lifecycle hooks
+    for the application, including the Client class used to interface with
+    the platform of choice.
+    This singleton instance is available through 'from pyttman import app'.
     """
-    repr_fields = ()
+    __repr_fields__ = ("name", "client", "hooks")
 
-    def __repr__(self):
-        name = self.__class__.__name__
-        attrs = [f"{i}={getattr(self, i)}" for i in self.repr_fields]
-        return f"{name}({', '.join(attrs)})"
+    client: Any
+    name: str | None = field(default=None)
+    settings: Settings | None = field(default=None)
+    abilities: set = field(default_factory=set)
+    hooks: LifecycleHookRepository = field(
+        default_factory=lambda: LifecycleHookRepository())
+
+    def start(self):
+        """
+        Start a Pyttman application.
+        """
+        try:
+            self.client.run_client()
+        except Exception:
+            warnings.warn(traceback.format_exc())

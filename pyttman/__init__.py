@@ -19,6 +19,18 @@ class _SettingsNotConfigured:
                                   "use 'pyttman shell <app name>'. ")
 
 
+class _AppNotConfigured:
+    def __getattr__(self, item):
+        raise NotImplementedError("pyttman.app was accessed before its "
+                                  "creation. This error can occur if you're "
+                                  "trying to decorate functions as lifecycle "
+                                  "hooks, in an ability -or intent module, "
+                                  "which is included in the 'ABILITIES' list "
+                                  "in settings.py. To mitigate this error, "
+                                  "move lifecycle hooks to a separate module.")
+
+
+app = None
 settings = _SettingsNotConfigured
 is_configured = False
 logger = PyttmanLogger
