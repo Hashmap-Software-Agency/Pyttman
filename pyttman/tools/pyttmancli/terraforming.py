@@ -14,7 +14,7 @@ import pyttman
 from pyttman.clients.builtin.cli import CliClient
 from pyttman.core.ability import Ability
 from pyttman.core.exceptions import PyttmanProjectInvalidException
-from pyttman.core.internals import Settings, PyttmanApp
+from pyttman.core.internals import Settings, PyttmanApp, _depr
 from pyttman.core.middleware.routing import AbstractMessageRouter
 
 
@@ -143,7 +143,16 @@ def bootstrap_app(module: str = None, devmode: bool = False) -> PyttmanApp:
     pyttman.logger.LOG_INSTANCE = logger
 
     # Import the router defined in MIDDLEWARE in settings.py
-    message_router_config = settings.MIDDLEWARE.get("ROUTER_CLASS").split(".")
+    try:
+        message_router_config = settings.MIDDLEWARE.get(
+            "ROUTER_CLASS"
+        ).split(".")
+    except AttributeError:
+        _depr("Please rename 'MESSAGE_ROUTER' to 'MIDDLEWARE' in "
+              "'settings.py' for this application.",
+              "1.1.11",
+              False)
+
     message_router_class_name = message_router_config.pop()
     message_router_module = ".".join(message_router_config)
     message_router_module = import_module(message_router_module)
@@ -267,7 +276,7 @@ def bootstrap_app(module: str = None, devmode: bool = False) -> PyttmanApp:
 
 def prepare_app(module):
     try:
-        import_module("app", module)
+        import_module(f"{module}.app")
     except ImportError:
         # The app is missing this file; no problemo.
         pass
