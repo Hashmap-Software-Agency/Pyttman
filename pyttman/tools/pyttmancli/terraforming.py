@@ -142,9 +142,8 @@ def bootstrap_app(module: str = None, devmode: bool = False) -> PyttmanApp:
     # Set the configured instance of logger to the pyttman.PyttmanLogger object
     pyttman.logger.LOG_INSTANCE = logger
 
-    # Import the router defined in MESSAGE_ROUTER in settings.py
-    message_router_config = settings.MESSAGE_ROUTER\
-        .get("ROUTER_CLASS").split(".")
+    # Import the router defined in MIDDLEWARE in settings.py
+    message_router_config = settings.MIDDLEWARE.get("ROUTER_CLASS").split(".")
     message_router_class_name = message_router_config.pop()
     message_router_module = ".".join(message_router_config)
     message_router_module = import_module(message_router_module)
@@ -157,7 +156,7 @@ def bootstrap_app(module: str = None, devmode: bool = False) -> PyttmanApp:
                           f"Verify the MESSAGE_ROUTER setting in settings.py.")
 
     # Retrieve the help keyword from settings
-    if not (help_keyword := settings.MESSAGE_ROUTER.get("HELP_KEYWORD")):
+    if not (help_keyword := settings.MIDDLEWARE.get("HELP_KEYWORD")):
         raise AttributeError("'HELP_KEYWORD' not defined in settings.py. "
                              "Please define a word for the automatic "
                              "help page generation to trigger on in your "
@@ -166,11 +165,11 @@ def bootstrap_app(module: str = None, devmode: bool = False) -> PyttmanApp:
                              "'HELP_KEYWORD' = 'help'")
 
     # Retrieve command-unknown-responses from settings
-    if not (command_unknown_responses := settings.MESSAGE_ROUTER.
+    if not (command_unknown_responses := settings.MIDDLEWARE.
             get("COMMAND_UNKNOWN_RESPONSES")):
         raise ValueError("There are no responses provided for when "
                          "no intents match a query. Define these in "
-                         "MESSAGE_ROUTER['COMMAND_UNKNOWN_RESPONSES'] as "
+                         "MIDDLEWARE['COMMAND_UNKNOWN_RESPONSES'] as "
                          "a list of strings")
 
     # Import the client classes defined in CLIENTS in settings.py

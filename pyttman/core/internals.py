@@ -49,7 +49,7 @@ class Settings:
 
     def __init__(self, **kwargs):
         self.APPEND_LOG_FILES: bool = True
-        self.MESSAGE_ROUTER: dict | None = None
+        self.MIDDLEWARE: dict | None = None
         self.ABILITIES: list | None = None
         self.FATAL_EXCEPTION_AUTO_REPLY: list | None = None
         self.CLIENT: dict | None = None
