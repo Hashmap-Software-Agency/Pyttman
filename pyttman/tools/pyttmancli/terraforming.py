@@ -92,7 +92,7 @@ def bootstrap_app(module: str = None, devmode: bool = False) -> PyttmanApp:
     try:
         settings_module = import_module(f"{module}.settings")
         settings_names = [i for i in dir(settings_module)
-                          if not i.startswith("__")]
+                          if not i.startswith("_")]
         settings_config = {name: getattr(settings_module, name)
                            for name in settings_names}
         settings = Settings(**settings_config)
@@ -206,6 +206,7 @@ def bootstrap_app(module: str = None, devmode: bool = False) -> PyttmanApp:
     assert len(ability_objects_set), "No Ability classes were provided the " \
                                      "ABILITIES list in settings.py"
 
+    del settings.CLIENT
     # Instantiate router and provide the APP_NAME from settings
     message_router: AbstractMessageRouter = message_router_class(
         abilities=list(ability_objects_set),
@@ -220,7 +221,7 @@ def bootstrap_app(module: str = None, devmode: bool = False) -> PyttmanApp:
                          abilities=ability_objects_set,
                          settings=settings)
         pyttman.app = app
-        prepare_globals(module)
+        import_module("app", module)
         return app
 
     # Start the client
@@ -238,11 +239,11 @@ def bootstrap_app(module: str = None, devmode: bool = False) -> PyttmanApp:
                          "Client documentation for more help on this subject.")
     try:
         client_class_name = client_class_config.pop()
-        module_name = ".".join(client_class_config)
-        module = import_module(module_name)
+        client_module_name = ".".join(client_class_config)
+        client_module = import_module(client_module_name)
 
         # Provide the client with message_router and runner with client
-        client_class = getattr(module, client_class_name)
+        client_class = getattr(client_module, client_class_name)
     except Exception as e:
         raise RuntimeError(f"Cannot start client. Check "
                            f"the following error and correct "
@@ -260,17 +261,5 @@ def bootstrap_app(module: str = None, devmode: bool = False) -> PyttmanApp:
                      abilities=ability_objects_set,
                      settings=settings)
     pyttman.app = app
-    prepare_globals(module)
+    import_module("app", module)
     return app
-
-
-def prepare_globals(module) -> None:
-    """
-    Parses the app module for __all__ in the __init__ file. If the user
-    has defined any modules to import, they're imported. At this time in
-    the terraforming process, 'pyttman.app' is available to the modules
-    being imported.
-    """
-    imported_module: ModuleType = import_module(module)
-    if hasattr(imported_module, "__all__"):
-        [import_module(f"{module}.{i}") for i in imported_module.__all__]
