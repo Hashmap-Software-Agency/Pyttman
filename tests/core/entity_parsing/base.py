@@ -27,19 +27,23 @@ class PyttmanInternalTestBaseCase(PyttmanInternalBaseTestCase):
     """
     Base class for a test case testing EntityParser configurations
     """
-    test_entities = False
+    process_message = False
     test_intent_matching = False
     ability_cls = Ability
+    intent_class = None
     mock_intent_cls: Type[Intent]
     mock_message: Message
     expected_entities: dict[str: str] = {}
+    expected_reply: Reply | None = None
 
     class IntentClass(Intent, ABC):
         pass
 
     def setUp(self) -> None:
+        if self.intent_class is not None:
+            self. IntentClass = self.intent_class
         self.mock_intent = self.IntentClass()
-        self.intent_reply = None
+        self.intent_reply: Reply | None = None
         self.main_ability = self.ability_cls(intents=(self.IntentClass,))
         self.router = FirstMatchingRouter(abilities=[self.main_ability],
                                           help_keyword="",
@@ -60,18 +64,19 @@ class PyttmanInternalTestBaseCase(PyttmanInternalBaseTestCase):
         parsed by the EntityParser to a set of expected values.
         :return:
         """
-        if self.test_entities is False:
+        if self.process_message is False:
             self.skipTest(
                 f"EntityParser API test is disabled for "
                 f"'{self.__class__.__name__}' -- Skipping ")
 
         # Show the test explanation in the log output
         print(f"\n'{self.__class__.__name__}':\n"
-              f'\t\t"""{self.IntentClass.__doc__}"""',
+              f'\t"""{self.IntentClass.__doc__}"""',
               end="\n\n")
 
         print("\t\tChecking EntityParser...")
         self.parse_message_for_entities()
+        print(f"\t\tIntent reply: {self.intent_reply}")
 
         for field_name, expected_value in self.expected_entities.items():
             value = self.get_entity_value(field_name)
@@ -87,15 +92,22 @@ class PyttmanInternalTestBaseCase(PyttmanInternalBaseTestCase):
     def parse_message_for_entities(self):
         # Truncate 'lead' and 'trail' from the message before parsing
         self.mock_intent.storage = self.main_ability.storage
+        self.before_message_processing()
         self.intent_reply = self.router.process(self.mock_message,
                                                 self.mock_intent,
                                                 keep_alive_on_exc=False)
         print(f"\t\tResult: {self.mock_message.entities}")
 
+        if self.expected_reply:
+            self.assertEqual(self.intent_reply.as_str(),
+                             self.expected_reply.as_str())
+        self.after_message_processing()
+
     def test_intent_message_matching(self):
         """
         Tests that the Intent class matches a given message, as expected.
         """
+        self.before_intent_matching()
         if self.test_intent_matching is False:
             self.skipTest(
                 f"Intent matching test is disabled for "
@@ -113,3 +125,16 @@ class PyttmanInternalTestBaseCase(PyttmanInternalBaseTestCase):
 
         self.assertIs(expected_matching_intent.__class__,
                       first_matching.__class__)
+        self.after_intent_matching()
+
+    def after_message_processing(self):
+        pass
+
+    def after_intent_matching(self):
+        pass
+
+    def before_message_processing(self):
+        pass
+
+    def before_intent_matching(self):
+        pass

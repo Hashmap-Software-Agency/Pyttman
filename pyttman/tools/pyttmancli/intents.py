@@ -82,6 +82,7 @@ class RunAppInDevMode(Intent):
     to provide verbose outputs which are user defined
     and the CliClient is used as the primary front end.
     """
+    fail_gracefully = True
     lead = ("dev",)
     example = "pyttman dev <app name>"
     help_string = "Run a Pyttman app in dev mode. Dev mode sets " \
@@ -107,8 +108,9 @@ class RunAppInDevMode(Intent):
             app = bootstrap_app(devmode=True, module=app_name)
             app.hooks.trigger(LifeCycleHookType.before_start)
         except Exception as e:
-            print("errors occurred:")
-            return Reply(f"\t{e.__class__.__name__}: {e}")
+            if self.fail_gracefully is False:
+                raise e
+            return Reply({traceback.format_exc()})
         self.storage.put("app", app)
         self.storage.put("ready", True)
         return Reply(f"- Starting app '{app_name}' in dev mode...")
@@ -119,6 +121,7 @@ class RunAppInClientMode(Intent):
     Intent class for running Pyttman Apps
     in Client mode.
     """
+    fail_gracefully = True
     lead = ("runclient",)
     example = "pyttman runclient <app name>"
     help_string = "Run a Pyttman app in client mode. This is the " \
@@ -140,8 +143,9 @@ class RunAppInClientMode(Intent):
         try:
             app = bootstrap_app(devmode=False, module=app_name)
         except Exception as e:
-            print("errors occurred:")
-            return Reply(f"\t{e.__class__.__name__}: {e}")
+            if self.fail_gracefully is False:
+                raise e
+            return Reply({traceback.format_exc()})
         self.storage.put("app", app)
         self.storage.put("ready", True)
         return Reply(f"- Starting app '{app_name}' in client mode...")

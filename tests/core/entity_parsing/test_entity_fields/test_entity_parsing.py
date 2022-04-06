@@ -11,7 +11,7 @@ from tests.core.entity_parsing.base import ImplementedTestIntent, \
 class PyttmanIntentInternalEntityParserTestMusicPlayerApp(
     PyttmanInternalTestBaseCase
 ):
-    test_entities = True
+    process_message = True
     mock_message = Message("Play 29 Palms by Robert Plant on Spotify or "
                            "soundCloud and shuffle songs")
     expected_entities = {
@@ -46,7 +46,7 @@ class PyttmanIntentInternalEntityParserTestMusicPlayerApp(
 class PyttmanIntentInternalEntityParserTestBookKeeperApp(
     PyttmanInternalTestBaseCase
 ):
-    test_entities = True
+    process_message = True
     mock_message = Message("add expense Groceries at Whole Foods price 695,"
                            "5684")
     expected_entities = {
@@ -76,7 +76,7 @@ class PyttmanIntentInternalEntityParserTestBookKeeperApp(
 class PyttmanIntentInternalEntityParserTestTranslatorApp(
     PyttmanInternalTestBaseCase
 ):
-    test_entities = True
+    process_message = True
     mock_message = Message("Translate I Love You from english to swedish")
     expected_entities = {
         "text_to_translate": "I Love You",
@@ -99,7 +99,7 @@ class PyttmanIntentInternalEntityParserTestTranslatorApp(
 class PyttmanIntentInternalEntityParserTestContactApp(
     PyttmanInternalTestBaseCase
 ):
-    test_entities = True
+    process_message = True
     mock_message = Message("create a new contact Will Byers on mobile with "
                            "0805552859 and do it on 2021-09-20-10:40")
     expected_entities = {
@@ -127,7 +127,7 @@ class PyttmanIntentInternalEntityParserTestContactApp(
 class PyttmanIntentInternalEntityParserTestExpenseApp(
     PyttmanInternalTestBaseCase
 ):
-    test_entities = True
+    process_message = True
     test_intent_matching = True
     mock_message = Message("add expense Clothes price 695,5684:-")
     expected_entities = {
@@ -154,7 +154,7 @@ class PyttmanIntentInternalEntityParserTestExpenseApp(
 class PyttmanIntentInternalEntityParserTestWebscraperApp(
     PyttmanInternalTestBaseCase
 ):
-    test_entities = True
+    process_message = True
     mock_message = Message("Search for ManufacturerA ManufacturerB Model123 "
                            "on page_a and page_b price 45000 60 results")
     expected_entities = {
@@ -191,7 +191,7 @@ def get_valid_strings() -> tuple:
 class PyttmanIntentInternalEntityParserTestWebscraperAppWithCallableFields(
     PyttmanInternalTestBaseCase
 ):
-    test_entities = True
+    process_message = True
     mock_message = Message("Search for ManufacturerA ManufacturerB Model123 "
                            "on page_a and page_b price 45000 60 results")
     expected_entities = {
@@ -225,7 +225,7 @@ class PyttmanIntentInternalEntityParserTestWebscraperAppWithCallableFields(
 class PyttmanIntentInternalEntityParserTestDefaultValues(
     PyttmanInternalTestBaseCase
 ):
-    test_entities = True
+    process_message = True
     mock_message = Message("My new shoes cost me 140:- retail")
 
     expected_entities = {
