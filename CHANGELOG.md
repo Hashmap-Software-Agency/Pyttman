@@ -60,8 +60,8 @@ few new other features and bugfixes.
     application as `@app.hooks.run('before_start')` allows you to run a 
     function before the entire app starts. This is useful for connecting to 
     databases or performing other tasks necessary to the application. 
-    > **You can only decorate functions as lifecycle hooks from a 
-    special module in your app: `setup.py`. This module is automatically 
+    > **You can only decorate functions as app-lifecycle hooks from a 
+    special module in your app: `app.py`. This module is automatically 
     imported at the start of the runtime, by Pyttman, if present in the app 
     root directory.** 
 
