@@ -110,7 +110,9 @@ class RunAppInDevMode(Intent):
         except Exception as e:
             if self.fail_gracefully is False:
                 raise e
-            return Reply({traceback.format_exc()})
+            print(traceback.format_exc())
+            return Reply("The app could not start due to issues with "
+                         "bootstrapping, see traceback above.")
         self.storage.put("app", app)
         self.storage.put("ready", True)
         return Reply(f"- Starting app '{app_name}' in dev mode...")
@@ -145,7 +147,9 @@ class RunAppInClientMode(Intent):
         except Exception as e:
             if self.fail_gracefully is False:
                 raise e
-            return Reply({traceback.format_exc()})
+            print(traceback.format_exc())
+            return Reply("The app could not start due to issues with "
+                         "bootstrapping, see traceback above.")
         self.storage.put("app", app)
         self.storage.put("ready", True)
         return Reply(f"- Starting app '{app_name}' in client mode...")
