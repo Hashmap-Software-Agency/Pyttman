@@ -215,7 +215,6 @@ def bootstrap_app(module: str = None, devmode: bool = False) -> PyttmanApp:
     assert len(ability_objects_set), "No Ability classes were provided the " \
                                      "ABILITIES list in settings.py"
 
-    del settings.CLIENT
     # Instantiate router and provide the APP_NAME from settings
     message_router: AbstractMessageRouter = message_router_class(
         abilities=list(ability_objects_set),
@@ -231,6 +230,7 @@ def bootstrap_app(module: str = None, devmode: bool = False) -> PyttmanApp:
                          settings=settings)
         pyttman.app = app
         prepare_app(module)
+        del settings.CLIENT
         return app
 
     # Start the client
@@ -260,9 +260,6 @@ def bootstrap_app(module: str = None, devmode: bool = False) -> PyttmanApp:
                            f"\n{e}") from e
     client = client_class(message_router=message_router, **settings.CLIENT)
 
-    # Purge the 'CLIENT' settings from the Settings object for protection
-    del settings.CLIENT
-
     # Create a log entry for app start
     pyttman.logger.log(f" -- App {app_name} started: {datetime.now()} -- ")
     app = PyttmanApp(client=client,
@@ -271,6 +268,7 @@ def bootstrap_app(module: str = None, devmode: bool = False) -> PyttmanApp:
                      settings=settings)
     pyttman.app = app
     prepare_app(module)
+    del settings.CLIENT
     return app
 
 
