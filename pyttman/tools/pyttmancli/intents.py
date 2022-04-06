@@ -199,5 +199,5 @@ class CreateNewAbilityIntent(Intent):
         for file in files_to_create:
             rel_path = ability_catalog / file
             with open(rel_path, "w", encoding="utf-8") as f:
-                f.write("\n # Created by Pyttman ")
+                f.write("\n# Created by Pyttman ")
         return Reply(f"Created ability '{ability_name}'.")
