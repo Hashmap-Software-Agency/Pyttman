@@ -144,6 +144,7 @@ class RunAppInClientMode(Intent):
                          f"'{app_name}' exists.")
         try:
             app = bootstrap_app(devmode=False, module=app_name)
+            app.hooks.trigger(LifeCycleHookType.before_start)
         except Exception as e:
             if self.fail_gracefully is False:
                 raise e
