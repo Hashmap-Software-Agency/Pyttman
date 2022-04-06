@@ -221,7 +221,7 @@ def bootstrap_app(module: str = None, devmode: bool = False) -> PyttmanApp:
                          abilities=ability_objects_set,
                          settings=settings)
         pyttman.app = app
-        import_module("app", module)
+        prepare_app(module)
         return app
 
     # Start the client
@@ -261,5 +261,13 @@ def bootstrap_app(module: str = None, devmode: bool = False) -> PyttmanApp:
                      abilities=ability_objects_set,
                      settings=settings)
     pyttman.app = app
-    import_module("app", module)
+    prepare_app(module)
     return app
+
+
+def prepare_app(module):
+    try:
+        import_module("app", module)
+    except ImportError:
+        # The app is missing this file; no problemo.
+        pass
