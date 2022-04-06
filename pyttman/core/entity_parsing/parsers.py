@@ -19,7 +19,7 @@ from typing import Tuple, Type, Dict, Union
 from ordered_set import OrderedSet
 
 from pyttman.core.exceptions import InvalidPyttmanObjectException
-from pyttman.core.communication.models.containers import MessageMixin
+from pyttman.core.containers import MessageMixin
 from pyttman.core.entity_parsing.entity import Entity
 from pyttman.core.entity_parsing.identifiers import Identifier
 

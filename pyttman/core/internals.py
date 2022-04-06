@@ -11,7 +11,7 @@ import pytz
 import pyttman
 from pyttman.core.decorators import LifecycleHookRepository
 from pyttman.core.mixins import PrettyReprMixin
-from pyttman.core.communication.models.containers import MessageMixin, Reply
+from pyttman.core.containers import MessageMixin, Reply
 
 
 def _depr(message: str, version: str, graceful=True) -> None:

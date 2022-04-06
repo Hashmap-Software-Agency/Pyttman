@@ -1,12 +1,12 @@
 import abc
 import random
 import warnings
-from typing import List, Union, Any
+from typing import List, Any
 
 import pyttman
 from pyttman.core.ability import Ability
 from pyttman.core.intent import Intent
-from pyttman.core.communication.models.containers import MessageMixin, \
+from pyttman.core.containers import MessageMixin, \
     Reply, ReplyStream, Message
 from pyttman.core.internals import _generate_error_entry
 

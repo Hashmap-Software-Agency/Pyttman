@@ -3,7 +3,7 @@ from pyttman.core.entity_parsing.fields import BoolEntityField, \
     FloatEntityField, IntegerEntityField, StringEntityField, IntEntityField
 from pyttman.core.entity_parsing.identifiers import NumberIdentifier, \
     CapitalizedIdentifier, CellPhoneNumberIdentifier, DateTimeStringIdentifier
-from pyttman.core.communication.models.containers import Message
+from pyttman.core.containers import Message
 from tests.core.entity_parsing.base import ImplementedTestIntent, \
     PyttmanInternalTestBaseCase
 

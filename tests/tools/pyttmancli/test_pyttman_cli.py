@@ -3,7 +3,7 @@ import shutil
 from pathlib import Path
 
 import pyttman.tools.pyttmancli.intents as pyttman_cli_intents
-from pyttman.core.communication.models.containers import Message, Reply
+from pyttman.core.containers import Message, Reply
 from pyttman.tools.pyttmancli import PyttmanCli
 from tests.core.entity_parsing.base import PyttmanInternalTestBaseCase
 

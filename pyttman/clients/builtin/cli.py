@@ -1,9 +1,8 @@
 import sys
 
 import pyttman
-from typing import Union
 from pyttman.clients.base import BaseClient
-from pyttman.core.communication.models.containers import Message, Reply, \
+from pyttman.core.containers import Message, Reply, \
     ReplyStream
 
 

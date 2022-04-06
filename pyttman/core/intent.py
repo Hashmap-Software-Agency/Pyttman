@@ -7,7 +7,7 @@ from typing import Tuple
 from pyttman.core.entity_parsing.parsers import ChoiceParser, EntityParserBase
 from pyttman.core.internals import _generate_name
 from pyttman.core.storage.basestorage import Storage
-from pyttman.core.communication.models.containers import (
+from pyttman.core.containers import (
     Reply,
     ReplyStream,
     Message

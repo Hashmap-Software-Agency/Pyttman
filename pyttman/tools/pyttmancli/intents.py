@@ -9,7 +9,7 @@ from pyttman.core.decorators import LifeCycleHookType
 from pyttman.core.entity_parsing.fields import TextEntityField
 from pyttman.core.intent import Intent
 from pyttman.tools.pyttmancli import TerraFormer, bootstrap_app
-from pyttman.core.communication.models.containers import (
+from pyttman.core.containers import (
     Message,
     ReplyStream,
     Reply
