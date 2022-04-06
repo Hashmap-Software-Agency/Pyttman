@@ -91,6 +91,20 @@ few new other features and bugfixes.
   In new apps, this setting has the updated name automatically. In apps 
   from previous versions of Pyttman, you must change this name in `settings.py.`
 
+
+* **Refactored the `Message`, `Reply` and `ReplyStream` classes import path**
+  
+  This update moves the above mentioned classes. Change imports 
+
+   **from:**
+    
+    `from pyttman.core.communication.models.containers import Reply, ReplyStream, Message`
+  
+    **to:**
+  
+     `from pyttman.core.containers import Reply,  ReplyStream, Message`
+* 
+
 ### **🐛 Splatted bugs and corrected issues** 
 * **Fixes [#58]((https://github.com/dotchetter/Pyttman/issues/58)**
 * **Fixes [#62]((https://github.com/dotchetter/Pyttman/issues/58)**
