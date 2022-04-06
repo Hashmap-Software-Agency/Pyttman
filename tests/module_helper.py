@@ -1,11 +1,9 @@
-import os
-from time import sleep
-
-import pyttman
 import logging
+import os
 from pathlib import Path
 from unittest import TestCase
 
+import pyttman
 from pyttman.core.internals import Settings
 
 
