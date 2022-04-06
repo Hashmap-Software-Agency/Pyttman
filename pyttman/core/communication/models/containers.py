@@ -3,8 +3,10 @@ from datetime import datetime
 from queue import Queue
 from typing import List, Iterable
 
+from pyttman.core.mixins import PrettyReprMixin
 
-class MessageMixin:
+
+class MessageMixin(PrettyReprMixin):
     """
     Pyttman MessageMixin, to extend the functionality
     of existing Message classes provided by 3rd party
@@ -17,6 +19,7 @@ class MessageMixin:
     inheritance when a Message-like class is developed
     for supporting a 3rd party library / API.
     """
+    __repr_fields__ = ("created", "content")
 
     def __init__(self, content=None, **kwargs):
         self.author = "anonymous"
@@ -32,11 +35,6 @@ class MessageMixin:
 
         for k, v in kwargs.items():
             setattr(self, k, v)
-
-    def __repr__(self):
-        return f"{self.__class__.__name__}(author=" \
-               f"{self.author}, created={self.created}, " \
-               f"content={self.content})"
 
     def __getitem__(self, index: int) -> str:
         return self.content[index]
