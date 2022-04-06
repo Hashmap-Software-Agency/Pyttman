@@ -3,7 +3,7 @@ from pyttman.core.internals import PyttmanApp
 
 from pyttman.core.ability import Ability
 from pyttman.tools.pyttmancli.intents import CreateNewApp, RunAppInDevMode, \
-    RunAppInClientMode
+    RunAppInClientMode, CreateNewAbilityIntent
 
 
 class PyttmanCli(Ability):
@@ -13,7 +13,8 @@ class PyttmanCli(Ability):
     """
     intents = (CreateNewApp,
                RunAppInDevMode,
-               RunAppInClientMode)
+               RunAppInClientMode,
+               CreateNewAbilityIntent)
 
     description = f"\nPyttman v{pyttman.__version__}\n\n" \
                   "For help about a commend, type pyttman help [command]" \
