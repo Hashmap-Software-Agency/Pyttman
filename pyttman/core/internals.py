@@ -131,8 +131,8 @@ def _generate_error_entry(message: MessageMixin, exc: BaseException) -> Reply:
                                f"The error was caught while processing "
                                f"message: '{message}'. Error message: '{exc}'")
 
-    return Reply(f"{pyttman.settings.FATAL_EXCEPTION_AUTO_REPLY} - "
-                 f"Error id: {error_id}")
+    auto_reply = pyttman.settings.MIDDLEWARE['FATAL_EXCEPTION_AUTO_REPLY']
+    return Reply(f"{auto_reply} ({error_id})")
 
 
 @dataclass
