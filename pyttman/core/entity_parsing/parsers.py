@@ -1,6 +1,6 @@
 """
     This module contains parser objects used
-    through out the Pyttman framework.
+    throughout the Pyttman framework.
 
     Parsers are seen interacting with the
     Intent class as a configuration class
@@ -24,27 +24,7 @@ from pyttman.core.entity_parsing.entity import Entity
 from pyttman.core.entity_parsing.identifiers import Identifier
 
 
-class AbstractParser(abc.ABC):
-    """
-    Abstract Parser class
-    """
-    first_item = 0
-    last_item = -1
-
-    @abc.abstractmethod
-    def parse_message(self, message: MessageMixin,
-                      memoization: dict = None) -> None:
-        """
-        Subclasses override this method, defining the
-        logic for parsing the message contents and
-        identifying the value of interest for each
-        field in the EntityParser class in which
-        these classes are created in as fields.
-        """
-        pass
-
-
-class Parser(AbstractParser, ABC):
+class Parser(ABC):
     """
     Base class for the Parser API in Pyttman.
     The various entity_fields in Pyttman inherit from this
@@ -83,6 +63,18 @@ class Parser(AbstractParser, ABC):
         :return: None
         """
         self.value = None
+
+    @abc.abstractmethod
+    def parse_message(self, message: MessageMixin,
+                      memoization: dict = None) -> None:
+        """
+        Subclasses override this method, defining the
+        logic for parsing the message contents and
+        identifying the value of interest in each
+        field in the EntityParser class in which
+        these classes are created in as fields.
+        """
+        pass
 
 
 class EntityParserBase(Parser):
@@ -207,14 +199,14 @@ class EntityParserBase(Parser):
     def get_entity_fields(self) -> Dict:
         """
         Returns a collection of fields on the instance of
-        type AbstractParser.
+        type Parser.
         """
         entity_fields = {}
 
         for field_name in self.entity_fields:
             field_value = getattr(self, field_name)
             if not field_name.startswith("__") and \
-                    issubclass(field_value.__class__, AbstractParser):
+                    issubclass(field_value.__class__, Parser):
                 entity_fields[field_name] = field_value
         return entity_fields
 
@@ -251,7 +243,7 @@ class EntityParserBase(Parser):
         user_defined_entity_fields = {name: parser for name, parser
                                       in metaclass.__dict__.items()
                                       if issubclass(parser.__class__,
-                                                    AbstractParser)}
+                                                    Parser)}
 
         # Use the EntityParserBase as metaclass for an EntityParser class with
         # the fields configured in the user Intent.EntityParser class.
