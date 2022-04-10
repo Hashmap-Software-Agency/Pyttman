@@ -31,7 +31,7 @@ class CliClient(BaseClient):
                 elif isinstance(reply, Reply):
                     print(f"{pyttman.settings.APP_NAME}:", reply.as_str())
                 print()
-        except KeyboardInterrupt:
+        except (KeyboardInterrupt, EOFError):
             sys.exit(0)
 
     @staticmethod
