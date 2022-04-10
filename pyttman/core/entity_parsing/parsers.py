@@ -270,6 +270,7 @@ class EntityFieldValueParser(Parser):
     EntityParser Api component: 'EntityField'.
     """
     truncates_message_in_parsing = True
+    default = None
 
     def __init__(self,
                  prefixes: tuple | typing.Callable = None,
@@ -292,8 +293,10 @@ class EntityFieldValueParser(Parser):
         self.suffixes = suffixes
         self.identifier: Type[Identifier] = identifier
         self.span = span
-        self.default = default
         self.valid_strings = valid_strings
+
+        if default is not None:
+            self.default = default
 
         self._properties_for_evaluation = {
             "prefixes": self.prefixes,
