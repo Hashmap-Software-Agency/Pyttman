@@ -256,7 +256,7 @@ class PyttmanIntentInternalEntityParserTestDefaultValues(
                 message_contains=("retail",))
 
 
-class PyttmanIntentInternalTestTrailAndLeadAreIgnored(
+class PyttmanIntentInternalTestTrailAndLeadAreNotIgnored(
     PyttmanInternalTestBaseCase
 ):
     mock_message = Message("Start workshift")
@@ -286,7 +286,7 @@ class PyttmanIntentInternalTestTrailAndLeadAreIgnored(
     mock_message = Message("Start workshift")
     process_message = True
     expected_entities = {
-        "is_workshift": True,
+        "is_workshift": False,
         "is_break": False
     }
 
@@ -299,6 +299,5 @@ class PyttmanIntentInternalTestTrailAndLeadAreIgnored(
         trail = ("workshift", "break")
 
         class EntityParser:
-            exclude_trail = False
             is_break = BoolEntityField(message_contains=("break",))
             is_workshift = BoolEntityField(message_contains=("workshift",))
