@@ -165,6 +165,10 @@ class BaseIntent(AbstractIntent, ABC):
         return f"{self.__class__.__name__}(lead={self.lead}, " \
                f"trail={self.trail}, ordered={self.ordered})"
 
+    @property
+    def entity_parser_instance(self) -> EntityParserBase:
+        return self._entity_parser
+
     def matches(self, message: Message) -> bool:
         """
         Boolean indicator to whether the Intent

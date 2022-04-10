@@ -92,6 +92,12 @@ class EntityParserBase(Parser):
     # find entities in messages.
     entity_fields: Dict[str, typing.Any] = {}
 
+    # Offers users a choice if they don't want strings in 'lead' and/or
+    # 'trail' tuples in the Intent class in which this EntityParser is
+    # defined in, to truncate all strings in those tuples.
+    exclude_lead = True
+    exclude_trail = True
+
     def __repr__(self):
         return f"{self.__class__.__name__}(" \
                f"value={self.value}, " \

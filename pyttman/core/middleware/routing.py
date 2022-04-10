@@ -84,7 +84,13 @@ class AbstractMessageRouter(abc.ABC):
         fetched from the application settings. Defaults to True.
         :return: Reply, logic defined in the 'respond' method
         """
-        joined_patterns = set(intent.lead + intent.trail)
+        joined_patterns = set()
+
+        if intent.entity_parser_instance.exclude_lead is True:
+            joined_patterns.update(intent.lead)
+        if intent.entity_parser_instance.exclude_trail is True:
+            joined_patterns.update(intent.trail)
+
         truncated_content = [i for i in message.content
                              if i.casefold() not in joined_patterns]
         truncated_message = Message(content=truncated_content)

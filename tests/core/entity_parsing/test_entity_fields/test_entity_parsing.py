@@ -254,3 +254,51 @@ class PyttmanIntentInternalEntityParserTestDefaultValues(
             should_be_str_1 = StringEntityField(default="1")
             purchase_was_retail = BoolEntityField(
                 message_contains=("retail",))
+
+
+class PyttmanIntentInternalTestTrailAndLeadAreIgnored(
+    PyttmanInternalTestBaseCase
+):
+    mock_message = Message("Start workshift")
+    process_message = True
+    expected_entities = {
+        "is_workshift": True,
+        "is_break": False
+    }
+
+    class IntentClass(ImplementedTestIntent):
+        """
+        Tests that the 'workshift' from 'lead' is not removed
+        from parsing, and can be used as entities.
+        """
+        lead = ("start", "initiate")
+        trail = ("workshift", "break")
+
+        class EntityParser:
+            exclude_trail = False
+            is_break = BoolEntityField(message_contains=("break",))
+            is_workshift = BoolEntityField(message_contains=("workshift",))
+
+
+class PyttmanIntentInternalTestTrailAndLeadAreIgnored(
+    PyttmanInternalTestBaseCase
+):
+    mock_message = Message("Start workshift")
+    process_message = True
+    expected_entities = {
+        "is_workshift": True,
+        "is_break": False
+    }
+
+    class IntentClass(ImplementedTestIntent):
+        """
+        Tests that the 'workshift' from 'lead' is not removed
+        from parsing, and can be used as entities.
+        """
+        lead = ("start", "initiate")
+        trail = ("workshift", "break")
+
+        class EntityParser:
+            exclude_trail = False
+            is_break = BoolEntityField(message_contains=("break",))
+            is_workshift = BoolEntityField(message_contains=("workshift",))
