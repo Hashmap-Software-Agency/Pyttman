@@ -150,6 +150,7 @@ class BoolEntityField(EntityFieldBase):
     The value output from this EntityField is <int>.
     """
     type_cls = bool
+    default = False
     truncates_message_in_parsing = False
 
     def __init__(self, *args,
