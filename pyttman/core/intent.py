@@ -5,7 +5,7 @@ from collections import OrderedDict
 from itertools import zip_longest
 from typing import Tuple
 
-from core.mixins import PrettyReprMixin
+from pyttman.core.mixins import PrettyReprMixin
 from pyttman.core.entity_parsing.parsers import parse_entities, Parser
 from pyttman.core.internals import _generate_name
 from pyttman.core.storage.basestorage import Storage

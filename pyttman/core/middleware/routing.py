@@ -4,7 +4,7 @@ import warnings
 from typing import List, Any
 
 import pyttman
-from core.entity_parsing.parsers import parse_entities
+from pyttman.core.entity_parsing.parsers import parse_entities
 from pyttman.core.ability import Ability
 from pyttman.core.intent import Intent
 from pyttman.core.containers import MessageMixin, \
