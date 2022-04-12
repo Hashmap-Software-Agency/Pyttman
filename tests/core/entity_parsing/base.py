@@ -54,8 +54,7 @@ class PyttmanInternalTestBaseCase(PyttmanInternalBaseTestCase):
             return self.mock_message.entities[entity_name]
         except KeyError:
             raise RuntimeError(f"Warning! No field named '{entity_name}' was "
-                               f"found in the EntityParser class in this test "
-                               f"suite")
+                               f"found in this test suite")
 
     def test_entity_parser_entity_values(self):
         """

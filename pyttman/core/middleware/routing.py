@@ -4,6 +4,7 @@ import warnings
 from typing import List, Any
 
 import pyttman
+from core.entity_parsing.parsers import parse_entities
 from pyttman.core.ability import Ability
 from pyttman.core.intent import Intent
 from pyttman.core.containers import MessageMixin, \
@@ -86,16 +87,18 @@ class AbstractMessageRouter(abc.ABC):
         """
         joined_patterns = set()
 
-        if intent.entity_parser_instance.exclude_lead is True:
+        if intent.exclude_lead_in_entities is True:
             joined_patterns.update(intent.lead)
-        if intent.entity_parser_instance.exclude_trail is True:
+        if intent.exclude_trail_in_entities is True:
             joined_patterns.update(intent.trail)
-
         truncated_content = [i for i in message.content
                              if i.casefold() not in joined_patterns]
         truncated_message = Message(content=truncated_content)
+        entities: dict[str: Any] = parse_entities(
+            truncated_message,
+            intent.user_defined_entity_fields,
+            intent.ignore_in_entities)
 
-        entities: dict[str: Any] = intent.process_entities(truncated_message)
         message.entities = {k: v.value for k, v in entities.items()}
 
         try:

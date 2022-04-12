@@ -1,10 +1,12 @@
 
 import abc
 from abc import ABC
+from collections import OrderedDict
 from itertools import zip_longest
 from typing import Tuple
 
-from pyttman.core.entity_parsing.parsers import ChoiceParser, EntityParserBase
+from core.mixins import PrettyReprMixin
+from pyttman.core.entity_parsing.parsers import parse_entities, Parser
 from pyttman.core.internals import _generate_name
 from pyttman.core.storage.basestorage import Storage
 from pyttman.core.containers import (
@@ -78,7 +80,7 @@ class AbstractIntent(abc.ABC):
         pass
 
 
-class BaseIntent(AbstractIntent, ABC):
+class BaseIntent(AbstractIntent, ABC, PrettyReprMixin):
     """
     Base class for an Intent, containing configuration
     on which criteria are set for a message to match
@@ -132,42 +134,40 @@ class BaseIntent(AbstractIntent, ABC):
         Provide your users with an example of how
         a message for this Intent could look.
     """
+    __repr_fields__ = ("name", "lead", "trail")
+
     description: str = "Unavailable"
     example: str = None
-    lead: Tuple[str] = tuple()
-    trail: Tuple[str] = tuple()
+    lead: tuple[str] = None
+    trail: tuple[str] = None
     ordered: bool = False
     help_string: str = None
     storage: Storage = None
-    EntityParser = None
+    ignore_in_entities: tuple[str] = None
+    exclude_lead_in_entities: bool = True
+    exclude_trail_in_entities: bool = True
 
     def __init__(self, **kwargs):
-        if not isinstance(self.lead, tuple) or \
-                not isinstance(self.trail, tuple):
-            raise AttributeError("'lead' and 'trail' fields must me tuples "
-                                 "containing strings for parsing to work "
-                                 "correctly")
+
         [setattr(self, k, v) for k, v in kwargs.items()]
 
+        for attr in ("lead", "trail", "ignore_in_entities"):
+            if getattr(self, attr) is None:
+                setattr(self, attr, tuple())
+
+        self.user_defined_entity_fields = OrderedDict()
         self.name = _generate_name(self.__class__.__name__)
         self.lead = tuple([i.lower() for i in self.lead])
         self.trail = tuple([i.lower() for i in self.trail])
 
-        # If an EntityParser class is defined by the user,
-        # merge it with EntityParserBase
-        if self.EntityParser is not None:
-            self._entity_parser = EntityParserBase.from_meta_class(
-                self.EntityParser)
-        else:
-            self._entity_parser = EntityParserBase()
+        for attr_name, attr_value in self.__class__.__dict__.items():
+            if not any((attr_name.startswith("_"), attr_name.endswith("_"))):
+                if issubclass(attr_value.__class__, Parser):
+                    self.user_defined_entity_fields[attr_name] = attr_value
 
     def __repr__(self):
         return f"{self.__class__.__name__}(lead={self.lead}, " \
                f"trail={self.trail}, ordered={self.ordered})"
-
-    @property
-    def entity_parser_instance(self) -> EntityParserBase:
-        return self._entity_parser
 
     def matches(self, message: Message) -> bool:
         """
@@ -250,40 +250,15 @@ class BaseIntent(AbstractIntent, ABC):
 
     def generate_help(self) -> str:
         #  TODO - Extract
-        entity_field_instances = self._entity_parser.get_entity_fields()
-        if not self.help_string:
-            help_string = f"\n\n> Help section for Intent '{self.name}'\n" \
-                          f"\n\t> Description:\n\t\t{self.description}" \
-                          f"\n\t> Syntax:\n\t\t[{'|'.join(self.lead)}]"
-            if self.trail:
-                help_string += f"[{'|'.join(self.trail)}]\n"
-
-            if entity_field_instances:
-                help_string += "\n\t> Entities (information you can provide):"
-                for field_name, parser in entity_field_instances.items():
-                    help_string += f"\n\t\t * {field_name}"
-                    if isinstance(parser, ChoiceParser):
-                        help_string += f" - Valid choices: {parser.choices}"
-                help_string += "\n"
-
-            if parsers := list(entity_field_instances.values()):
-                for parser in parsers:
-                    if isinstance(parser, ChoiceParser):
-                        help_string += ""
-
-            if self.example:
-                help_string += f"\n\t> Example:\n\t\t'{self.example}'\n"
-        else:
-            help_string = self.help_string
-        return help_string
+        pass
 
     def process_entities(self, message: Message) -> dict:
         """
         Use the EntityParser class designated to this instance to
         identify entities in a message.
         """
-        self._entity_parser.parse_message(message)
-        return self._entity_parser.value
+
+        return parse_entities(message, user_defined_entity_fields)
 
     def before_respond(self, message: Message) -> None:
         """
