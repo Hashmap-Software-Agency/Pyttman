@@ -252,14 +252,6 @@ class BaseIntent(AbstractIntent, ABC, PrettyReprMixin):
         #  TODO - Extract
         pass
 
-    def process_entities(self, message: Message) -> dict:
-        """
-        Use the EntityParser class designated to this instance to
-        identify entities in a message.
-        """
-
-        return parse_entities(message, user_defined_entity_fields)
-
     def before_respond(self, message: Message) -> None:
         """
         Implement this method to execute code before an Intent starts
