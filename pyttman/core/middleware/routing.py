@@ -120,6 +120,10 @@ class AbstractMessageRouter(abc.ABC):
                              f"{intent.__class__.__name__}."
                              f"respond method returned '{type(reply)}', "
                              f"expected Reply or ReplyStream")
+
+        for entity_field in intent.user_defined_entity_fields:
+            entity_field.reset()
+
         return reply
 
 
