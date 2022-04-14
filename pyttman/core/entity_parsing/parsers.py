@@ -37,7 +37,7 @@ class Parser(ABC):
         matches its own patterns.
     """
     identifier: Identifier = None
-    exclude: Tuple = ()
+    ignore_in_entities: Tuple = ()
     prefixes: Tuple = ()
     suffixes: Tuple = ()
     case_preserved_cache = set()
@@ -53,7 +53,7 @@ class Parser(ABC):
 
     def __repr__(self):
         return f"{self.__class__.__name__}(" \
-               f"exclude={self.exclude}, " \
+               f"exclude={self.ignore_in_entities}, " \
                f"identifier={self.identifier}, " \
                f"value={self.value})"
 
@@ -311,7 +311,7 @@ class EntityFieldValueParser(Parser):
         # sure it complies with Pre- and/or suffix values, if configured
         if self.identifier is not None:
             identifier_object = self.identifier(start_index=start_index)
-            identifier_entity = identifier_object .try_identify_entity(message)
+            identifier_entity = identifier_object.try_identify_entity(message)
 
             if identifier_entity is not None:
                 allowed_scenarios = {
@@ -359,7 +359,7 @@ class EntityFieldValueParser(Parser):
         # If an Identifier is does not comply with a string, the walk is
         # cancelled.
         if parsed_entity is not None:
-            while parsed_entity.value.casefold() in self.exclude:
+            while parsed_entity.value.casefold() in self.ignore_in_entities:
                 parsed_entity.index_in_message += 1
                 # Traverse the message for as long as the current found
                 # entity is in the 'exclude' tuple. If the end of message
@@ -392,7 +392,7 @@ class EntityFieldValueParser(Parser):
                 except IndexError:
                     break
                 else:
-                    if span_value not in self.exclude:
+                    if span_value not in self.ignore_in_entities:
                         parsed_entity.value += f" {span_value}"
         return parsed_entity
 
@@ -434,7 +434,7 @@ def parse_entities(message: MessageMixin,
             memoization=parsers_memoization)
 
         # See what the parser found - Entity or None.
-        # Ignore entities in self.exclude.
+        # Ignore entities in self.ignore_in_entities.
         parsed_entity: Union[Entity, None] = entity_field_instance.value
 
         if parsed_entity is None or parsed_entity.value in exclude:
