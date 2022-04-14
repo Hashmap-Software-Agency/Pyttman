@@ -22,6 +22,7 @@ class CreateNewApp(Intent):
     The directory is terraformed and prepared
     with a template project.
     """
+    app_name = TextEntityField()
     lead = ("new",)
     trail = ("app",)
     ordered = True
@@ -29,9 +30,6 @@ class CreateNewApp(Intent):
     help_string = "Creates a new Pyttman app project in current directory " \
                   "from a template.\n" \
                   f"Example: {example}"
-
-    class EntityParser:
-        app_name = TextEntityField()
 
     def respond(self, message: Message) -> Reply | ReplyStream:
         num_retries = 3
@@ -82,6 +80,7 @@ class RunAppInDevMode(Intent):
     to provide verbose outputs which are user defined
     and the CliClient is used as the primary front end.
     """
+    app_name = TextEntityField()
     fail_gracefully = True
     lead = ("dev",)
     example = "pyttman dev <app name>"
@@ -92,8 +91,6 @@ class RunAppInDevMode(Intent):
                   "with minimal overhead.\n" \
                   f"Example: {example}"
 
-    class EntityParser:
-        app_name = TextEntityField()
 
     def respond(self, message: Message) -> Reply | ReplyStream:
         if (app_name := message.entities.get("app_name")) is None:
@@ -132,8 +129,7 @@ class RunAppInClientMode(Intent):
                   "settings.py under 'CLIENT'.\n" \
                   f"Example: {example}"
 
-    class EntityParser:
-        app_name = TextEntityField()
+    app_name = TextEntityField()
 
     def respond(self, message: Message) -> Reply | ReplyStream:
         if (app_name := message.entities.get("app_name")) is None:
@@ -165,9 +161,8 @@ class CreateNewAbilityIntent(Intent):
                   "a template for new Ability classes for your app.\n" \
                   f"Example: {example}"
 
-    class EntityParser:
-        ability_name = TextEntityField()
-        app_name = TextEntityField(prefixes=(ability_name,))
+    ability_name = TextEntityField()
+    app_name = TextEntityField(prefixes=(ability_name,))
 
     def respond(self, message: Message) -> Reply | ReplyStream:
         files_to_create = ("ability.py", "intents.py", "__init__.py")
