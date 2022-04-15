@@ -165,7 +165,8 @@ class CreateNewAbilityIntent(Intent):
     app_name = TextEntityField(prefixes=(ability_name,))
 
     def respond(self, message: Message) -> Reply | ReplyStream:
-        files_to_create = ("ability.py", "intents.py", "__init__.py")
+        files_to_create = ("__init__.py", "ability.py",
+                           "intents.py", "models.py")
         ability_name = message.entities["ability_name"]
 
         if (app_name := message.entities.get("app_name")) is None:
