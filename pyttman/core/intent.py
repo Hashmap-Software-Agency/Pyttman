@@ -136,6 +136,7 @@ class BaseIntent(AbstractIntent, ABC, PrettyReprMixin):
     """
     __repr_fields__ = ("name", "lead", "trail")
 
+    ability = None
     description: str = "Unavailable"
     example: str = None
     lead: tuple[str] = None
