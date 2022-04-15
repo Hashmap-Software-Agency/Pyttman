@@ -192,7 +192,8 @@ class FirstMatchingRouter(AbstractMessageRouter):
         for ability in self.abilities:
             for intent in ability.intents:
                 try:
-                    intent = intent(storage=ability.storage)
+                    intent = intent(storage=ability.storage,
+                                    ability=ability)
                     if intent.matches(message):
                         matching_intents.append(intent)
                 except TypeError as e:
