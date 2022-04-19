@@ -160,18 +160,7 @@ class BaseIntent(AbstractIntent, ABC, PrettyReprMixin):
         self.lead = tuple([i.lower() for i in self.lead])
         self.trail = tuple([i.lower() for i in self.trail])
 
-        entity_field_search_area_dict = self.__class__.__dict__
-        if hasattr(self, "EntityParser"):
-            depr_graceful("EntityParser classes are redundant. "
-                          "You can declare EntityField´s in the Intent "
-                          "without the use of an EntityParser inner class.\n"
-                          "using an EntityParser will be deprecated in "
-                          "future releases.", "1.2.0")
-            entity_parser_cls = getattr(self, "EntityParser")
-            entity_field_search_area_dict |= \
-                entity_parser_cls.__class__.__dict__
-
-        for attr_name, attr_value in entity_field_search_area_dict.items():
+        for attr_name, attr_value in self.__class__.__dict__.items():
             if not any((attr_name.startswith("_"), attr_name.endswith("_"))):
                 if issubclass(attr_value.__class__, Parser):
                     self.user_defined_entity_fields[attr_name] = attr_value
