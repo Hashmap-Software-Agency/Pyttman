@@ -1,9 +1,13 @@
 import pyttman
 from pyttman.core.internals import PyttmanApp
-
 from pyttman.core.ability import Ability
-from pyttman.tools.pyttmancli.intents import CreateNewApp, RunAppInDevMode, \
-    RunAppInClientMode, CreateNewAbilityIntent
+from pyttman.tools.pyttmancli.intents import (
+    CreateNewApp,
+    RunAppInDevMode,
+    RunAppInClientMode,
+    CreateNewAbilityIntent,
+    ShellMode
+)
 
 
 class PyttmanCli(Ability):
@@ -14,21 +18,19 @@ class PyttmanCli(Ability):
     intents = (CreateNewApp,
                RunAppInDevMode,
                RunAppInClientMode,
-               CreateNewAbilityIntent)
+               CreateNewAbilityIntent,
+               ShellMode)
 
     description = f"\nPyttman v{pyttman.__version__}\n\n" \
                   "For help about a commend, type pyttman help [command]" \
                   f"\n\nSupported commands:\n"
 
     def before_create(self):
-        responses = {"NO_APP_NAME_MSG": "Please provide a name "
-                                        "for your app."}
         self.storage.put("app", None)
         self.storage.put("ready", False)
         self.storage.put("template_url",
                          "https://github.com/dotchetter/pyttman-"
                          "project-template/archive/refs/heads/main.zip")
-        self.storage |= responses
 
     def run_application(self) -> None:
         """

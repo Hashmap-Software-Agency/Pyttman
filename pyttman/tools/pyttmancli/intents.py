@@ -16,7 +16,27 @@ from pyttman.core.containers import (
 )
 
 
-class CreateNewApp(Intent):
+class ShellMode(Intent, PyttmanCliComplainerMixin):
+    """
+    Allows developers to enter an interactive shell in their application,
+    useful for debugging.
+    """
+    lead = ("shell",)
+    app_name = TextEntityField()
+
+    def respond(self, message: Message) -> Reply | ReplyStream:
+        app_name = message.entities["app_name"]
+        if complaint := self.complain_app_not_found(app_name):
+            return Reply(complaint)
+        app = bootstrap_app(devmode=True, module=app_name)
+        global_variables = globals().copy()
+        global_variables.update(locals())
+        shell = code.InteractiveConsole(global_variables)
+        shell.interact()
+        return Reply("Exited shell")
+
+
+class CreateNewApp(Intent, PyttmanCliComplainerMixin):
     """
     Intent class for creating a new Pyttman app.
     The directory is terraformed and prepared
@@ -34,10 +54,9 @@ class CreateNewApp(Intent):
     def respond(self, message: Message) -> Reply | ReplyStream:
         num_retries = 3
         net_err = None
-
-        if (app_name := message.entities.get("app_name")) is None:
-            return Reply(self.storage.get("NO_APP_NAME_MSG"))
-
+        app_name = message.entities["app_name"]
+        if complaint := self.complain_app_not_found(app_name):
+            return Reply(complaint)
         terraformer = TerraFormer(app_name=app_name,
                                   url=self.storage["template_url"])
 
