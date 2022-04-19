@@ -6,7 +6,6 @@ import traceback
 from datetime import datetime
 from importlib import import_module
 from pathlib import Path
-from types import ModuleType
 
 import requests
 
@@ -14,7 +13,7 @@ import pyttman
 from pyttman.clients.builtin.cli import CliClient
 from pyttman.core.ability import Ability
 from pyttman.core.exceptions import PyttmanProjectInvalidException
-from pyttman.core.internals import Settings, PyttmanApp, _depr
+from pyttman.core.internals import Settings, PyttmanApp, depr_raise
 from pyttman.core.middleware.routing import AbstractMessageRouter
 
 
@@ -148,10 +147,8 @@ def bootstrap_app(module: str = None, devmode: bool = False) -> PyttmanApp:
             "ROUTER_CLASS"
         ).split(".")
     except AttributeError:
-        _depr("Please rename 'MESSAGE_ROUTER' to 'MIDDLEWARE' in "
-              "'settings.py' for this application.",
-              "1.1.11",
-              False)
+        depr_raise("Please rename 'MESSAGE_ROUTER' to 'MIDDLEWARE' in "
+                   "'settings.py' for this application.", "1.1.11")
 
     message_router_class_name = message_router_config.pop()
     message_router_module = ".".join(message_router_config)
