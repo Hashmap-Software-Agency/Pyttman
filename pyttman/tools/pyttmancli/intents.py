@@ -24,6 +24,9 @@ class ShellMode(Intent, PyttmanCliComplainerMixin):
     useful for debugging.
     """
     lead = ("shell",)
+    example = "pyttman shell <app name>"
+    help_string = "Opens a Python interactive shell with access to modules, " \
+                  "app settings and the Pyttman 'app' object."
     app_name = TextEntityField()
 
     def respond(self, message: Message) -> Reply | ReplyStream:
