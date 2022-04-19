@@ -1,3 +1,4 @@
+import code
 import os
 import pathlib
 import traceback
@@ -5,6 +6,7 @@ import requests
 
 from time import sleep
 
+from pyttman.core.mixins import PyttmanCliComplainerMixin
 from pyttman.core.decorators import LifeCycleHookType
 from pyttman.core.entity_parsing.fields import TextEntityField
 from pyttman.core.intent import Intent
@@ -92,7 +94,7 @@ class CreateNewApp(Intent, PyttmanCliComplainerMixin):
                      f"https://github.com/dotchetter/Pyttman/wiki/Tutorial")
 
 
-class RunAppInDevMode(Intent):
+class RunAppInDevMode(Intent, PyttmanCliComplainerMixin):
     """
     Intent class for running a Pyttman app in dev mode,
     meaning the "DEV_MODE" flag is set to True in the app
@@ -110,16 +112,10 @@ class RunAppInDevMode(Intent):
                   "with minimal overhead.\n" \
                   f"Example: {example}"
 
-
     def respond(self, message: Message) -> Reply | ReplyStream:
-        if (app_name := message.entities.get("app_name")) is None:
-            return Reply(self.storage.get("NO_APP_NAME_MSG"))
-
-        app_name = app_name
-        if not pathlib.Path(app_name).exists():
-            return Reply(f"- App '{app_name}' was not found here, "
-                         f"verify that a Pyttman app directory named "
-                         f"'{app_name}' exists.")
+        app_name = message.entities["app_name"]
+        if complaint := self.complain_app_not_found(app_name):
+            return Reply(complaint)
         try:
             app = bootstrap_app(devmode=True, module=app_name)
             app.hooks.trigger(LifeCycleHookType.before_start)
@@ -134,7 +130,7 @@ class RunAppInDevMode(Intent):
         return Reply(f"- Starting app '{app_name}' in dev mode...")
 
 
-class RunAppInClientMode(Intent):
+class RunAppInClientMode(Intent, PyttmanCliComplainerMixin):
     """
     Intent class for running Pyttman Apps
     in Client mode.
@@ -151,12 +147,9 @@ class RunAppInClientMode(Intent):
     app_name = TextEntityField()
 
     def respond(self, message: Message) -> Reply | ReplyStream:
-        if (app_name := message.entities.get("app_name")) is None:
-            return Reply(self.storage.get("NO_APP_NAME_MSG"))
-        elif not pathlib.Path(app_name).exists():
-            return Reply(f"- App '{app_name}' was not found here, "
-                         f"verify that a Pyttman app directory named "
-                         f"'{app_name}' exists.")
+        app_name = message.entities["app_name"]
+        if complaint := self.complain_app_not_found(app_name):
+            return Reply(complaint)
         try:
             app = bootstrap_app(devmode=False, module=app_name)
             app.hooks.trigger(LifeCycleHookType.before_start)
@@ -171,7 +164,7 @@ class RunAppInClientMode(Intent):
         return Reply(f"- Starting app '{app_name}' in client mode...")
 
 
-class CreateNewAbilityIntent(Intent):
+class CreateNewAbilityIntent(Intent, PyttmanCliComplainerMixin):
     lead = ("new",)
     trail = ("ability",)
     ordered = True
@@ -187,13 +180,9 @@ class CreateNewAbilityIntent(Intent):
         files_to_create = ("__init__.py", "ability.py",
                            "intents.py", "models.py")
         ability_name = message.entities["ability_name"]
-
-        if (app_name := message.entities.get("app_name")) is None:
-            return Reply(self.storage.get("NO_APP_NAME_MSG"))
-        elif not pathlib.Path(app_name).exists():
-            return Reply(f"- App '{app_name}' was not found here, "
-                         f"verify that a Pyttman app directory named "
-                         f"'{app_name}' exists.")
+        app_name = message.entities["app_name"]
+        if complaint := self.complain_app_not_found(app_name):
+            return Reply(complaint)
         else:
             app_name = pathlib.Path(app_name)
 
