@@ -162,11 +162,11 @@ class BaseIntent(AbstractIntent, ABC, PrettyReprMixin):
 
         entity_field_search_area_dict = self.__class__.__dict__
         if hasattr(self, "EntityParser"):
-            depr_graceful("EntityParser classes are redundant since 1.2.0. "
+            depr_graceful("EntityParser classes are redundant. "
                           "You can declare EntityField´s in the Intent "
                           "without the use of an EntityParser inner class.\n"
                           "using an EntityParser will be deprecated in "
-                          "future releases.")
+                          "future releases.", "1.2.0")
             entity_parser_cls = getattr(self, "EntityParser")
             entity_field_search_area_dict |= \
                 entity_parser_cls.__class__.__dict__
