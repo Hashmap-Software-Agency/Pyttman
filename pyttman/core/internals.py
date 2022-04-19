@@ -6,7 +6,6 @@ from dataclasses import dataclass, field
 from datetime import datetime
 from typing import Any
 
-import pytz
 
 import pyttman
 from pyttman.core.decorators import LifecycleHookRepository
@@ -26,22 +25,13 @@ def _depr(message: str, version: str, graceful=True) -> None:
         raise DeprecationWarning(out)
 
 
-def is_dst(timezone: str):
     """
-    method for returning a bool whether a timezone
-    currently is in daylight savings time, useful for servers
-    that run systems outside the user timezone.
-    :param timezone:
-        string, timezone to give pytz for the dst query.
-        look up available timezones at this url:
-        https://stackoverflow.com/questions/13866926/is-there-a-list-of-pytz
-        -timezones
-    :returns:
-        bool
+    Uses warnings.warn with a message and version tag for users.
+    :param message: Deprecation message to display to users
+    :param version: Pyttman version in which deprecation was declared
     """
-    timezone = pytz.timezone(timezone)
-    timezone_aware_date = timezone.localize(datetime.now(), is_dst=None)
-    return timezone_aware_date.tzinfo._dst.seconds != 0
+    out = f"{message} - This was deprecated in version {version}."
+    warnings.warn(out, DeprecationWarning)
 
 
 class Settings:

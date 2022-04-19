@@ -34,7 +34,6 @@ setup(
     include_package_data=True,
     install_requires=[
         "multidict",
-        "pytz",
         "discord.py",
         "requests",
         "py7zr",
