@@ -6,25 +6,24 @@ from dataclasses import dataclass, field
 from datetime import datetime
 from typing import Any
 
-
 import pyttman
+from pyttman.core.containers import MessageMixin, Reply
 from pyttman.core.decorators import LifecycleHookRepository
 from pyttman.core.mixins import PrettyReprMixin
-from pyttman.core.containers import MessageMixin, Reply
 
 
-def _depr(message: str, version: str, graceful=True) -> None:
+def depr_raise(message: str, version: str) -> None:
     """
     Raise DeprecationWarning with a message and version tag for users.
+    :param message: Deprecation message to display to users
     :param version: Pyttman version in which deprecation was declared
+    :raise DeprecationWarning
     """
     out = f"{message} - This was deprecated in version {version}."
-    if graceful:
-        warnings.warn(out, DeprecationWarning)
-    else:
-        raise DeprecationWarning(out)
+    raise DeprecationWarning(out)
 
 
+def depr_graceful(message: str, version: str):
     """
     Uses warnings.warn with a message and version tag for users.
     :param message: Deprecation message to display to users
@@ -68,15 +67,6 @@ class Settings:
     def __repr__(self):
         _attrs = {name: value for name, value in self.__dict__.items()}
         return f"Settings({_attrs})"
-
-
-def load_settings(*args):
-    raise DeprecationWarning("The function 'load_settings' is deprecated "
-                             "deprecated as of version 1.1.4. Instead of "
-                             "manually loading settings in your main.py, "
-                             "consider creating a project with pyttman-cli "
-                             "and use the clients provided in the framework, "
-                             "or create your own by subclassing BaseClient.")
 
 
 def _generate_name(name):
@@ -147,6 +137,7 @@ class PyttmanApp(PrettyReprMixin):
         """
         Start a Pyttman application.
         """
+        # noinspection PyBroadException
         try:
             self.client.run_client()
         except Exception:
