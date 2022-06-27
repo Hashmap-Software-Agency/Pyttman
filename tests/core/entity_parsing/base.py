@@ -41,7 +41,7 @@ class PyttmanInternalTestBaseCase(PyttmanInternalBaseTestCase):
 
     def setUp(self) -> None:
         if self.intent_class is not None:
-            self. IntentClass = self.intent_class
+            self.IntentClass = self.intent_class
         self.mock_intent = self.IntentClass()
         self.intent_reply: Reply | None = None
         self.main_ability = self.ability_cls(intents=(self.IntentClass,))
