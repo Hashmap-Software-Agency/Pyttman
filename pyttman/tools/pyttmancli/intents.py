@@ -61,8 +61,6 @@ class CreateNewApp(Intent, PyttmanCliComplainerMixin):
         num_retries = 3
         net_err = None
         app_name = message.entities["app_name"]
-        if complaint := self.complain_app_not_found(app_name):
-            return Reply(complaint)
         terraformer = TerraFormer(app_name=app_name,
                                   url=self.storage["template_url"])
 
