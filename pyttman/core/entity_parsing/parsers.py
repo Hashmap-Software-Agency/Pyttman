@@ -1,15 +1,4 @@
-"""
-    This module contains parser objects used
-    throughout the Pyttman framework.
 
-    Parsers are seen interacting with the
-    Intent class as a configuration class
-    to both identify which command matches
-    a message, but also in ValueParser
-    classes to add functionality for Command
-    classes to identify values behind querystring
-    intents which may be a value provider for a command.
-"""
 import abc
 import typing
 from abc import ABC
@@ -29,7 +18,6 @@ class Parser(ABC):
     Base class for the Parser API in Pyttman.
     The various entity_fields in Pyttman inherit from this
     base class.
-    Subclass this class when creating a custom Parser.
 
     field identifier:
         An optional Identifier class can be supplied as an Identifier.
