@@ -4,7 +4,7 @@ from pyttman.tools.logger.logger import PyttmanLogger
 
 __version__ = version.__version__
 __author__ = "Simon Olofsson"
-__copyright__ = "(c) Pyttman development Team 2020-2021"
+__copyright__ = "(c) Pyttman development Team 2020-2022"
 __licence__ = "MIT"
 
 
