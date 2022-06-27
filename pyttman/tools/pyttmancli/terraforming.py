@@ -3,6 +3,7 @@ import os
 import shutil
 import sys
 import traceback
+import warnings
 from datetime import datetime
 from importlib import import_module
 from pathlib import Path
@@ -277,6 +278,8 @@ def load_abilities(settings: Settings) -> set:
         ability_module = import_module(ability_module_name)
         ability_class = getattr(ability_module, ability_class_name)
         ability_objects_set.add(ability_class())
-    assert len(ability_objects_set), "No Ability classes were provided the " \
-                                     "ABILITIES list in settings.py"
+
+    if not len(ability_objects_set):
+        warnings.warn("There are no ability classes loaded - "
+                      "your app will not have any replies.")
     return ability_objects_set
