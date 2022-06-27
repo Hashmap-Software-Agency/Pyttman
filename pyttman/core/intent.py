@@ -4,6 +4,7 @@ from abc import ABC
 from collections import OrderedDict
 from itertools import zip_longest
 
+from pyttman.core.entity_parsing.fields import EntityFieldBase
 from pyttman.core.entity_parsing.parsers import Parser
 from pyttman.core.internals import _generate_name, depr_graceful
 from pyttman.core.mixins import PrettyReprMixin
@@ -155,15 +156,15 @@ class BaseIntent(AbstractIntent, ABC, PrettyReprMixin):
             if getattr(self, attr) is None:
                 setattr(self, attr, tuple())
 
-        self.user_defined_entity_fields = OrderedDict()
+        self.user_entity_fields: dict[str, EntityFieldBase] = OrderedDict()
         self.name = _generate_name(self.__class__.__name__)
-        self.lead = tuple([i.lower() for i in self.lead])
-        self.trail = tuple([i.lower() for i in self.trail])
+        self.lead = tuple([i.casefold() for i in self.lead])
+        self.trail = tuple([i.casefold() for i in self.trail])
 
         for attr_name, attr_value in self.__class__.__dict__.items():
             if not any((attr_name.startswith("_"), attr_name.endswith("_"))):
                 if issubclass(attr_value.__class__, Parser):
-                    self.user_defined_entity_fields[attr_name] = attr_value
+                    self.user_entity_fields[attr_name] = attr_value
 
     def __repr__(self):
         return f"{self.__class__.__name__}(lead={self.lead}, " \
@@ -249,8 +250,32 @@ class BaseIntent(AbstractIntent, ABC, PrettyReprMixin):
         return ordered_trail and ordered_lead
 
     def generate_help(self) -> str:
-        #  TODO - Extract
-        pass
+        """
+        Generates a text snippet which describes the Intent for end users
+        on how to use it: which words to use, how to formulate a query and
+        describe any Entities, if used - on how they can be provided.
+        """
+        if not self.help_string:
+            help_string = f"\n\n> Help section for Intent '{self.name}'\n" \
+                          f"\n\t> Description:\n\t\t{self.description}" \
+                          f"\n\t> Syntax:\n\t\t[{'|'.join(self.lead)}]"
+            if self.trail:
+                help_string += f"[{'|'.join(self.trail)}]\n"
+
+            if self.user_entity_fields:
+                help_string += "\n\t> Information you can provide:"
+                for field_name, entity_field in self.user_entity_fields.items():
+                    help_string += f"\n\t\t * {field_name}"
+                    if entity_field.valid_strings is not None:
+                        help_string += f" - Valid choices: " \
+                                       f"{entity_field.valid_strings}"
+                help_string += "\n"
+
+            if self.example:
+                help_string += f"\n\t> Example:\n\t\t'{self.example}'\n"
+        else:
+            help_string = self.help_string
+        return help_string
 
     def before_respond(self, message: Message) -> None:
         """
