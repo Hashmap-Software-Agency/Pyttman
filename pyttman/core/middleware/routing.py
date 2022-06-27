@@ -96,7 +96,7 @@ class AbstractMessageRouter(abc.ABC):
         truncated_message = Message(content=truncated_content)
         entities: dict[str: Any] = parse_entities(
             truncated_message,
-            intent.user_defined_entity_fields,
+            intent.user_entity_fields,
             intent.ignore_in_entities)
 
         message.entities = {k: v.value for k, v in entities.items()}
@@ -121,7 +121,7 @@ class AbstractMessageRouter(abc.ABC):
                              f"respond method returned '{type(reply)}', "
                              f"expected Reply or ReplyStream")
 
-        for entity_field in intent.user_defined_entity_fields.values():
+        for entity_field in intent.user_entity_fields.values():
             entity_field.reset()
 
         return reply
