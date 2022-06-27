@@ -186,16 +186,6 @@ def bootstrap_app(module: str = None, devmode: bool = False) -> PyttmanApp:
                          "in settings.py. Refer to the documentation for "
                          "examples.")
 
-        # Instantiate the ability class and traverse over its intents.
-        # Validate.
-        ability = ability_class()
-        assert issubclass(ability_class, Ability), \
-            f"'{ability.__class__.__name__}' " \
-            f"is not a subclass of 'Ability'. " \
-            f"Check your ABILITIES list in settings.py and verify that " \
-            f"all classes defined are Ability subclasses."
-        ability_objects_set.add(ability)
-
     # Instantiate router and provide the APP_NAME from settings
     message_router: AbstractMessageRouter = message_router_class(
         abilities=None,
