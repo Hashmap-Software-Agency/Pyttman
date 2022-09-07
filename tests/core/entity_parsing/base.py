@@ -73,12 +73,16 @@ class PyttmanInternalTestBaseCase(PyttmanInternalBaseTestCase):
               f'\t"""{self.IntentClass.__doc__}"""',
               end="\n\n")
 
-        print("\t\tChecking EntityParser...")
+        print("\t\tChecking EntityFields...")
         self.parse_message_for_entities()
         print(f"\t\tIntent reply: {self.intent_reply}")
 
         for field_name, expected_value in self.expected_entities.items():
             value = self.get_entity_value(field_name)
+            if self.mock_intent.ignore_in_entities is not None:
+                for word in self.mock_intent.ignore_in_entities:
+                    self.assertNotIn(word, value)
+
             self.assertEqual(expected_value,
                              value,
                              f"\t\tEntityParser test FAILED.\n"
