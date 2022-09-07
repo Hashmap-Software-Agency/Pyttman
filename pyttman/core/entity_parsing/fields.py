@@ -21,12 +21,14 @@ class EntityFieldBase(EntityFieldValueParser, ABC):
     datatype if a match is True.
 
     """
+    default = None
     type_cls = None
     identifier_cls = None
 
     def __init__(self,
                  identifier: Type[Identifier] | None = None,
                  as_list: bool = False,
+                 default: Any = None,
                  **kwargs):
         """
         :param as_list: If set to True combined with providing 'valid_strings',
@@ -53,7 +55,10 @@ class EntityFieldBase(EntityFieldValueParser, ABC):
                                                 f"'type_cls'.")
 
         self.as_list = as_list
-        super().__init__(identifier=identifier or self.identifier_cls, **kwargs)
+        _default_arg = default if default is not None else self.default
+
+        super().__init__(identifier=identifier or self.identifier_cls,
+                         default=_default_arg, **kwargs)
 
     def convert_value(self, value: Any) -> Any:
         """

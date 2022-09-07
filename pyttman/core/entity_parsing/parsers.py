@@ -1,17 +1,14 @@
-
-import abc
 import typing
-from abc import ABC
 from itertools import zip_longest
-from typing import Tuple, Type, Dict, Union
+from typing import Type, Dict, Union
 
 from ordered_set import OrderedSet
 
-from core.mixins import PrettyReprMixin
-from pyttman.core.exceptions import InvalidPyttmanObjectException
 from pyttman.core.containers import MessageMixin
 from pyttman.core.entity_parsing.entity import Entity
 from pyttman.core.entity_parsing.identifiers import Identifier
+from pyttman.core.exceptions import InvalidPyttmanObjectException
+from pyttman.core.mixins import PrettyReprMixin
 
 
 class EntityFieldValueParser(PrettyReprMixin):
@@ -45,7 +42,7 @@ class EntityFieldValueParser(PrettyReprMixin):
         self.suffixes = suffixes or tuple()
         self.exclude = exclude or tuple()
         self.valid_strings = valid_strings or tuple()
-        self.default = default or None
+        self.default = default if default is not None else None
         self.identifier = identifier
         self.span = span
         self._properties_for_evaluation = {
@@ -55,7 +52,6 @@ class EntityFieldValueParser(PrettyReprMixin):
             "default": self.default,
             "valid_strings": self.valid_strings
         }
-        print("SET EXLUDE TO", self.exclude, "ON", self)
 
     def _prepare_params(self):
         """
