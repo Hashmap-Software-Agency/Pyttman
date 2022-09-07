@@ -52,12 +52,8 @@ class EntityFieldBase(EntityFieldValueParser, ABC):
                                                 f"a valid value for "
                                                 f"'type_cls'.")
 
-        identifier_cls = self.identifier_cls
         self.as_list = as_list
-        if identifier is not None:
-            identifier_cls = identifier
-
-        super().__init__(identifier=identifier_cls, **kwargs)
+        super().__init__(identifier=identifier or self.identifier_cls, **kwargs)
 
     def convert_value(self, value: Any) -> Any:
         """

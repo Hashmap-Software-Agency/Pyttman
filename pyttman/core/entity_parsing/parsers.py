@@ -7,73 +7,21 @@ from typing import Tuple, Type, Dict, Union
 
 from ordered_set import OrderedSet
 
+from core.mixins import PrettyReprMixin
 from pyttman.core.exceptions import InvalidPyttmanObjectException
 from pyttman.core.containers import MessageMixin
 from pyttman.core.entity_parsing.entity import Entity
 from pyttman.core.entity_parsing.identifiers import Identifier
 
 
-class Parser(ABC):
-    """
-    Base class for the Parser API in Pyttman.
-    The various entity_fields in Pyttman inherit from this
-    base class.
-
-    field identifier:
-        An optional Identifier class can be supplied as an Identifier.
-        The Identifier's job is finding strings in a message which
-        matches its own patterns.
-    """
-    identifier: Identifier = None
-    exclude: Tuple = ()
-    prefixes: Tuple = ()
-    suffixes: Tuple = ()
-    case_preserved_cache = set()
-
-    def __init__(self, **kwargs):
-        if hasattr(self, "value"):
-            raise AttributeError(
-                "The field 'value' is reserved for internal use. "
-                "Please choose a different name for the field.")
-        self.value = None
-        for k, v in kwargs.items():
-            setattr(self, k, v)
-
-    def __repr__(self):
-        return f"{self.__class__.__name__}(" \
-               f"exclude={self.exclude}, " \
-               f"identifier={self.identifier}, " \
-               f"value={self.value})"
-
-    def reset(self) -> None:
-        """
-        Resets the parser, defaulting it's value to None.
-        :return: None
-        """
-        self.value = None
-
-    @abc.abstractmethod
-    def parse_message(self, message: MessageMixin,
-                      memoization: dict = None) -> None:
-        """
-        Subclasses override this method, defining the
-        logic for parsing the message contents and
-        identifying the value of interest in each
-        field in the EntityParser class in which
-        these classes are created in as fields.
-        """
-        pass
-
-
-class EntityFieldValueParser(Parser):
+class EntityFieldValueParser(PrettyReprMixin):
     """
     This class is used by EntityField classes primarily,
     as the inner-working engine for identifying and finding
     values which match the pattern provided in the declarative
     EntityParser Api component: 'EntityField'.
     """
-    truncates_message_in_parsing = True
-    default = None
+    __repr_fields__ = ("identifier", "exclude", "prefixes", "suffixes")
 
     def __init__(self,
                  prefixes: tuple | typing.Callable = None,
@@ -81,26 +29,25 @@ class EntityFieldValueParser(Parser):
                  valid_strings: tuple | typing.Callable = None,
                  default:  typing.Any | typing.Callable = None,
                  span: int | typing.Callable = 0,
-                 identifier: Type[Identifier] = None,
+                 identifier: Type[Identifier] | None = None,
+                 exclude: typing.Iterable[str] = None,
                  **kwargs):
-        super().__init__(**kwargs)
 
-        if prefixes is None:
-            prefixes = tuple()
-        if suffixes is None:
-            suffixes = tuple()
-        if valid_strings is None:
-            valid_strings = tuple()
+        if hasattr(self, "value"):
+            raise AttributeError("The field 'value' is reserved for internal "
+                                 "use. Please choose a different name for "
+                                 "the field.")
 
-        self.prefixes = prefixes
-        self.suffixes = suffixes
-        self.identifier: Type[Identifier] = identifier
+        self.truncates_message_in_parsing = True
+        self.value = None
+        self.case_preserved_cache = set()
+        self.prefixes = prefixes or tuple()
+        self.suffixes = suffixes or tuple()
+        self.exclude = exclude or tuple()
+        self.valid_strings = valid_strings or tuple()
+        self.default = default or None
+        self.identifier = identifier
         self.span = span
-        self.valid_strings = valid_strings
-
-        if default is not None:
-            self.default = default
-
         self._properties_for_evaluation = {
             "prefixes": self.prefixes,
             "suffixes": self.suffixes,
@@ -108,11 +55,7 @@ class EntityFieldValueParser(Parser):
             "default": self.default,
             "valid_strings": self.valid_strings
         }
-
-    def __repr__(self):
-        return f"{self.__class__.__name__}(value='{self.value}', " \
-               f"identifier={self.identifier}, prefixes={self.prefixes}, " \
-               f"suffixes={self.suffixes}, span={self.span})"
+        print("SET EXLUDE TO", self.exclude, "ON", self)
 
     def _prepare_params(self):
         """
@@ -155,6 +98,13 @@ class EntityFieldValueParser(Parser):
         else:
             self.valid_strings = tuple(
                 [i.casefold() for i in self.valid_strings])
+
+    def reset(self) -> None:
+        """
+        Resets the parser, defaulting it's value to None.
+        :return: None
+        """
+        self.value = None
 
     def parse_message(self, message: MessageMixin,
                       memoization: dict = None) -> None:
@@ -214,7 +164,7 @@ class EntityFieldValueParser(Parser):
         ... these conditions need to be evaluated for each scenario.
 
         Pre- and Suffix tuples can contain strings or Parsers, or a
-        combination. When Parser instances are used in these tuples,
+        combination. When EntityFieldValueParser instances are used in these tuples,
         their last occurring string, separated by spaces, is chosen
         as the ultimate prefix. This is so due to the fact that Parsers
         may span across multiple elements in the string collection
@@ -249,7 +199,7 @@ class EntityFieldValueParser(Parser):
             for rule, rule_collection in {i_prefix: prefixes,
                                           i_suffix: suffixes}.items():
                 if rule is not None:
-                    if isinstance(rule, Parser) and rule.value is not None:
+                    if isinstance(rule, EntityFieldValueParser) and rule.value is not None:
                         entity: Entity = rule.value
                         rule_collection.append(entity.value
                                                .split().pop().lower().strip())
@@ -381,6 +331,7 @@ class EntityFieldValueParser(Parser):
                     break
                 else:
                     if span_value not in self.exclude:
+                        print(f"{span_value} is not in {self.exclude} for {self}")
                         parsed_entity.value += f" {span_value}"
         return parsed_entity
 
@@ -389,7 +340,7 @@ def parse_entities(message: MessageMixin,
                    entity_fields: dict,
                    exclude: tuple = None) -> dict:
     """
-    Traverse over all fields which are Parser subclasses.
+    Traverse over all fields which are EntityFieldValueParser subclasses.
     Have them identify their values according to their
     constraints and conditions, and store them in a
     dictionary, returned at the end of parsing.
@@ -402,7 +353,7 @@ def parse_entities(message: MessageMixin,
     if exclude is None:
         exclude = tuple()
 
-    # The memoization dict is provided each Parser instance
+    # The memoization dict is provided each EntityFieldValueParser instance
     # in order for them to avoid catching a string, previously
     # caught by a predecessor in iterations.
     parsers_memoization: Dict[int, Entity] = {}
@@ -415,7 +366,7 @@ def parse_entities(message: MessageMixin,
             entity_field_instance.prefixes + entity_field_instance.suffixes)
 
         # Share the 'exclude' tuple assigned by the developer in the
-        # application code to each Parser instance
+        # application code to each EntityFieldValueParser instance
         entity_field_instance.exclude = exclude
         entity_field_instance.parse_message(
             message,

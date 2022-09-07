@@ -5,7 +5,7 @@ from collections import OrderedDict
 from itertools import zip_longest
 
 from pyttman.core.entity_parsing.fields import EntityFieldBase
-from pyttman.core.entity_parsing.parsers import Parser
+from pyttman.core.entity_parsing.parsers import EntityFieldValueParser
 from pyttman.core.internals import _generate_name, depr_graceful
 from pyttman.core.mixins import PrettyReprMixin
 from pyttman.core.storage.basestorage import Storage
@@ -163,7 +163,7 @@ class BaseIntent(AbstractIntent, ABC, PrettyReprMixin):
 
         for attr_name, attr_value in self.__class__.__dict__.items():
             if not any((attr_name.startswith("_"), attr_name.endswith("_"))):
-                if issubclass(attr_value.__class__, Parser):
+                if issubclass(attr_value.__class__, EntityFieldValueParser):
                     self.user_entity_fields[attr_name] = attr_value
 
     def __repr__(self):

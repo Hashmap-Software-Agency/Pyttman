@@ -72,7 +72,7 @@ class AbstractMessageRouter(abc.ABC):
                 intent: Intent,
                 keep_alive_on_exc=True) -> Reply | ReplyStream:
         """
-        Iterate over all Parser objects and the name
+        Iterate over all EntityFieldValueParser objects and the name
         of the field it's allocated as.
 
         The strings present in 'lead' and 'trail' in the Intent are

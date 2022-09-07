@@ -25,7 +25,7 @@ class Identifier:
     This class is subclassed and patterns are
     defined in the tuple 'patterns' as raw
     python strings (prepend the string with 'r').
-    The regex pattern is evaluated by the Parser
+    The regex pattern is evaluated by the EntityFieldValueParser
     at runtime.
     """
     patterns = (r"^.*$",)
