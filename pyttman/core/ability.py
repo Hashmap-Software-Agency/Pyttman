@@ -68,15 +68,6 @@ class Ability(PrettyReprMixin):
                         "Ability class.\nHint: Change '(FooIntent(), "
                         "BarIntent())' to '(FooIntent, BarIntent).")
 
-                # Validate the EntityParser by calling constructor
-                if intent_class.EntityParser is not None:
-                    try:
-                        intent_class().EntityParser()
-                    except Exception as e:
-                        raise AttributeError(
-                            "An error occurred with the EntityParser "
-                            f"in Intent class '{intent_class}': {e}")
-
     def before_create(self):
         """
         Lifecycle hook. This hook method is executed before the

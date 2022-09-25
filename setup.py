@@ -30,11 +30,11 @@ setup(
         "Operating System :: OS Independent",
     ],
     python_requires=">=3.10",
-    packages=find_packages(exclude=["*.tests", "*.tests.*", "tests.*", "tests"]),
+    packages=find_packages(exclude=["*.tests", "*.tests.*",
+                                    "tests.*", "tests"]),
     include_package_data=True,
     install_requires=[
         "multidict",
-        "pytz",
         "discord.py",
         "requests",
         "py7zr",
@@ -46,5 +46,3 @@ setup(
         ]
     },
 )
-
-

@@ -41,7 +41,7 @@ class PyttmanInternalTestBaseCase(PyttmanInternalBaseTestCase):
 
     def setUp(self) -> None:
         if self.intent_class is not None:
-            self. IntentClass = self.intent_class
+            self.IntentClass = self.intent_class
         self.mock_intent = self.IntentClass()
         self.intent_reply: Reply | None = None
         self.main_ability = self.ability_cls(intents=(self.IntentClass,))
@@ -54,8 +54,7 @@ class PyttmanInternalTestBaseCase(PyttmanInternalBaseTestCase):
             return self.mock_message.entities[entity_name]
         except KeyError:
             raise RuntimeError(f"Warning! No field named '{entity_name}' was "
-                               f"found in the EntityParser class in this test "
-                               f"suite")
+                               f"found in this test suite")
 
     def test_entity_parser_entity_values(self):
         """
@@ -74,7 +73,7 @@ class PyttmanInternalTestBaseCase(PyttmanInternalBaseTestCase):
               f'\t"""{self.IntentClass.__doc__}"""',
               end="\n\n")
 
-        print("\t\tChecking EntityParser...")
+        print("\t\tChecking EntityFields...")
         self.parse_message_for_entities()
         print(f"\t\tIntent reply: {self.intent_reply}")
 

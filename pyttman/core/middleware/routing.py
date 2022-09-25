@@ -4,6 +4,7 @@ import warnings
 from typing import List, Any
 
 import pyttman
+from pyttman.core.entity_parsing.parsers import parse_entities
 from pyttman.core.ability import Ability
 from pyttman.core.intent import Intent
 from pyttman.core.containers import MessageMixin, \
@@ -71,7 +72,7 @@ class AbstractMessageRouter(abc.ABC):
                 intent: Intent,
                 keep_alive_on_exc=True) -> Reply | ReplyStream:
         """
-        Iterate over all Parser objects and the name
+        Iterate over all EntityFieldValueParser objects and the name
         of the field it's allocated as.
 
         The strings present in 'lead' and 'trail' in the Intent are
@@ -84,12 +85,20 @@ class AbstractMessageRouter(abc.ABC):
         fetched from the application settings. Defaults to True.
         :return: Reply, logic defined in the 'respond' method
         """
-        joined_patterns = set(intent.lead + intent.trail)
+        joined_patterns = set()
+
+        if intent.exclude_lead_in_entities is True:
+            joined_patterns.update(intent.lead)
+        if intent.exclude_trail_in_entities is True:
+            joined_patterns.update(intent.trail)
         truncated_content = [i for i in message.content
                              if i.casefold() not in joined_patterns]
         truncated_message = Message(content=truncated_content)
+        entities: dict[str: Any] = parse_entities(
+            truncated_message,
+            intent.user_entity_fields,
+            intent.ignore_in_entities)
 
-        entities: dict[str: Any] = intent.process_entities(truncated_message)
         message.entities = {k: v.value for k, v in entities.items()}
 
         try:
@@ -111,6 +120,10 @@ class AbstractMessageRouter(abc.ABC):
                              f"{intent.__class__.__name__}."
                              f"respond method returned '{type(reply)}', "
                              f"expected Reply or ReplyStream")
+
+        for entity_field in intent.user_entity_fields.values():
+            entity_field.reset()
+
         return reply
 
 
@@ -179,7 +192,8 @@ class FirstMatchingRouter(AbstractMessageRouter):
         for ability in self.abilities:
             for intent in ability.intents:
                 try:
-                    intent = intent(storage=ability.storage)
+                    intent = intent(storage=ability.storage,
+                                    ability=ability)
                     if intent.matches(message):
                         matching_intents.append(intent)
                 except TypeError as e:

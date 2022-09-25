@@ -48,6 +48,16 @@ class TestPyttmanCLIRunDevModeIntent(PyttmanInternalTestBaseCase):
     intent_class.fail_gracefully = True
 
 
+class TestPyttmanCliShellMode(PyttmanInternalTestBaseCase):
+    test_intent_matching = True
+    process_message = True
+
+    mock_message = Message("shell app_name")
+    expected_entities = {"app_name": "app_name"}
+    intent_class = pyttman_cli_intents.ShellMode
+    intent_class.fail_gracefully = True
+
+
 class TestPyttmanCLICreateAbility(PyttmanInternalTestBaseCase):
     test_intent_matching = True
     process_message = True

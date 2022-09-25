@@ -3,10 +3,10 @@ import os
 import shutil
 import sys
 import traceback
+import warnings
 from datetime import datetime
 from importlib import import_module
 from pathlib import Path
-from types import ModuleType
 
 import requests
 
@@ -14,7 +14,7 @@ import pyttman
 from pyttman.clients.builtin.cli import CliClient
 from pyttman.core.ability import Ability
 from pyttman.core.exceptions import PyttmanProjectInvalidException
-from pyttman.core.internals import Settings, PyttmanApp, _depr
+from pyttman.core.internals import Settings, PyttmanApp, depr_raise
 from pyttman.core.middleware.routing import AbstractMessageRouter
 
 
@@ -148,10 +148,8 @@ def bootstrap_app(module: str = None, devmode: bool = False) -> PyttmanApp:
             "ROUTER_CLASS"
         ).split(".")
     except AttributeError:
-        _depr("Please rename 'MESSAGE_ROUTER' to 'MIDDLEWARE' in "
-              "'settings.py' for this application.",
-              "1.1.11",
-              False)
+        depr_raise("Please rename 'MESSAGE_ROUTER' to 'MIDDLEWARE' in "
+                   "'settings.py' for this application.", "1.1.11")
 
     message_router_class_name = message_router_config.pop()
     message_router_module = ".".join(message_router_config)
@@ -188,36 +186,9 @@ def bootstrap_app(module: str = None, devmode: bool = False) -> PyttmanApp:
                          "in settings.py. Refer to the documentation for "
                          "examples.")
 
-    # Set the abilities of the router to the abilities from settings.py
-    ability_objects_set = set()
-    for ability in settings.ABILITIES:
-        assert not isinstance(ability, Ability), \
-            f"The ability '{ability}' is instantiated. Please redefine " \
-            f"this ability as only the reference to the class, " \
-            f"as in 'MyClass', not 'MyClass()'. "
-
-        ability_module_config = ability.split(".")
-        ability_class_name = ability_module_config.pop()
-        ability_module_name = ".".join(ability_module_config)
-        ability_module = import_module(ability_module_name)
-        ability_class = getattr(ability_module, ability_class_name)
-
-        # Instantiate the ability class and traverse over its intents.
-        # Validate.
-        ability = ability_class()
-        assert issubclass(ability_class, Ability), \
-            f"'{ability.__class__.__name__}' " \
-            f"is not a subclass of 'Ability'. " \
-            f"Check your ABILITIES list in settings.py and verify that " \
-            f"all classes defined are Ability subclasses."
-        ability_objects_set.add(ability)
-
-    assert len(ability_objects_set), "No Ability classes were provided the " \
-                                     "ABILITIES list in settings.py"
-
     # Instantiate router and provide the APP_NAME from settings
     message_router: AbstractMessageRouter = message_router_class(
-        abilities=list(ability_objects_set),
+        abilities=None,
         intent_unknown_responses=command_unknown_responses,
         help_keyword=help_keyword)
 
@@ -226,9 +197,10 @@ def bootstrap_app(module: str = None, devmode: bool = False) -> PyttmanApp:
         client = CliClient(message_router=message_router)
         app = PyttmanApp(client=client,
                          name=settings.APP_NAME,
-                         abilities=ability_objects_set,
                          settings=settings)
         pyttman.app = app
+        app.abilities = load_abilities(settings)
+        message_router.abilities = app.abilities
         prepare_app(module)
         del settings.CLIENT
         return app
@@ -264,10 +236,11 @@ def bootstrap_app(module: str = None, devmode: bool = False) -> PyttmanApp:
     pyttman.logger.log(f" -- App {app_name} started: {datetime.now()} -- ")
     app = PyttmanApp(client=client,
                      name=settings.APP_NAME,
-                     abilities=ability_objects_set,
                      settings=settings)
     pyttman.app = app
+    app.abilities = load_abilities(settings)
     prepare_app(module)
+    message_router.abilities = app.abilities
     del settings.CLIENT
     return app
 
@@ -278,3 +251,25 @@ def prepare_app(module):
     except ImportError:
         # The app is missing this file; no problemo.
         pass
+
+
+def load_abilities(settings: Settings) -> set:
+    # Set the abilities of the router to the abilities from settings.py
+    ability_objects_set = set()
+    for ability in settings.ABILITIES:
+        assert not isinstance(ability, Ability), \
+            f"The ability '{ability}' is instantiated. Please redefine " \
+            f"this ability as only the reference to the class, " \
+            f"as in 'MyClass', not 'MyClass()'. "
+
+        ability_module_config = ability.split(".")
+        ability_class_name = ability_module_config.pop()
+        ability_module_name = ".".join(ability_module_config)
+        ability_module = import_module(ability_module_name)
+        ability_class = getattr(ability_module, ability_class_name)
+        ability_objects_set.add(ability_class())
+
+    if not len(ability_objects_set):
+        warnings.warn("There are no ability classes loaded - "
+                      "your app will not have any replies.")
+    return ability_objects_set

@@ -19,7 +19,7 @@ class MessageMixin(PrettyReprMixin):
     inheritance when a Message-like class is developed
     for supporting a 3rd party library / API.
     """
-    __repr_fields__ = ("created", "content")
+    __repr_fields__ = ("author", "created")
 
     def __init__(self, content=None, **kwargs):
         self.author = "anonymous"

@@ -2,9 +2,37 @@
 
 
 
+# v 1.1.12
+**2022-04-10**
+
+This mini-release contains small changes and bug fixes.
+
+### :star2: News
+* **Improved behavior control when using the EntityParser Api**
+
+  Added the option for developers to state explicitly whether they want to ignore or keep any strings in 'lead' and/or 'trail' from the Intent, as possible strings
+in the EntityParser.
+### 👀 Changes
+
+* **Internal cleaning and refactoring of our Parser code.**
+
+  Removed redundant class `AbstractParserBase`, making the `Parser` class 
+  the base parser class in Pyttman. 
+
+
+* **BoolEntityField now defaults to `False`**
+
+  The `BoolEntityField` class defaults to `False` if it can't find the 
+  sought value in a message, in comparison to the previous default `None` 
+  as default value.  
+
+### **🐛 Splatted bugs and corrected issues** 
+* **Fixes [#63](https://github.com/dotchetter/Pyttman/issues/63)**
+  
+  
 
 # v 1.1.11
-**2022-**
+**2022-04-7**
 
 This release improves the **EntityParser** API, packs the new `create 
 ability` command for the `pyttman` cli tool, and introduces a 
@@ -106,8 +134,8 @@ few new other features and bugfixes.
 * 
 
 ### **🐛 Splatted bugs and corrected issues** 
-* **Fixes [#58]((https://github.com/dotchetter/Pyttman/issues/58)**
-* **Fixes [#62]((https://github.com/dotchetter/Pyttman/issues/58)**
+* **Fixes [#58](https://github.com/dotchetter/Pyttman/issues/58)**
+* **Fixes [#62](https://github.com/dotchetter/Pyttman/issues/62)**
   
   
 

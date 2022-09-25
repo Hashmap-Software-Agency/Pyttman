@@ -153,8 +153,7 @@ pyttman shell my_first_app
 pyttman runclient my_first_app
 ```
 
-## Find content in messages 
-
+## Discord support built in - No extra code to get your chatbot online
 
 **Pyttman aims to offer developers a platform-independent experience.** 
 We're constantly developing support for more platforms. As of today, Pyttman offers built-in support for Discord through the [discord.py](https://github.com/Rapptz/discord.py) library, and we have more on the way. 
