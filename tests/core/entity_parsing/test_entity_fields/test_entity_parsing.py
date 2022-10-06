@@ -38,8 +38,34 @@ class PyttmanIntentInternalEntityParserTestMusicPlayerApp(
         # Test that both SoundCloud and Spotify are found despite being
         # misspelled in comparison to the mock message above
         platform_all = TextEntityField(as_list=True,
+                                       span=2,
                                        valid_strings=("spOtifY",
                                                       "soundcloud"))
+
+
+class PyttmanIntentInternalEntityParserTestTwoTextFields(
+    PyttmanInternalTestBaseCase
+):
+    process_message = True
+    mock_message = Message("Adam and Eve were out walking on green grass")
+    expected_entities = {
+        "person_one": "Adam",
+        "person_two": "Eve",
+        "grass_color": "green"
+    }
+
+    class IntentClass(ImplementedTestIntent):
+        """
+        Test a combination of custom Identifier class for a TextEntityField
+        with valid_strings, message_contains all in combinations.
+        """
+        valid_strings = ("Adam", "Eve")
+        lead = ("walking",)
+        person_one = TextEntityField(identifier=CapitalizedIdentifier,
+                                     valid_strings=valid_strings)
+        person_two = TextEntityField(identifier=CapitalizedIdentifier,
+                                     valid_strings=valid_strings)
+        grass_color = TextEntityField(suffixes=("grass",))
 
 
 class PyttmanIntentInternalEntityParserTestBookKeeperApp(
