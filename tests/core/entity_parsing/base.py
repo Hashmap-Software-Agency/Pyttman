@@ -20,7 +20,8 @@ class ImplementedTestIntent(Intent):
     with the intent to be tested.
     """
     def respond(self, message: Message) -> Reply | ReplyStream:
-        return Reply(f"'{self.__class__.__name__}' matched a message")
+        return Reply(f"'{self.__class__.__name__}' "
+                     f"matched message: {message}")
 
 
 class PyttmanInternalTestBaseCase(PyttmanInternalBaseTestCase):
