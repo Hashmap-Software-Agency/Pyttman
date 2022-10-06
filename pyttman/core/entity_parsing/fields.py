@@ -1,6 +1,5 @@
 import inspect
 from abc import ABC
-from functools import singledispatchmethod
 from typing import Any, Sequence, Type
 
 from pyttman.core.entity_parsing.identifiers import IntegerIdentifier, \
@@ -27,7 +26,6 @@ class EntityFieldBase(EntityFieldValueParser, ABC):
 
     def __init__(self,
                  identifier: Type[Identifier] | None = None,
-                 as_list: bool = False,
                  default: Any = None,
                  **kwargs):
         """
@@ -54,9 +52,7 @@ class EntityFieldBase(EntityFieldValueParser, ABC):
                                                 f"a valid value for "
                                                 f"'type_cls'.")
 
-        self.as_list = as_list
         _default_arg = default if default is not None else self.default
-
         super().__init__(identifier=identifier or self.identifier_cls,
                          default=_default_arg, **kwargs)
 
