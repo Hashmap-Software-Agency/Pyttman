@@ -119,7 +119,9 @@ class EntityFieldValueParser(PrettyReprMixin):
             common_occurrences = tuple(
                 OrderedSet(casefolded_msg).intersection(self.valid_strings))
 
-            for word in common_occurrences:
+            for i, word in enumerate(common_occurrences):
+                if i > self.span and not self.as_list:
+                    break
                 word_index = casefolded_msg.index(word)
                 output.append(message.content[word_index])
 
