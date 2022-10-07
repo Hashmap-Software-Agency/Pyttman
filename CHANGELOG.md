@@ -1,5 +1,81 @@
 # Pyttman Changelog
 
+# V 1.2.0.1
+
+This is a hotfix release, fixing an issue with EntityFields with `as_list` 
+configured, where it would append an infinite amount of matching strings, 
+when in fact, it should only add as many as defined in `span`.
+
+
+### **🐛 Splatted bugs and corrected issues** 
+* **Fixes [#66](https://github.com/dotchetter/Pyttman/issues/66)**
+    
+
+
+
+# V 1.2.0
+This is a minor release, containing new improved features, some changes 
+and bug fixes, where the first point on the News list is the reason for this release being a minor release.
+
+### :star2: News
+* **Accessing the `Ability` instance in an `Intent` class**
+
+  in Pyttman, the relationship between an Ability and Intent classes have 
+  been parent->child, with no way to access the Ability instance from the Intent. 
+  This is now possible, which allows for accessing methods which Intents may share.
+  To access the Ability from an Intent, you can do so with `self.ability` in all Intent methods.
+  This is, however, not a breaking change: backwards compatibility is still supported, meaning 
+  apps with `EntityParser` inner classes will continue to work normally.
+
+
+* **`BoolEntityField` defaults to False**
+
+  Instead of defaulting to `None`, the `BoolEntityField` class now more appropriately 
+  defaults to `False` if the sought pattern isn't found in the message.
+
+
+* **New mode in Pyttman CLI: `shell`**
+
+  The `shell` mode allows you to open your Pyttman app bootstrapped with 
+  dependencies and environment loaded up, in an interactive shell. This is 
+  useful where you want to try your classes using an interactive shell.
+  This feature is invoked using `pyttman shell <app name>`.
+   
+
+### 👀 Changes
+
+* **Removed pytz dependency from the library**
+
+
+* **Internal refactoring and code cleanup**
+
+
+* **The inner class "EntityParser" is no longer used and is unsupported.**
+  
+   The inner class `EntityParser` inside `Intent` classes was optional, and
+   added EntityParser functionality to an intent class. This class proved 
+   to be redundant however, as the EntityParser API continues to evolve. 
+   The need for an inner class is thus removed, and `EntityField` classes 
+   are instead directly declared inside the `Intent` class as class fields, 
+   more resembling other declarative API:s. 
+   
+   ```python
+    # Old
+    class SomeIntent(Intent):
+        class EntityParser:
+            name = StringEntityField()
+  
+  
+    # New
+    class SomeIntent(Intent):
+        name = StringEntityField()
+   ```
+  
+
+
+### **🐛 Splatted bugs and corrected issues** 
+* **Fixes [#64](https://github.com/dotchetter/Pyttman/issues/63)**
+    
 
 
 # v 1.1.12
