@@ -28,6 +28,7 @@ class EntityFieldValueParser(PrettyReprMixin):
                  span: int | typing.Callable = 0,
                  identifier: Type[Identifier] | None = None,
                  exclude: typing.Iterable[str] = None,
+                 as_list: bool = False,
                  **kwargs):
 
         if hasattr(self, "value"):
@@ -45,6 +46,7 @@ class EntityFieldValueParser(PrettyReprMixin):
         self.default = default if default is not None else None
         self.identifier = identifier
         self.span = span
+        self.as_list = as_list
         self._properties_for_evaluation = {
             "prefixes": self.prefixes,
             "suffixes": self.suffixes,
@@ -119,7 +121,9 @@ class EntityFieldValueParser(PrettyReprMixin):
             common_occurrences = tuple(
                 OrderedSet(casefolded_msg).intersection(self.valid_strings))
 
-            for word in common_occurrences:
+            for i, word in enumerate(common_occurrences):
+                if i > self.span and not self.as_list:
+                    break
                 word_index = casefolded_msg.index(word)
                 output.append(message.content[word_index])
 
@@ -129,6 +133,14 @@ class EntityFieldValueParser(PrettyReprMixin):
                 self.value = Entity(output.pop())
             else:
                 self.value = Entity(self.default, is_fallback_default=True)
+
+            if self.value:
+                entity = self.value
+                if isinstance(entity.value, list):
+                    [message.content.remove(i) for i in entity.value]
+                    entity.index_in_message += len(entity.value)
+                elif isinstance(entity.value, str):
+                    message.content.remove(self.value)
             return
 
         if self.truncates_message_in_parsing is False:
@@ -137,7 +149,6 @@ class EntityFieldValueParser(PrettyReprMixin):
         for i, _ in enumerate(message.content):
             parsed_entity: Entity = self._identify_value(message,
                                                          start_index=i)
-
             # An entity has been identified, and it's unique.
             if parsed_entity is not None and memoization.get(
                     parsed_entity.index_in_message) is None:
@@ -292,43 +303,43 @@ class EntityFieldValueParser(PrettyReprMixin):
         # for each span iteration as the walk in the message progresses.
         # If an Identifier is does not comply with a string, the walk is
         # cancelled.
-        if parsed_entity is not None:
-            while parsed_entity.value.casefold() in self.exclude:
-                parsed_entity.index_in_message += 1
-                # Traverse the message for as long as the current found
-                # entity is in the 'exclude' tuple. If the end of message
-                # is reached, quietly break the loop.
-                try:
-                    parsed_entity.value = message.content[
-                        parsed_entity.index_in_message]
-                except IndexError:
-                    return None
+        if parsed_entity is None:
+            return parsed_entity
 
-            current_index = parsed_entity.index_in_message
+        while parsed_entity.value.casefold() in self.exclude:
+            parsed_entity.index_in_message += 1
+            # Traverse the message for as long as the current found
+            # entity is in the 'exclude' tuple. If the end of message
+            # is reached, quietly break the loop.
+            try:
+                parsed_entity.value = message.content[
+                    parsed_entity.index_in_message]
+            except IndexError:
+                return None
 
-            for i in range(1, self.span):
-                try:
-                    current_index += 1
-                    if self.identifier:
-                        identifier_object: Identifier = self.identifier(
-                            start_index=current_index)
-                        # Identifier did not find
-                        span_entity = identifier_object.try_identify_entity(
-                            message)
-                        if span_entity is None or span_entity.index_in_message != current_index:
-                            break
-                        span_value = span_entity.value
-                    else:
-                        span_value = message.content[current_index]
-
-                # There are not enough elements in message.content to walk
-                # as far as the span property requests - abort.
-                except IndexError:
-                    break
+        # Now, add words for as long as `span` allows us to iterate.
+        for i in range(1, self.span):
+            parsed_entity.index_in_message += 1
+            try:
+                if self.identifier:
+                    identifier_object: Identifier = self.identifier(
+                        start_index=parsed_entity.index_in_message)
+                    # Identifier did not find
+                    span_entity = identifier_object.try_identify_entity(
+                        message)
+                    if span_entity is None or span_entity.index_in_message != parsed_entity.index_in_message:
+                        break
+                    span_value = span_entity.value
                 else:
-                    if span_value not in self.exclude:
-                        print(f"{span_value} is not in {self.exclude} for {self}")
-                        parsed_entity.value += f" {span_value}"
+                    span_value = message.content[parsed_entity.index_in_message]
+
+            # There are not enough elements in message.content to walk
+            # as far as the span property requests - abort.
+            except IndexError:
+                break
+            else:
+                if span_value not in self.exclude:
+                    parsed_entity.value += f" {span_value}"
         return parsed_entity
 
 
