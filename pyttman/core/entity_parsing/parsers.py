@@ -86,16 +86,11 @@ class EntityFieldValueParser(PrettyReprMixin):
                                  f"Don't forget the trailing comma, "
                                  f"example: '(1,)' instead of '(1)'.")
 
-        if (
-            self.valid_strings is not None
-        ) and (
-            isinstance(self.valid_strings, typing.Sequence) is False
-        ):
+        if self.valid_strings is not None and not isinstance(self.valid_strings, typing.Sequence):
             raise AttributeError("'valid_strings' must be a collection of "
                                  f"strings, got: '{self.valid_strings}'")
         else:
-            self.valid_strings = tuple(
-                [i.casefold() for i in self.valid_strings])
+            self.valid_strings = tuple([i.casefold() for i in self.valid_strings])
 
     def reset(self) -> None:
         """
@@ -134,6 +129,8 @@ class EntityFieldValueParser(PrettyReprMixin):
             else:
                 self.value = Entity(self.default, is_fallback_default=True)
 
+            self._validate_prefixes_suffixes(message)
+
             if self.value:
                 entity = self.value
                 if isinstance(entity.value, list):
@@ -156,6 +153,35 @@ class EntityFieldValueParser(PrettyReprMixin):
                 break
             else:
                 self.reset()
+
+    def _validate_message_with_affixes(self,
+                                       affixes: tuple[str],
+                                       message: MessageMixin,
+                                       comparator: callable):
+        entity = self.value
+        if not (common_strings := set(affixes).intersection(message.content)):
+            entity.value = self.default
+            return
+        for string in common_strings:
+            if not comparator(message.content.index(string), entity.index_in_message):
+                entity.value = self.default
+
+    def _validate_prefixes_suffixes(self, message: MessageMixin):
+        """
+        Check 'prefixes' and 'suffixes' for Entity values to make sure
+        that they comply
+        :return:
+        """
+        if self.prefixes:
+            self._validate_message_with_affixes(
+                self.prefixes,
+                message,
+                lambda affix_index, value_index: affix_index < value_index)
+        if self.suffixes:
+            self._validate_message_with_affixes(
+                self.suffixes,
+                message,
+                lambda affix_index, value_index: affix_index > value_index)
 
     def _identify_value(self, message: MessageMixin,
                         start_index: int = 0) -> Union[None, Entity]:

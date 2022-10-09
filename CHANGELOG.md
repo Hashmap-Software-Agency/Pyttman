@@ -1,5 +1,15 @@
 # Pyttman Changelog
 
+
+# V 1.2.0.2
+
+This is a hotfix release, fixing an issue with EntityFields with `valid_strings` 
+configured combined with 'suffixes' and/or 'prefixes', 
+where the 'prefixes' and/or 'suffixes' were ignored, if an entity matched 
+a string mentioned in 'valid_strings'.
+
+
+
 # V 1.2.0.1
 
 This is a hotfix release, fixing an issue with EntityFields with `as_list` 
