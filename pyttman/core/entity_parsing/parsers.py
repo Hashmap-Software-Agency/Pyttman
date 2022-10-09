@@ -129,6 +129,8 @@ class EntityFieldValueParser(PrettyReprMixin):
             else:
                 self.value = Entity(self.default, is_fallback_default=True)
 
+            self._validate_prefixes_suffixes(message)
+
             if self.value:
                 entity = self.value
                 if isinstance(entity.value, list):
@@ -151,6 +153,35 @@ class EntityFieldValueParser(PrettyReprMixin):
                 break
             else:
                 self.reset()
+
+    def _validate_message_with_affixes(self,
+                                       affixes: tuple[str],
+                                       message: MessageMixin,
+                                       comparator: callable):
+        entity = self.value
+        if not (common_strings := set(affixes).intersection(message.content)):
+            entity.value = self.default
+            return
+        for string in common_strings:
+            if not comparator(message.content.index(string), entity.index_in_message):
+                entity.value = self.default
+
+    def _validate_prefixes_suffixes(self, message: MessageMixin):
+        """
+        Check 'prefixes' and 'suffixes' for Entity values to make sure
+        that they comply
+        :return:
+        """
+        if self.prefixes:
+            self._validate_message_with_affixes(
+                self.prefixes,
+                message,
+                lambda affix_index, value_index: affix_index < value_index)
+        if self.suffixes:
+            self._validate_message_with_affixes(
+                self.suffixes,
+                message,
+                lambda affix_index, value_index: affix_index > value_index)
 
     def _identify_value(self, message: MessageMixin,
                         start_index: int = 0) -> Union[None, Entity]:
