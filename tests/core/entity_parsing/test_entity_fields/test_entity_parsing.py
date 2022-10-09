@@ -68,6 +68,37 @@ class PyttmanIntentInternalEntityParserTestTwoTextFields(
         grass_color = TextEntityField(suffixes=("grass",))
 
 
+class PyttmanIntentInternalEntityParserTestTwoTextFieldsWithPrefixes(
+    PyttmanInternalTestBaseCase
+):
+    process_message = True
+    mock_message = Message("Adam and Eve were out walking on green grass")
+    expected_entities = {
+        "person_one_fail": None,
+        "person_one": "Adam",
+        "person_two": "Eve",
+        "grass_color": "green"
+    }
+
+    class IntentClass(ImplementedTestIntent):
+        """
+        Test a combination of custom Identifier class for a TextEntityField
+        with valid_strings, message_contains all in combinations.
+        prefixed should denote that the entity isn't found.
+        """
+        valid_strings = ("Adam", "Eve")
+        lead = ("walking",)
+        person_one_fail = TextEntityField(identifier=CapitalizedIdentifier,
+                                          valid_strings=valid_strings,
+                                          prefixes=("_prefix_",))
+        person_one = TextEntityField(identifier=CapitalizedIdentifier,
+                                     valid_strings=valid_strings)
+        person_two = TextEntityField(identifier=CapitalizedIdentifier,
+                                     valid_strings=valid_strings,
+                                     suffixes=("were",))
+        grass_color = TextEntityField(suffixes=("grass",))
+
+
 class PyttmanIntentInternalEntityParserTestBookKeeperApp(
     PyttmanInternalTestBaseCase
 ):
