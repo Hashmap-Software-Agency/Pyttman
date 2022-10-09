@@ -86,16 +86,11 @@ class EntityFieldValueParser(PrettyReprMixin):
                                  f"Don't forget the trailing comma, "
                                  f"example: '(1,)' instead of '(1)'.")
 
-        if (
-            self.valid_strings is not None
-        ) and (
-            isinstance(self.valid_strings, typing.Sequence) is False
-        ):
+        if self.valid_strings is not None and not isinstance(self.valid_strings, typing.Sequence):
             raise AttributeError("'valid_strings' must be a collection of "
                                  f"strings, got: '{self.valid_strings}'")
         else:
-            self.valid_strings = tuple(
-                [i.casefold() for i in self.valid_strings])
+            self.valid_strings = tuple([i.casefold() for i in self.valid_strings])
 
     def reset(self) -> None:
         """
