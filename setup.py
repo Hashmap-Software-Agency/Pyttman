@@ -20,6 +20,7 @@ setup(
     author="Simon Olofsson",
     project_urls={
         "Bug Tracker": "https://github.com/dotchetter/Pyttman/issues",
+        "Changelog": "https://github.com/dotchetter/Pyttman/blob/main/CHANGELOG.md"
     },
     author_email="simon@dotchetter.se",
     license="MIT",
