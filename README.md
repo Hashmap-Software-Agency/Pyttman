@@ -6,7 +6,6 @@
 [![PyPI version](https://badge.fury.io/py/Pyttman.svg)](https://badge.fury.io/py/Pyttman) 
 [![CodeQL](https://github.com/dotchetter/Pyttman/actions/workflows/codeql-analysis.yml/badge.svg)](https://github.com/dotchetter/Pyttman/actions/workflows/codeql-analysis.yml) 
 [![Python package](https://github.com/dotchetter/Pyttman/actions/workflows/python-package-310.yml/badge.svg)](https://github.com/dotchetter/Pyttman/actions/workflows/python-package-310.yml)
-[![Python package](https://github.com/dotchetter/Pyttman/actions/workflows/python-package-311.yml/badge.svg)](https://github.com/dotchetter/Pyttman/actions/workflows/python-package-311.yml)
 
 ### If you've ever developed a chatbot or otherwise virtual assistant
 -how many times have you had to iterate over the message contents to route the 
