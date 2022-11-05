@@ -133,11 +133,16 @@ class EntityFieldValueParser(PrettyReprMixin):
 
             if self.value:
                 entity = self.value
+                if entity.value == self.default:
+                    return
                 if isinstance(entity.value, list):
-                    [message.content.remove(i) for i in entity.value]
+                    words_to_remove_from_message = entity.value
                     entity.index_in_message += len(entity.value)
                 elif isinstance(entity.value, str):
-                    message.content.remove(self.value)
+                    words_to_remove_from_message = [entity.value]
+
+                self._remove_words_from_message(message,
+                                                *words_to_remove_from_message)
             return
 
         if self.truncates_message_in_parsing is False:
@@ -153,6 +158,22 @@ class EntityFieldValueParser(PrettyReprMixin):
                 break
             else:
                 self.reset()
+
+    def _remove_words_from_message_unless_default(self,
+                                                  message,
+                                                  *words_to_remove_from_message) -> None:
+        """
+        Removes elements from message.content, if they're present
+        in the message, unless a word or other object happens to
+        equal the 'self.default' property on the instance.
+        """
+        for word in words_to_remove_from_message:
+            if word == self.default:
+                continue
+            try:
+                message.content.remove(word)
+            except ValueError:
+                continue
 
     def _validate_message_with_affixes(self,
                                        affixes: tuple[str],
