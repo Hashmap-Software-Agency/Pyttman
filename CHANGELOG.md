@@ -1,5 +1,17 @@
 # Pyttman Changelog
 
+
+# V 1.2.0.4
+This is a hotfix release, fixing an issue with BoolEntityField instances 
+not parsing the values correctly if the sought word is also part of the 
+'lead' and/or 'trail' tuples.
+
+
+### **🐛 Splatted bugs and corrected issues** 
+* **Fixes [#69](https://github.com/dotchetter/Pyttman/issues/68)**
+    
+
+
 # V 1.2.0.3
 This is a hotfix release, fixing an issue with default values in 
 TextEntityFields, causing a crash if it was combined with `as_list=True`, and

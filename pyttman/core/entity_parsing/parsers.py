@@ -99,13 +99,23 @@ class EntityFieldValueParser(PrettyReprMixin):
         """
         self.value = None
 
-    def parse_message(self, message: MessageMixin,
+    def parse_message(self,
+                      message: MessageMixin,
+                      original_message_content: tuple[str],
                       memoization: dict = None) -> None:
         """
         Walk the message and parse it for values.
         If the identified value exists in memoization,
         traverse on until value is returned or the
         message is exhausted.
+
+        :param message: A Message object to pass to each EntityField,
+        for parsing entities.
+        :param original_message_content: The original untouched contents of
+        the message as received from the client. This is used for a source
+        of truth, since the content in `message` is mutated with each entity
+        field parsing it.
+        :param memoization: Dictionary with previously identified entities
         """
         self._prepare_params()
         if self.valid_strings:
@@ -305,7 +315,7 @@ class EntityFieldValueParser(PrettyReprMixin):
         # sure it complies with Pre- and/or suffix values, if configured
         if self.identifier is not None:
             identifier_object = self.identifier(start_index=start_index)
-            identifier_entity = identifier_object .try_identify_entity(message)
+            identifier_entity = identifier_object.try_identify_entity(message)
 
             if identifier_entity is not None:
                 allowed_scenarios = {
@@ -393,17 +403,22 @@ class EntityFieldValueParser(PrettyReprMixin):
 
 
 def parse_entities(message: MessageMixin,
-                   entity_fields: dict,
-                   exclude: tuple = None) -> dict:
+                   entity_fields: dict[str, EntityFieldValueParser],
+                   original_message_content: tuple[str],
+                   exclude: tuple = None) -> dict[str, str]:
     """
     Traverse over all fields which are EntityFieldValueParser subclasses.
     Have them identify their values according to their
     constraints and conditions, and store them in a
     dictionary, returned at the end of parsing.
-    :param exclude:
-    :param entity_fields:
+    :param original_message_content: The original untouched contents of
+        the message as received from the client. This is used for a source
+        of truth, since the content in `message` is mutated with each entity
+        field parsing it.
+    :param exclude: Optional tuple of strings to ignore in parsing.
+    :param entity_fields: Dictionary with `name: EntityField` mapped
     :param message: MessageMixin subclass object to be parsed.
-    :return:
+    :return: Dictionary with the name of the entity against its parsed value.
     """
     output = {}
     if exclude is None:
@@ -426,7 +441,8 @@ def parse_entities(message: MessageMixin,
         entity_field_instance.exclude = exclude
         entity_field_instance.parse_message(
             message,
-            memoization=parsers_memoization)
+            memoization=parsers_memoization,
+            original_message_content=original_message_content)
 
         # See what the parser found - Entity or None.
         # Ignore entities in self.exclude.
@@ -458,6 +474,9 @@ def parse_entities(message: MessageMixin,
         parser_joined_suffixes_and_prefixes)
 
     for field_name, entity in reversed(output.items()):
+        if entity.is_boolean():
+            continue
+
         entity_field = entity_fields.get(field_name)
         duplicate_cache.update(entity_field.case_preserved_cache)
         value_for_type_conversion = entity_field.default

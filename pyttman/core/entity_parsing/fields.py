@@ -2,6 +2,10 @@ import inspect
 from abc import ABC
 from typing import Any, Sequence, Type
 
+from pyttman.core.entity_parsing.entity import Entity
+
+from pyttman.core.containers import MessageMixin, Message
+
 from pyttman.core.entity_parsing.identifiers import IntegerIdentifier, \
     Identifier
 from pyttman.core.entity_parsing.parsers import EntityFieldValueParser
@@ -154,6 +158,15 @@ class BoolEntityField(EntityFieldBase):
                  message_contains: Sequence[str] = None,
                  **kwargs):
         super().__init__(*args, valid_strings=message_contains, **kwargs)
+
+    def parse_message(self,
+                      message: MessageMixin,
+                      original_message_content: tuple[str],
+                      memoization: dict = None) -> None:
+        original_content = Message(original_message_content).lowered_content()
+        self.value = Entity(value=self.default, is_fallback_default=True)
+        if set(self.valid_strings).intersection(original_content):
+            self.value = Entity(value=True)
 
 
 if __name__ != "__main__":

@@ -27,3 +27,10 @@ class Entity:
                and other.index_in_message == self.index_in_message
         except AttributeError:
             return False
+
+    def is_boolean(self) -> bool:
+        """
+        Returns whether the value held in `self.value` is a bool,
+        in which case it cannot be evaluated with string methods.
+        """
+        return isinstance(self.value, bool)

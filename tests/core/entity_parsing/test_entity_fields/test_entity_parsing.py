@@ -205,13 +205,14 @@ class PyttmanIntentInternalEntityParserTestWebscraperApp(
     PyttmanInternalTestBaseCase
 ):
     process_message = True
-    mock_message = Message("Search for ManufacturerA ManufacturerB Model123 "
+    mock_message = Message("monitor ManufacturerA ManufacturerB Model123 "
                            "on page_a and page_b price 45000 60 results")
     expected_entities = {
         "manufacturer": "ManufacturerA ManufacturerB",
         "model": "Model123",
         "pages": ["page_a", "page_b"],
         "minimum_price": 45000,
+        "create_monitor": True,
         "maximum_results": 60}
 
     class IntentClass(ImplementedTestIntent):
@@ -219,7 +220,7 @@ class PyttmanIntentInternalEntityParserTestWebscraperApp(
         This test checks The TextEntityField, and asserts that the 'default'
         argument works as expected.
         """
-        lead = ("Search",)
+        lead = ("monitor", "search")
         ignore_in_entities = ("search", "for", "on")
         manufacturer = TextEntityField(span=2)
         model = TextEntityField(prefixes=(manufacturer,))
@@ -230,6 +231,7 @@ class PyttmanIntentInternalEntityParserTestWebscraperApp(
                                            prefixes=("price",))
         maximum_results = IntegerEntityField(suffixes=("results",),
                                              identifier=NumberIdentifier)
+        create_monitor = BoolEntityField(message_contains=("monitor", "monitoring"))
 
 
 def get_valid_strings() -> tuple:
@@ -331,7 +333,7 @@ class PyttmanIntentInternalTestTrailAndLeadAreIgnored(
     mock_message = Message("Start workshift")
     process_message = True
     expected_entities = {
-        "is_workshift": False,
+        "is_workshift": True,
         "is_break": False
     }
 
