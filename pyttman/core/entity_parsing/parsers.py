@@ -141,8 +141,9 @@ class EntityFieldValueParser(PrettyReprMixin):
                 elif isinstance(entity.value, str):
                     words_to_remove_from_message = [entity.value]
 
-                self._remove_words_from_message(message,
-                                                *words_to_remove_from_message)
+                self._remove_words_from_message_unless_default(
+                    message,
+                    *words_to_remove_from_message)
             return
 
         if self.truncates_message_in_parsing is False:
@@ -159,9 +160,10 @@ class EntityFieldValueParser(PrettyReprMixin):
             else:
                 self.reset()
 
-    def _remove_words_from_message_unless_default(self,
-                                                  message,
-                                                  *words_to_remove_from_message) -> None:
+    def _remove_words_from_message_unless_default(
+            self,
+            message,
+            *words_to_remove_from_message) -> None:
         """
         Removes elements from message.content, if they're present
         in the message, unless a word or other object happens to
