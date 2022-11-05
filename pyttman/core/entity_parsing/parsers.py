@@ -474,6 +474,9 @@ def parse_entities(message: MessageMixin,
         parser_joined_suffixes_and_prefixes)
 
     for field_name, entity in reversed(output.items()):
+        if entity.is_boolean():
+            continue
+
         entity_field = entity_fields.get(field_name)
         duplicate_cache.update(entity_field.case_preserved_cache)
         value_for_type_conversion = entity_field.default
