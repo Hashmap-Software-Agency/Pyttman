@@ -345,3 +345,22 @@ class PyttmanIntentInternalTestTrailAndLeadAreIgnored(
 
         is_break = BoolEntityField(message_contains=("break",))
         is_workshift = BoolEntityField(message_contains=("workshift",))
+
+
+class PyttmanIntentInternalTestTextEntityDefault(
+    PyttmanInternalTestBaseCase
+):
+    mock_message = Message("I would like the blue cheese, please.")
+    process_message = True
+    expected_entities = {
+        "cheese_type": ["blue"],
+    }
+
+    class IntentClass(ImplementedTestIntent):
+        """
+        Tests that the 'workshift' from 'lead' is not removed
+        from parsing, and can be used as entities.
+        """
+        cheese_type = StringEntityField(valid_strings=("blue", "yellow"),
+                                        default="blue",
+                                        as_list=True)
