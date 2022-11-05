@@ -1,6 +1,7 @@
 import abc
 import random
 import warnings
+from copy import copy
 from typing import List, Any
 
 import pyttman
@@ -95,9 +96,10 @@ class AbstractMessageRouter(abc.ABC):
                              if i.casefold() not in joined_patterns]
         truncated_message = Message(content=truncated_content)
         entities: dict[str: Any] = parse_entities(
-            truncated_message,
-            intent.user_entity_fields,
-            intent.ignore_in_entities)
+            message=truncated_message,
+            entity_fields=intent.user_entity_fields,
+            original_message_content=copy(message.content),
+            exclude=intent.ignore_in_entities)
 
         message.entities = {k: v.value for k, v in entities.items()}
 
