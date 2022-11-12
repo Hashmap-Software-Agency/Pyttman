@@ -1,3 +1,5 @@
+from pyttman.core.internals import PyttmanApp
+
 from pyttman import version
 from pyttman.tools.scheduling.schedule import schedule
 from pyttman.tools.logger.logger import PyttmanLogger
@@ -30,7 +32,7 @@ class _AppNotConfigured:
                                   "move lifecycle hooks to a separate module.")
 
 
-app = None
+app: PyttmanApp | None = None
 settings = _SettingsNotConfigured
 is_configured = False
 logger = PyttmanLogger
