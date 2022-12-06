@@ -17,7 +17,7 @@ trying to decipher a message and its contents to find words of interest? Maybe t
 The Pyttman Framework aims to provide a similar experience as Django and Flask does for web, but for chatbots and digital assistants.
 It's large and full of features yet easy to use.
 
-# Abiliy, Intent, Entity
+# Ability, Intent, Entity
 Pyttman apps are structured with inspiration from the MVC (Model View Controller) 
 pattern, but things are named a bit differently. Here's a short rundown on what they're about.
 
@@ -172,7 +172,7 @@ on a different platform.
 * Built-in thread based task scheduler 
 * Abstraction layer middleware for managing incoming Messages just like requests in API frameworks
 * Django-like settings.py file
-* Powerful built-in rule-based API for parsing entities in messages (identifying words based on pre/suffixes and/or regex patterns, and/or order of appearence
+* Powerful built-in rule-based API for parsing entities in messages (identifying words based on pre/suffixes and/or regex patterns, and/or order of appearance
 
 
 ### Documentation

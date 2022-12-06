@@ -62,7 +62,7 @@ class PyttmanLogger:
         @functools.wraps(func)
         def inner(*args, **kwargs):
             """
-            Inner method, executing the func paramter function,
+            Inner method, executing the func parameter function,
             as well as executing the logger.
             :returns:
                 Output from executed function in parameter func
@@ -74,7 +74,7 @@ class PyttmanLogger:
                 return results
             except Exception as e:
                 pyttman.logger.LOG_INSTANCE.error(
-                    f'Exception occured in {func.__name__}. Traceback '
+                    f'Exception occurred in {func.__name__}. Traceback '
                     f'{traceback.format_exc()} {e}')
                 raise e
         return inner

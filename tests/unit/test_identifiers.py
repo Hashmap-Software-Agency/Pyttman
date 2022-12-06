@@ -8,11 +8,11 @@ from pyttman.core.entity_parsing.entity import Entity
 class TestDateStringIdentifier(TestCase):
 
     def setUp(self) -> None:
-        self.sample_message = Message("The biggest manmade disaster in human history "
+        self.sample_message = Message("The biggest man-made disaster in human history "
                                       "occurred 1984/04/26-01:23:45 when the Chernobyl "
-                                      "powerplant meltdown accident. Another big human "
+                                      "power plant meltdown accident. Another big human "
                                       "made disaster is the hiroshima bomb which dropped "
-                                      "over the city of Heroshima in Japan on 1945-08-06.")
+                                      "over the city of Hiroshima in Japan on 1945-08-06.")
 
     def test_identify_valid(self):
         identifier = identifiers.DateTimeStringIdentifier(start_index=0)

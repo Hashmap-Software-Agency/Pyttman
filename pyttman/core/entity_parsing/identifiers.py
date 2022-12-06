@@ -15,9 +15,9 @@ class Identifier:
     whether they are capitalized, have a date-like
     format to them, and alike.
 
-    Subclasses can define very granularly how
+    Subclasses can define in a very granular way, how
     a string can look by strict rules, or less
-    so with less defined criterias.
+    so with less defined criterion.
 
     The Identifier will use regex to assess
     the similarity of given string.

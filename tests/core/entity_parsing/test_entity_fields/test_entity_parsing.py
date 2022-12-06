@@ -37,6 +37,7 @@ class PyttmanIntentInternalEntityParserTestMusicPlayerApp(
 
         # Test that both SoundCloud and Spotify are found despite being
         # misspelled in comparison to the mock message above
+        # noinspection SpellCheckingInspection
         platform_all = TextEntityField(as_list=True,
                                        span=2,
                                        valid_strings=("spOtifY",
