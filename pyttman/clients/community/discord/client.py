@@ -1,8 +1,12 @@
-
 import asyncio
 from datetime import datetime
 
 import discord
+from discord import Intents
+
+from pyttman import logger
+from pyttman.core.middleware.routing import AbstractMessageRouter
+from pyttman.core.exceptions import ClientImproperlyConfiguredError
 from pyttman.clients.base import BaseClient
 from pyttman.clients.community.discord.misc import DiscordMessage
 from pyttman.core.containers import Reply, ReplyStream
@@ -52,13 +56,49 @@ class DiscordClient(discord.Client, BaseClient):
         be parsed.
     """
     token: str = ""
-    guild: str = ""
+    guild: int = None
     message_startswith: str = ""
     message_endswith: str = ""
 
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-        [setattr(self, k, v) for k, v in kwargs.items()]
+    def __init__(self,
+                 message_router: AbstractMessageRouter,
+                 token: str,
+                 guild: int,
+                 *args,
+                 **kwargs):
+        discord_intents = Intents.all()
+        discord_intents.message_content = True
+        try:
+            discord_intent_flags = kwargs["discord_intent_flags"]
+            discord_intents = discord.Intents(**discord_intent_flags)
+            if not discord_intents:
+                raise ClientImproperlyConfiguredError(
+                    "Pyttman cannot start the Discord client without the "
+                    "discord intent 'message_content' being set to True, "
+                    "since the contents in the message are required to "
+                    "do the routing and deliver the Entities found in the "
+                    "message.")
+        except KeyError:
+            raise ClientImproperlyConfiguredError(
+                "Could not find 'discord_intent_flags' in 'CLIENT' section "
+                "in settings.py for this app, and it's required. The app cannot "
+                "start. Refer to the documentation for settings.py to setup "
+                "the client and the discord intent flags correctly.")
+
+        message_startswith = kwargs.get("message_startswith")
+        message_endswith = kwargs.get("message_endswith")
+        self.message_startswith = message_startswith or self.message_startswith
+        self.message_startswith = message_endswith or self.message_endswith
+        self.message_router = message_router
+        self._token = token
+        self.guild = guild
+        super().__init__(*args,
+                         **kwargs,
+                         guild=guild,
+                         intents=discord_intents)
+
+    async def on_ready(self):
+        logger.log(f"App online on discord.")
 
     async def on_message(self, message: DiscordMessage) -> None:
         """
@@ -71,6 +111,7 @@ class DiscordClient(discord.Client, BaseClient):
         :param message: discord.Message
         :return: None
         """
+        print("Message recieved:", message)
         if message.author == self.user:
             return
 
@@ -109,20 +150,23 @@ class DiscordClient(discord.Client, BaseClient):
                 _generate_error_entry(discord_message, e).as_str())
 
     def run_client(self):
-        if not self.token or not self.guild:
-            raise ValueError("Cannot connect - missing authentication."
-                             "'token' and 'guild' must be provided when "
-                             "using the Discord client. Specify these "
-                             "values in the dictionary for the client "
-                             "as {\"token\": \"foo_token\", \"guild\": "
-                             "\"foo_guild\"}")
-        _token = self.token
-        del self.token
+        if not self._token:
+            raise ClientImproperlyConfiguredError(
+                "Cannot connect - missing authentication."
+                "'token' must be provided when "
+                "using the Discord client. Specify these "
+                "values in the dictionary for the client "
+                "as {\"token\": \"foo_token\", \"guild\": "
+                "\"foo_guild\"}")
+
+        _token = self._token
+        del self._token
 
         try:
             self.run(_token)
         except Exception as e:
-            raise RuntimeError("DiscordClient ran in to a problem. "
-                               "Please ensure that all data is provided "
-                               "correctly in settings.py."
-                               f"Excact error message: \"{e}\"")
+            raise ClientImproperlyConfiguredError(
+                "DiscordClient ran in to a problem. "
+                "Please ensure that all data is provided "
+                "correctly in settings.py."
+                f"Exact error message: \"{e}\"")
