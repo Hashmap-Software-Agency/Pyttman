@@ -66,8 +66,6 @@ class DiscordClient(discord.Client, BaseClient):
                  guild: int,
                  *args,
                  **kwargs):
-        discord_intents = Intents.all()
-        discord_intents.message_content = True
         try:
             discord_intent_flags = kwargs["discord_intent_flags"]
             discord_intents = discord.Intents(**discord_intent_flags)
