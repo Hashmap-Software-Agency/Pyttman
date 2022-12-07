@@ -1,6 +1,15 @@
 # Pyttman Changelog
 
 
+# V 1.2.1.1
+This is a hotfix release, addressing an issue with the integration with discord.py 2.0 API
+were Pyttman incorrectly parsed the 'channel' property for the message. 
+
+
+### **🐛 Splatted bugs and corrected issues** 
+* Fixes the discord integration 
+    
+
 # V 1.2.1
 This release includes an important update for the discord client.
 Any application using Pyttman will need to upgrade to this version for the 

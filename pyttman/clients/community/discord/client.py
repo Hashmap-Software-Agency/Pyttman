@@ -109,12 +109,13 @@ class DiscordClient(discord.Client, BaseClient):
         :param message: discord.Message
         :return: None
         """
-        print("Message recieved:", message)
         if message.author == self.user:
             return
 
         # Add the client to the attributes, passed on to the message object
-        attrs = {"created": datetime.now(), "client": self}
+        attrs = {"created": datetime.now(),
+                 "client": self,
+                 "channel": message.channel}
 
         for attr_name in message.__slots__:
             try:
@@ -134,9 +135,10 @@ class DiscordClient(discord.Client, BaseClient):
                 self.message_endswith):
             return
 
-        reply: Reply | ReplyStream = self.message_router.get_reply(
-            discord_message)
         try:
+            reply: Reply | ReplyStream = self.message_router.get_reply(
+                discord_message)
+
             if isinstance(reply, ReplyStream):
                 while reply.qsize():
                     await discord_message.channel.send(reply.get().as_str())
