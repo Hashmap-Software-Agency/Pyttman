@@ -9,7 +9,7 @@ class DiscordMessage(MessageMixin, discord.Message):
     of the Pyttman framework depend on, while also
     supporting the Discord module and API for interacting
     with its API to support full interaction with the
-    discord plattform from within applications developed
+    discord platform from within applications developed
     in Pyttman, and not just the content of the message.
 
     This class is designed to be used with the DiscordClient

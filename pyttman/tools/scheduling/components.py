@@ -110,7 +110,7 @@ class TimeTrigger:
                f"next_trigger={self.next_trigger}, " \
                f"last_trigger={self.last_trigger}, " \
                f"amount_of_runs={self.amount_of_runs}, " \
-               f"reoccuring={self.reoccurring})" \
+               f"reccuring={self.reoccurring})" \
 
 
     @staticmethod

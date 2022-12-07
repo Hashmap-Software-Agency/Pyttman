@@ -1,6 +1,18 @@
 # Pyttman Changelog
 
 
+# V 1.2.1
+This release includes an important update for the discord client.
+Any application using Pyttman will need to upgrade to this version for the 
+app to still work after new year 2023 due to Discord API changes.
+
+
+### **🐛 Splatted bugs and corrected issues** 
+* **Fixes [#71](https://github.com/dotchetter/Pyttman/issues/71)**
+* Reduced dependencies to 1/3 of previous versions, improving security and reducing dependency exposure.
+* Fixes various spelling errors in the code and comments
+    
+
 # V 1.2.0.4
 This is a hotfix release, fixing an issue with BoolEntityField instances 
 not parsing the values correctly if the sought word is also part of the 
@@ -8,7 +20,7 @@ not parsing the values correctly if the sought word is also part of the
 
 
 ### **🐛 Splatted bugs and corrected issues** 
-* **Fixes [#69](https://github.com/dotchetter/Pyttman/issues/68)**
+* **Fixes [#69](https://github.com/dotchetter/Pyttman/issues/69)**
     
 
 

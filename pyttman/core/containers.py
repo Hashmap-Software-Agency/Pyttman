@@ -58,7 +58,7 @@ class MessageMixin(PrettyReprMixin):
                 self._content = repr(val).split()
             except Exception:
                 raise TypeError(f"content cannot be type {type(val)} "
-                                f"as it is could not be typecasted to "
+                                f"as it is could not be typecast to "
                                 f"str.")
 
     def sanitized_content(self, preserve_case=False) -> List[str]:

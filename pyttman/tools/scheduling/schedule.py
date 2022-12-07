@@ -20,7 +20,7 @@ class schedule:
 
     Works as a decorator using the
     'method' method as @Schedule.method,
-    or by calling Schedule.run() withr
+    or by calling Schedule.run() with
     provided args.
     """
     id_job_map: Dict[int, Job] = {}
@@ -217,7 +217,7 @@ class schedule:
     @staticmethod
     def start_job(name: str) -> None:
         """
-        Start the scheudling of a given method,
+        Start the scheduling of a given method,
         if a Job with the name is found
         @param name: Name of the job to start (may start multiple)
         @return: None

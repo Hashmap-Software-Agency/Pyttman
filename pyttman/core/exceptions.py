@@ -24,3 +24,13 @@ class InvalidPyttmanObjectException(BaseException):
     """
     def __init__(self, message):
         super().__init__(message)
+
+
+class ClientImproperlyConfiguredError(BaseException):
+    """
+    This error is raised when a Client is misconfigured in settings.py
+    for a pyttman project.
+    """
+    def __init__(self, message):
+        super().__init__(message)
+
