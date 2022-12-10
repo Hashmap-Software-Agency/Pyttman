@@ -5,7 +5,7 @@ import traceback
 import requests
 
 from time import sleep
-
+from pyttman.version import __version__ as pyttman_version
 from pyttman.core.mixins import PyttmanCliComplainerMixin
 from pyttman.core.decorators import LifeCycleHookType
 from pyttman.core.entity_parsing.fields import TextEntityField
@@ -208,3 +208,11 @@ class CreateNewAbilityIntent(Intent, PyttmanCliComplainerMixin):
             with open(rel_path, "w", encoding="utf-8") as f:
                 f.write("\n# Created by Pyttman ")
         return Reply(f"Created ability '{ability_name}'.")
+
+
+class VersionInfo(Intent):
+    lead = ("-v", "v",)
+    help_string = "Returns the Pyttman build version."
+
+    def respond(self, message: Message) -> Reply | ReplyStream:
+        return Reply(pyttman_version)
