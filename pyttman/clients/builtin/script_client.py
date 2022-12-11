@@ -12,7 +12,7 @@ class ScriptClient(BaseClient):
     a program loop, but are designed to be executed as a script
     to run once.
     """
-    def run_client(self):
+    def run_client(self, *args, **kwargs):
         print(f"\nPyttman v.{pyttman.__version__} - "
               f"Script client", end="\n")
         try:
@@ -34,7 +34,3 @@ class ScriptClient(BaseClient):
                 print()
         except (KeyboardInterrupt, EOFError):
             sys.exit(0)
-
-    @staticmethod
-    def publish(reply: Reply):
-        print(reply.as_str())
