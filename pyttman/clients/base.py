@@ -24,11 +24,10 @@ class BaseClient(abc.ABC):
         return f"{self.name}({vars(self)})"
 
     @abc.abstractmethod
-    def run_client(self):
+    def run_client(self, *args, **kwargs) -> None:
         """
         Starts the main method for the client, opening
         a session to the front end with which it is
         associated with.
-        :return: None
         """
         pass
