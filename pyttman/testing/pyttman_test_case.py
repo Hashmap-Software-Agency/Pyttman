@@ -21,7 +21,7 @@ class PyttmanTestCase(TestCase):
             self.app = bootstrap_app(
                 devmode=self.devmode,
                 module=self.app_name,
-                application_abspath=self.application_abspath)
+                application_abspath=self.application_abspath.parent)
         except Exception as e:
             raise PyttmanProjectInvalidException(
                 "\n\nPyttman could not boostrap the application for "
