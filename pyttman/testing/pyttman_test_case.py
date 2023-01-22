@@ -4,10 +4,11 @@ from unittest import TestCase
 
 from pyttman.core.exceptions import PyttmanProjectInvalidException
 from pyttman.tools.pyttmancli import bootstrap_app
+from pyttman.core.decorators import LifeCycleHookType
 
 
 class PyttmanTestCase(TestCase):
-    devmode = False
+    dev_mode = None
     application_abspath = None
     app_name = None
 
@@ -40,6 +41,7 @@ class PyttmanTestCase(TestCase):
                           "a test executing code to production environments. "
                           "To override this warning, set 'dev_mode = True' "
                           "as a class variable in this unit test.")
+        self.app.hooks.trigger(LifeCycleHookType.before_start)
 
     @staticmethod
     def find_app_path(start_dir: Path = None) -> Path:
