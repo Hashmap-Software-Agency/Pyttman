@@ -23,15 +23,12 @@ class PyttmanTestCase(TestCase):
                 module=self.app_name,
                 application_abspath=self.application_abspath.parent)
         except Exception as e:
+            print(traceback.format_exc())
             raise PyttmanProjectInvalidException(
                 "\n\nPyttman could not boostrap the application for "
-                "testing since it wasn't found automatically.\n"
-                "Pyttman presumes the tests to be located in: "
-                "'project_root/tests/'.\nIf this is no longer the case, "
-                "you can explicitly provide the path to "
-                "your project root as: 'application_abspath = "
-                "'/users/home/.../name_of_pyttman_app' as a class variable in "
-                "the test suite.") from e
+                "testing. Full traceback above"
+            ) from e
+
         super().__init__(*args, **kwargs)
         if self.dev_mode is not None and not self.app.settings.DEV_MODE:
             raise Warning("Warning! This test class does not declare 'dev_mode' as a "
