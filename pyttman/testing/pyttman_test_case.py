@@ -1,3 +1,4 @@
+import traceback
 from pathlib import Path
 from unittest import TestCase
 
@@ -7,9 +8,10 @@ from pyttman.tools.pyttmancli import bootstrap_app
 
 
 class PyttmanTestCase(TestCase):
-    dev_mode = False
+    devmode = False
     application_abspath = None
     app_name = None
+    override_devmode_warning = False
 
     def __init__(self, *args, **kwargs):
         if self.application_abspath is None:
@@ -19,7 +21,7 @@ class PyttmanTestCase(TestCase):
 
         try:
             self.app = bootstrap_app(
-                devmode=self.dev_mode,
+                devmode=self.devmode,
                 module=self.app_name,
                 application_abspath=self.application_abspath.parent)
         except Exception as e:
@@ -30,13 +32,14 @@ class PyttmanTestCase(TestCase):
             ) from e
 
         super().__init__(*args, **kwargs)
-        if self.dev_mode is not None and not self.app.settings.DEV_MODE:
-            raise Warning("Warning! This test class does not declare 'dev_mode' as a "
-                          "class variable, and 'DEV_MODE' in settings.py for "
+        if not any((self.devmode, self.app.settings.DEV_MODE, self.override_devmode_warning)):
+            raise Warning("Warning! This test class does not declare 'devmode' as a "
+                          "True, and 'DEV_MODE' in settings.py for "
                           "this app is False. This could potentially lead to "
-                          "a test executing code to production environments. "
-                          "To override this warning, set 'dev_mode = True' "
+                          "a test executing to production environment. "
+                          "To override this warning, set 'override_devmode_warning = True' "
                           "as a class variable in this unit test.")
+        self.app.settings.DEV_MODE = self.devmode
         self.app.hooks.trigger(LifeCycleHookType.before_start)
 
     @staticmethod
