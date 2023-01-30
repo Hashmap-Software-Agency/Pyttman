@@ -2,6 +2,7 @@ from copy import copy
 from pathlib import Path
 from unittest import TestCase
 
+from core.decorators import LifeCycleHookType
 from pyttman.core.exceptions import PyttmanProjectInvalidException
 from pyttman.tools.pyttmancli import bootstrap_app
 
@@ -33,6 +34,14 @@ class PyttmanTestCase(TestCase):
                 "'/users/home/.../name_of_pyttman_app' as a class variable in "
                 "the test suite.") from e
         super().__init__(*args, **kwargs)
+        if self.devmode is not None and not self.app.settings.DEV_MODE:
+            raise Warning("Warning! This test class does not declare 'dev_mode' as a "
+                          "class variable, and 'DEV_MODE' in settings.py for "
+                          "this app is False. This could potentially lead to "
+                          "a test executing code to production environments. "
+                          "To override this warning, set 'dev_mode = True' "
+                          "as a class variable in this unit test.")
+        self.app.hooks.trigger(LifeCycleHookType.before_start)
 
     @staticmethod
     def find_app_path(start_dir: Path = None) -> Path:
