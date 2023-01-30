@@ -7,7 +7,7 @@ from pyttman.tools.pyttmancli import bootstrap_app
 
 
 class PyttmanTestCase(TestCase):
-    devmode = False
+    dev_mode = False
     application_abspath = None
     app_name = None
 
@@ -19,7 +19,7 @@ class PyttmanTestCase(TestCase):
 
         try:
             self.app = bootstrap_app(
-                devmode=self.devmode,
+                devmode=self.dev_mode,
                 module=self.app_name,
                 application_abspath=self.application_abspath.parent)
         except Exception as e:
@@ -33,7 +33,7 @@ class PyttmanTestCase(TestCase):
                 "'/users/home/.../name_of_pyttman_app' as a class variable in "
                 "the test suite.") from e
         super().__init__(*args, **kwargs)
-        if self.devmode is not None and not self.app.settings.DEV_MODE:
+        if self.dev_mode is not None and not self.app.settings.DEV_MODE:
             raise Warning("Warning! This test class does not declare 'dev_mode' as a "
                           "class variable, and 'DEV_MODE' in settings.py for "
                           "this app is False. This could potentially lead to "
