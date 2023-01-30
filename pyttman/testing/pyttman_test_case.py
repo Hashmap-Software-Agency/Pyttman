@@ -4,11 +4,10 @@ from unittest import TestCase
 
 from pyttman.core.exceptions import PyttmanProjectInvalidException
 from pyttman.tools.pyttmancli import bootstrap_app
-from pyttman.core.decorators import LifeCycleHookType
 
 
 class PyttmanTestCase(TestCase):
-    dev_mode = None
+    devmode = False
     application_abspath = None
     app_name = None
 
@@ -20,7 +19,7 @@ class PyttmanTestCase(TestCase):
 
         try:
             self.app = bootstrap_app(
-                devmode=self.dev_mode,
+                devmode=self.devmode,
                 module=self.app_name,
                 application_abspath=self.application_abspath.parent)
         except Exception as e:
@@ -34,14 +33,6 @@ class PyttmanTestCase(TestCase):
                 "'/users/home/.../name_of_pyttman_app' as a class variable in "
                 "the test suite.") from e
         super().__init__(*args, **kwargs)
-        if self.dev_mode is not None and not self.app.settings.DEV_MODE:
-            raise Warning("Warning! This test class does not declare 'dev_mode' as a "
-                          "class variable, and 'DEV_MODE' in settings.py for "
-                          "this app is False. This could potentially lead to "
-                          "a test executing code to production environments. "
-                          "To override this warning, set 'dev_mode = True' "
-                          "as a class variable in this unit test.")
-        self.app.hooks.trigger(LifeCycleHookType.before_start)
 
     @staticmethod
     def find_app_path(start_dir: Path = None) -> Path:
@@ -57,7 +48,7 @@ class PyttmanTestCase(TestCase):
         start_dir = start_dir or Path.cwd()
         next_dir = start_dir
         while not next_dir.joinpath(sought_file).exists():
-            if start_dir.parent == start_dir:
+            if next_dir.parent == start_dir:
                 raise ModuleNotFoundError(
                     "Could not find a Pyttman app in the "
                     "same directory as the test, or in any "
