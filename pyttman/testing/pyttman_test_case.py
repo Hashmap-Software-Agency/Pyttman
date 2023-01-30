@@ -1,8 +1,7 @@
-from copy import copy
 from pathlib import Path
 from unittest import TestCase
 
-from core.decorators import LifeCycleHookType
+from pyttman.core.decorators import LifeCycleHookType
 from pyttman.core.exceptions import PyttmanProjectInvalidException
 from pyttman.tools.pyttmancli import bootstrap_app
 
