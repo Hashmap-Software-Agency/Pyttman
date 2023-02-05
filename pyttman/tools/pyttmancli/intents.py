@@ -228,7 +228,7 @@ class CreateNewAbilityIntent(Intent, PyttmanCliComplainerMixin):
         if complaint := self.complain_app_not_found(app_name):
             return Reply(complaint)
         else:
-            app_name = pathlib.Path(app_name)
+            app_name = Path(app_name)
 
         abilities_parent_catalog = app_name / "abilities"
         ability_catalog = abilities_parent_catalog / ability_name
