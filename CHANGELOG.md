@@ -1,5 +1,10 @@
 # Pyttman Changelog
 
+# V 1.3.0.1
+Hotfix release, addressing an issue with PyttmanCLI executing scripts,
+where the directory of the app is included in the path for a script 
+twice.
+
 # V 1.3.0
 In this release, we're introducing some cool new features along with 
 some bug fixes.

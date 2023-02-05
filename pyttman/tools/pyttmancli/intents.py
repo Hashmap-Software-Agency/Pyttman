@@ -193,7 +193,7 @@ class RunFile(Intent, PyttmanCliComplainerMixin):
         global_variables = globals().copy()
         global_variables.update(locals())
         shell = code.InteractiveConsole(global_variables)
-        script_path = Path().cwd() / Path(app_name) / script_file
+        script_path = Path.cwd() / script_file
 
         with open(script_path.as_posix(), "r") as f:
             # Set variable to indicate for the running script that it's main
