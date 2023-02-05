@@ -166,6 +166,37 @@ class RunAppInClientMode(Intent, PyttmanCliComplainerMixin):
         return Reply(f"- Starting app '{app_name}' in client mode...")
 
 
+class RunScript(Intent, PyttmanCliComplainerMixin):
+    """
+    Runs a single python file within a Pyttman app context
+    """
+    fail_gracefully = True
+    lead = ("runfile",)
+    example = "pyttman runfile <app name> <file.py>"
+    help_string = "Run a singe file within a Pyttman app context. " \
+                  f"Example: {example}"
+
+    app_name = TextEntityField()
+    script_file = TextEntityField()
+
+    def respond(self, message: Message) -> Reply | ReplyStream:
+        app_name = message.entities["app_name"]
+        if complaint := self.complain_app_not_found(app_name):
+            return Reply(complaint)
+        try:
+            app = bootstrap_app(devmode=False, module=app_name)
+            app.hooks.trigger(LifeCycleHookType.before_start)
+        except Exception as e:
+            if self.fail_gracefully is False:
+                raise e
+            print(traceback.format_exc())
+            return Reply("The app could not start due to issues with "
+                         "bootstrapping, see traceback above.")
+        self.storage.put("app", app)
+        self.storage.put("ready", True)
+        return Reply(f"- Starting app '{app_name}' in client mode...")
+
+
 class CreateNewAbilityIntent(Intent, PyttmanCliComplainerMixin):
     lead = ("new",)
     trail = ("ability",)
