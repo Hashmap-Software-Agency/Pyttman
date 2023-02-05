@@ -129,6 +129,35 @@ class PyttmanIntentInternalEntityParserTestBookKeeperApp(
                                          default="default")
 
 
+class PyttmanIntentInternalEntityParserTestBookKeeperAppWithDecimalField(
+    PyttmanIntentInternalEntityParserTestBookKeeperApp
+):
+    process_message = True
+    mock_message = Message("add expense Groceries at Whole Foods price 695,"
+                           "5684")
+    expected_entities = {
+        "item": "Groceries",
+        "store": "Whole Foods",
+        "price": decimal.Decimal("695.5684"),
+        "some_undefined": "default"
+    }
+
+    class IntentClass(ImplementedTestIntent):
+        """
+        Tests the Text and Float EntityField classes and performs
+        type assertion with prefixes and valid_strings with various
+        case miss-matching
+        """
+        lead = ("new", "add")
+        trail = ("expense", "purchase")
+
+        item = TextEntityField(valid_strings=("groceries", "clothes"))
+        store = TextEntityField(prefixes=("in", "at", "on"), span=3)
+        price = DecimalEntityField(prefixes=("price",))
+        some_undefined = TextEntityField(prefixes=("none",),
+                                         default="default")
+
+
 class PyttmanIntentInternalEntityParserTestTranslatorApp(
     PyttmanInternalTestBaseCase
 ):

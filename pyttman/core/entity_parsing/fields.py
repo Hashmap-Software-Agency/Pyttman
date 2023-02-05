@@ -1,4 +1,5 @@
 import inspect
+from decimal import Decimal
 from abc import ABC
 from typing import Any, Sequence, Type
 
@@ -167,6 +168,16 @@ class BoolEntityField(EntityFieldBase):
         self.value = Entity(value=self.default, is_fallback_default=True)
         if set(self.valid_strings).intersection(original_content):
             self.value = Entity(value=True)
+
+
+class DecimalEntityField(FloatEntityField):
+    """
+    Converts floating point numbers to Decimal. Useful
+    when dealing with currencies or in other areas where
+    decimal precision is not trivial.
+    """
+    type_cls = Decimal
+    default = Decimal(0)
 
 
 if __name__ != "__main__":
