@@ -52,7 +52,7 @@ def run(argv=None, dev_args: typing.List = None):
     pyttman_cli = PyttmanCli()
     dot = "\u2022"
     default_response = [pyttman_cli.description]
-    default_response.extend([f"\n{dot} {i.example}"
+    default_response.extend([f"\n{dot} {i.example}{i.__doc__}"
                              for i in pyttman_cli.intents])
     default_response = str(" ").join(default_response) + "\n"
 

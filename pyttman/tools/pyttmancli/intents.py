@@ -20,7 +20,7 @@ from pyttman.core.containers import (
 
 class ShellMode(Intent, PyttmanCliComplainerMixin):
     """
-    Allows developers to enter an interactive shell in their application,
+    Opens an interactive shell in their application,
     useful for debugging.
     """
     lead = ("shell",)
@@ -44,9 +44,8 @@ class ShellMode(Intent, PyttmanCliComplainerMixin):
 
 class CreateNewApp(Intent, PyttmanCliComplainerMixin):
     """
-    Intent class for creating a new Pyttman app.
-    The directory is terraformed and prepared
-    with a template project.
+    Create a new Pyttman app. The directory is terraformed
+    and prepared with a template project.
     """
     app_name = TextEntityField()
     lead = ("new",)
@@ -98,10 +97,8 @@ class CreateNewApp(Intent, PyttmanCliComplainerMixin):
 
 class RunAppInDevMode(Intent, PyttmanCliComplainerMixin):
     """
-    Intent class for running a Pyttman app in dev mode,
-    meaning the "DEV_MODE" flag is set to True in the app
-    to provide verbose outputs which are user defined
-    and the CliClient is used as the primary front end.
+    Run a Pyttman app in dev mode. This sets "DEV_MODE"
+    to True and opens a chat interface in the terminal.
     """
     app_name = TextEntityField()
     fail_gracefully = True
@@ -134,8 +131,8 @@ class RunAppInDevMode(Intent, PyttmanCliComplainerMixin):
 
 class RunAppInClientMode(Intent, PyttmanCliComplainerMixin):
     """
-    Intent class for running Pyttman Apps
-    in Client mode.
+    Run a Pyttman in production mode. Client is configured
+    settings.py.
     """
     fail_gracefully = True
     lead = ("runclient",)
@@ -168,7 +165,7 @@ class RunAppInClientMode(Intent, PyttmanCliComplainerMixin):
 
 class RunScript(Intent, PyttmanCliComplainerMixin):
     """
-    Runs a single python file within a Pyttman app context
+    Runs a single Python file within a Pyttman app context
     """
     fail_gracefully = True
     lead = ("runfile",)
@@ -198,6 +195,10 @@ class RunScript(Intent, PyttmanCliComplainerMixin):
 
 
 class CreateNewAbilityIntent(Intent, PyttmanCliComplainerMixin):
+    """
+    Create a new Ability in a Pyttman application. A new directory
+    and a 'ability.py' file is created for you in the app directory.
+    """
     lead = ("new",)
     trail = ("ability",)
     ordered = True
@@ -242,8 +243,13 @@ class CreateNewAbilityIntent(Intent, PyttmanCliComplainerMixin):
 
 
 class VersionInfo(Intent):
+    """
+    Returns the version info about this Pyttman installation.
+    """
     lead = ("-v", "v",)
-    help_string = "Returns the Pyttman build version."
+    example = "pyttman -V"
+    help_string = "Returns the Pyttman build version. " \
+                  f"Example: {example}"
 
     def respond(self, message: Message) -> Reply | ReplyStream:
         return Reply(pyttman_version)
