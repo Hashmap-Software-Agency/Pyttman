@@ -173,25 +173,31 @@ class RunScript(Intent, PyttmanCliComplainerMixin):
     help_string = "Run a singe file within a Pyttman app context. " \
                   f"Example: {example}"
 
-    app_name = TextEntityField()
-    script_file = TextEntityField()
+    script_file_name = TextEntityField()
+    app_name = TextEntityField(prefixes=(script_file_name,))
 
     def respond(self, message: Message) -> Reply | ReplyStream:
         app_name = message.entities["app_name"]
+        script_file = message.entities["script_file_name"]
+
         if complaint := self.complain_app_not_found(app_name):
             return Reply(complaint)
-        try:
-            app = bootstrap_app(devmode=False, module=app_name)
-            app.hooks.trigger(LifeCycleHookType.before_start)
-        except Exception as e:
-            if self.fail_gracefully is False:
-                raise e
-            print(traceback.format_exc())
-            return Reply("The app could not start due to issues with "
-                         "bootstrapping, see traceback above.")
-        self.storage.put("app", app)
-        self.storage.put("ready", True)
-        return Reply(f"- Starting app '{app_name}' in client mode...")
+        if script_file is None:
+            return Reply("Filename must be entered, as a '.py' file. "
+                         f"Example: {self.example}")
+
+        script_file = pathlib.Path(script_file)
+        app = bootstrap_app(devmode=True, module=app_name)
+        app.hooks.trigger(LifeCycleHookType.before_start)
+        global_variables = globals().copy()
+        global_variables.update(locals())
+        shell = code.InteractiveConsole(global_variables)
+
+        with open(script_file.as_posix(), "r") as f:
+            source = f.read()
+            code_obj = compile(source, script_file.as_posix(), "exec")
+            shell.runcode(code_obj)
+        return Reply(f"Script file executed successfully.")
 
 
 class CreateNewAbilityIntent(Intent, PyttmanCliComplainerMixin):

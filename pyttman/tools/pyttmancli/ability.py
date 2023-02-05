@@ -16,6 +16,7 @@ class PyttmanCli(Ability):
         intents.CreateNewAbilityIntent,
         intents.ShellMode,
         intents.VersionInfo,
+        intents.RunScript,
     )
 
     description = f"\nPyttman v{pyttman.__version__}\n\n" \
