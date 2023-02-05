@@ -88,5 +88,5 @@ class TestPyttmanRunScript(PyttmanInternalTestBaseCase):
     mock_message = Message("runfile file.py app_name")
     expected_entities = {"app_name": "app_name",
                          "script_file_name": "file.py"}
-    intent_class = pyttman_cli_intents.RunScript
+    intent_class = pyttman_cli_intents.RunFile
     intent_class.fail_gracefully = True

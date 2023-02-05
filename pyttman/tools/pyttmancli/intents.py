@@ -1,7 +1,8 @@
 import code
 import os
-import pathlib
 import traceback
+from pathlib import Path
+
 import requests
 
 from time import sleep
@@ -163,7 +164,7 @@ class RunAppInClientMode(Intent, PyttmanCliComplainerMixin):
         return Reply(f"- Starting app '{app_name}' in client mode...")
 
 
-class RunScript(Intent, PyttmanCliComplainerMixin):
+class RunFile(Intent, PyttmanCliComplainerMixin):
     """
     Runs a single Python file within a Pyttman app context
     """
@@ -173,8 +174,8 @@ class RunScript(Intent, PyttmanCliComplainerMixin):
     help_string = "Run a singe file within a Pyttman app context. " \
                   f"Example: {example}"
 
-    script_file_name = TextEntityField()
-    app_name = TextEntityField(prefixes=(script_file_name,))
+    app_name = TextEntityField()
+    script_file_name = TextEntityField(prefixes=(app_name,))
 
     def respond(self, message: Message) -> Reply | ReplyStream:
         app_name = message.entities["app_name"]
@@ -186,17 +187,20 @@ class RunScript(Intent, PyttmanCliComplainerMixin):
             return Reply("Filename must be entered, as a '.py' file. "
                          f"Example: {self.example}")
 
-        script_file = pathlib.Path(script_file)
+        script_file = Path(script_file)
         app = bootstrap_app(devmode=True, module=app_name)
         app.hooks.trigger(LifeCycleHookType.before_start)
         global_variables = globals().copy()
         global_variables.update(locals())
         shell = code.InteractiveConsole(global_variables)
+        script_path = Path().cwd() / Path(app_name) / script_file
 
-        with open(script_file.as_posix(), "r") as f:
+        with open(script_path.as_posix(), "r") as f:
+            # Set variable to indicate for the running script that it's main
             source = f.read()
             code_obj = compile(source, script_file.as_posix(), "exec")
-            shell.runcode(code_obj)
+            global_variables["__name__"] = "__main__"
+            exec(code_obj, global_variables)
         return Reply(f"Script file executed successfully.")
 
 
