@@ -8,6 +8,8 @@ from pyttman.core.containers import Message, Reply, \
 
 class ScriptClient(BaseClient):
     """
+    The ScriptClient runs a single file within a Pyttman app
+    context.
     This client is suitable for applications which don't have
     a program loop, but are designed to be executed as a script
     to run once.
