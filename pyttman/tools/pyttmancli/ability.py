@@ -1,13 +1,7 @@
 import pyttman
+import pyttman.tools.pyttmancli.intents as intents
 from pyttman.core.internals import PyttmanApp
 from pyttman.core.ability import Ability
-from pyttman.tools.pyttmancli.intents import (
-    CreateNewApp,
-    RunAppInDevMode,
-    RunAppInClientMode,
-    CreateNewAbilityIntent,
-    ShellMode
-)
 
 
 class PyttmanCli(Ability):
@@ -15,11 +9,15 @@ class PyttmanCli(Ability):
     Encapsulates the Pyttman CLI tool 'pyttman'
     used in the terminal by framework users.
     """
-    intents = (CreateNewApp,
-               RunAppInDevMode,
-               RunAppInClientMode,
-               CreateNewAbilityIntent,
-               ShellMode)
+    intents = (
+        intents.CreateNewApp,
+        intents.RunAppInDevMode,
+        intents.RunAppInClientMode,
+        intents.CreateNewAbilityIntent,
+        intents.ShellMode,
+        intents.VersionInfo,
+        intents.RunFile,
+    )
 
     description = f"\nPyttman v{pyttman.__version__}\n\n" \
                   "For help about a commend, type pyttman help [command]" \

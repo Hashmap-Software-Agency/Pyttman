@@ -1,5 +1,83 @@
 # Pyttman Changelog
 
+# V 1.3.0
+In this release, we're introducing some cool new features along with 
+some bug fixes.
+The star of the show this time is the test suite class for improved
+testability of Pyttman applications.
+
+### :star2: News
+* **Test suite class for developing tests**
+
+  A new Test suite class has been developed for use in Pyttman apps, for
+  making it easier to write unit test for Pyttman applications. The test automatically
+  loads the app context for the app in which the tests are created in.
+
+  ```python
+  from pyttman.testing import PyttmanTestCase
+  
+  class TestUserSynchronizer(PyttmanTestCase):
+
+    def setUp(self) -> None:
+        # This setup hook works as with any TestCase class.        
+        # You have access to your pyttman app just as if the app was running.
+        app = self.app
+  
+    def test_some_func(self):
+        self.fail()  
+  ```
+
+* **New EntityField class for Decimal type**
+
+  For finance and other domains, the floating point precision
+  `float` isn't high enough. An industry standard is the `Decimal` type 
+  and it's now supported in the `EntityField` ecosystem in Pyttman. 
+  
+  ```python
+  
+  class EnterIncome(Intent):
+    income = DecimalEntityField()
+  ```
+
+* **New mode in Pyttman CLI: `runfile` - Run single scripts with Pyttman**
+
+  Some times a single script does the job, or the app you've developed 
+  isn't designed to be conversational. For these situations, the new 
+  PyttmanCLI command `runfile` is perfect. It will invoke a Python file 
+  with the app loaded, providing you all the benefits of using Pyttman 
+  without having to develop your app with a conversational approach.
+  
+  ```python
+  # someapp/script.py
+  
+  from pyttman import app
+  
+  if __name__ == "__main__":
+    print(f"Hello! I'm using {app.name} as context.")
+  
+  ```
+  Running the file above with PyttmanCLI:
+  ```python  
+  $ pyttman runfile pyttman_app_name script.py
+    
+  > Hello! I'm using pyttman_app_name as context.
+  ```
+  
+* **New mode in Pyttman CLI: `-V` - See the version you're at**
+   
+  This mode is quite simple. It returns the version of the installed
+  the version of the installation of Pyttman.
+  
+  ```python
+  pyttman -V
+  1.3.0
+  ```
+
+### **🐛 Splatted bugs and corrected issues** 
+* **Fixes problem where words with special characters where ignored in entities**
+    
+
+
 
 # V 1.2.1.1
 This is a hotfix release, addressing an issue with the integration with discord.py 2.0 API

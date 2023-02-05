@@ -2,14 +2,14 @@ import abc
 import random
 import warnings
 from copy import copy
-from typing import List, Any
+from typing import List, Any, Iterable
 
 import pyttman
+from pyttman.core.exceptions import PyttmanProjectInvalidException
 from pyttman.core.entity_parsing.parsers import parse_entities
 from pyttman.core.ability import Ability
 from pyttman.core.intent import Intent
-from pyttman.core.containers import MessageMixin, \
-    Reply, ReplyStream, Message
+from pyttman.core.containers import MessageMixin, Reply, ReplyStream, Message
 from pyttman.core.internals import _generate_error_entry
 
 
@@ -111,6 +111,19 @@ class AbstractMessageRouter(abc.ABC):
             reply = _generate_error_entry(message, e)
             if keep_alive_on_exc is False:
                 raise e
+
+        original_reply = copy(reply)
+        try:
+            if not any((isinstance(reply, Reply), isinstance(reply, ReplyStream))):
+                if isinstance(reply, Iterable) and not isinstance(reply, str):
+                    reply = Reply(reply)
+                else:
+                    reply = ReplyStream(reply)
+        except Exception:
+            raise PyttmanProjectInvalidException(
+                f"Could not return reply from intent '{intent}' due to "
+                f"a misconfiguration of the response type. '{intent.respond}' "
+                f"returned: '{original_reply}'")
 
         constraints = {
             bool(reply is not None),

@@ -250,11 +250,11 @@ class EntityFieldValueParser(PrettyReprMixin):
         suffix_entity = None
         prefixes = []
         suffixes = []
-        prefix_indexes = []
-        suffix_indexes = []
+        prefix_indices = []
+        suffix_incides = []
         last_prefix_index, earliest_suffix_index = 0, 0
         parsed_entity: Union[Entity, None] = None
-        sanitized_msg_content = message.sanitized_content(preserve_case=False)
+        lowered_msg_content = message.lowered_content()
 
         # First - traverse over the pre- and suffixes and
         # collect them in separate lists
@@ -276,9 +276,9 @@ class EntityFieldValueParser(PrettyReprMixin):
             try:
                 # Save the index of this prefix in the message
                 if prefix is not None:
-                    prefix_indexes.append(sanitized_msg_content.index(prefix))
+                    prefix_indices.append(lowered_msg_content.index(prefix))
                 if suffix is not None:
-                    suffix_indexes.append(sanitized_msg_content.index(suffix))
+                    suffix_incides.append(lowered_msg_content.index(suffix))
             except ValueError:
                 # The prefix was not in the message
                 continue
@@ -286,9 +286,9 @@ class EntityFieldValueParser(PrettyReprMixin):
         # Let's extract the last occurring prefix,
         # and the earliest suffix of the ones present
         if len(prefixes):
-            if not len(prefix_indexes):
+            if not len(prefix_indices):
                 return None
-            last_prefix_index = max(prefix_indexes)
+            last_prefix_index = max(prefix_indices)
             try:
                 index_for_value = last_prefix_index + 1
                 value_at_index = message.content[index_for_value]
@@ -299,10 +299,10 @@ class EntityFieldValueParser(PrettyReprMixin):
             start_index = last_prefix_index + 1
 
         if len(suffixes):
-            if not len(suffix_indexes):
+            if not len(suffix_incides):
                 return None
 
-            earliest_suffix_index = min(suffix_indexes)
+            earliest_suffix_index = min(suffix_incides)
             try:
                 index_for_value = earliest_suffix_index - 1
                 value_at_index = message.content[index_for_value]

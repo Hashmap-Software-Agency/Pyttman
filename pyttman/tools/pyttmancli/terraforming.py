@@ -62,7 +62,8 @@ class TerraFormer:
         os.remove(self.template_file_name)
 
 
-def bootstrap_app(module: str = None, devmode: bool = False) -> PyttmanApp:
+def bootstrap_app(module: str = None, devmode: bool = False,
+                  application_abspath: Path = None) -> PyttmanApp:
     """
     Bootstraps the framework with modules and configurations
     read from the settings.py found in the current path.
@@ -73,21 +74,26 @@ def bootstrap_app(module: str = None, devmode: bool = False) -> PyttmanApp:
 
     :param module: Module in which the app source is located
     :param devmode: Provides only one runner with the CliClient in.
+    :param application_abspath: Optional full path to the application
+           directory
     """
-
     # This enables relative imports
-    sys.path.insert(0, Path.cwd().as_posix())
+    if application_abspath:
+        sys.path.insert(0, Path(application_abspath).as_posix())
+        os.chdir(application_abspath.as_posix())
+    else:
+        sys.path.insert(0, Path.cwd().as_posix())
 
     # First, find the settings.py. It should reside in the current directory
     # provided that the user is currently positioned in the app catalog for
     # their Pyttman project.
-    if (Path(module) / "settings.py").exists() is False:
-        raise PyttmanProjectInvalidException("No 'settings.py' module "
-                                             "found.\nMake sure you are "
-                                             "executing the command from "
-                                             "within your Pyttman app "
-                                             "directory (where the "
-                                             "settings.py file is located).")
+    if not (Path(module) / "settings.py").exists():
+        raise PyttmanProjectInvalidException(f"\n\nApp '{module}' not found "
+                                             f"in '{Path.cwd().as_posix()}'. "
+                                             f"\nAre you running Pyttman in the "
+                                             f"right directory?\nTip! If this happens "
+                                             f"when unit testing, ensure the "
+                                             f"correct 'app_name' is provided.")
 
     try:
         settings_module = import_module(f"{module}.settings")

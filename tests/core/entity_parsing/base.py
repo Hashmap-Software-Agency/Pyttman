@@ -4,8 +4,8 @@ from typing import Type
 from pyttman.core.ability import Ability
 from pyttman.core.containers import Message, ReplyStream, \
     Reply
-from pyttman.core.middleware.routing import FirstMatchingRouter
 from pyttman.core.intent import Intent
+from pyttman.core.middleware.routing import FirstMatchingRouter
 from tests.module_helper import PyttmanInternalBaseTestCase
 
 
