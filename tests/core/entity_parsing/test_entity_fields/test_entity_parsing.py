@@ -1,11 +1,24 @@
-from pyttman.core.entity_parsing.fields import BoolEntityField, \
-    TextEntityField, \
-    FloatEntityField, IntegerEntityField, StringEntityField, IntEntityField
-from pyttman.core.entity_parsing.identifiers import NumberIdentifier, \
-    CapitalizedIdentifier, CellPhoneNumberIdentifier, DateTimeStringIdentifier
+import decimal
 from pyttman.core.containers import Message
-from tests.core.entity_parsing.base import ImplementedTestIntent, \
+from pyttman.core.entity_parsing.fields import (
+    BoolEntityField,
+    TextEntityField,
+    FloatEntityField,
+    IntegerEntityField,
+    StringEntityField,
+    IntEntityField,
+    DecimalEntityField
+)
+from tests.core.entity_parsing.base import (
+    ImplementedTestIntent,
     PyttmanInternalTestBaseCase
+)
+from pyttman.core.entity_parsing.identifiers import (
+    NumberIdentifier,
+    CapitalizedIdentifier,
+    CellPhoneNumberIdentifier,
+    DateTimeStringIdentifier
+)
 
 
 class PyttmanIntentInternalEntityParserTestMusicPlayerApp(
