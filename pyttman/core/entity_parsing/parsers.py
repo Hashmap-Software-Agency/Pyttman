@@ -254,7 +254,7 @@ class EntityFieldValueParser(PrettyReprMixin):
         suffix_incides = []
         last_prefix_index, earliest_suffix_index = 0, 0
         parsed_entity: Union[Entity, None] = None
-        sanitized_msg_content = message.sanitized_content(preserve_case=False)
+        lowered_msg_content = message.lowered_content()
 
         # First - traverse over the pre- and suffixes and
         # collect them in separate lists
