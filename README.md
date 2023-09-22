@@ -142,7 +142,7 @@ pip install pyttman
 pyttman new app my_first_app
 
 # Create an Ability module with files from a template
-pyttman new ability 
+pyttman new ability ability_name my_first_app
 
 # Run it in dev mode
 pyttman dev my_first_app
