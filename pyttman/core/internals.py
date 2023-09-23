@@ -5,6 +5,9 @@ import warnings
 from dataclasses import dataclass, field
 from datetime import datetime
 from typing import Any
+import json
+from collections import UserDict
+
 
 import pyttman
 from pyttman.core.containers import MessageMixin, Reply
@@ -32,6 +35,12 @@ def depr_graceful(message: str, version: str):
     out = f"{message} - This was deprecated in version {version}."
     warnings.warn(out, DeprecationWarning)
 
+class CustomUserDict(UserDict):
+     
+    # constructor
+    def __init__(self, dictionary):
+        self.data = dictionary
+        self.__dict__.update(dictionary)
 
 class Settings:
     """
@@ -60,9 +69,19 @@ class Settings:
         self.LOG_FORMAT: str | None = None
         self.LOG_TO_STDOUT: bool = False
 
-        [setattr(self, k, v) for k, v in kwargs.items()
+        [self.__set_attr(k, v) for k, v in kwargs.items()
          if not inspect.ismodule(v)
          and not inspect.isfunction(v)]
+
+    def __set_attr(self, k, v):
+        tmp = v
+        if isinstance(v, dict):
+            tmp = self.__dict2obj(v)
+            
+        setattr(self, k, tmp)
+        
+    def __dict2obj(self, dictionary):
+        return json.loads(json.dumps(dictionary), object_hook=CustomUserDict)
 
     def __repr__(self):
         _attrs = {name: value for name, value in self.__dict__.items()}
