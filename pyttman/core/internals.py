@@ -73,17 +73,17 @@ class Settings:
     def __set_attr(self, k, v):
         tmp = v
         if isinstance(v, dict):
-            tmp = self.__dict2obj(v)
+            tmp = Settings._dict_to_object(v)
             
         setattr(self, k, tmp)
-
-    def __dict2obj(self, dictionary):
-        return json.loads(json.dumps(dictionary), object_hook=Settings)
 
     def __repr__(self):
         _attrs = {name: value for name, value in self.__dict__.items()}
         return f"Settings({_attrs})"
 
+    @staticmethod
+    def _dict_to_object(dictionary):
+        return json.loads(json.dumps(dictionary), object_hook=Settings)
 
 def _generate_name(name):
     """
