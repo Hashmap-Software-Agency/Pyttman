@@ -35,13 +35,6 @@ def depr_graceful(message: str, version: str):
     out = f"{message} - This was deprecated in version {version}."
     warnings.warn(out, DeprecationWarning)
 
-class CustomUserDict(UserDict):
-     
-    # constructor
-    def __init__(self, dictionary):
-        self.data = dictionary
-        self.__dict__.update(dictionary)
-
 class Settings:
     """
     Dataclass holding settings configured in the settings.py
@@ -57,7 +50,8 @@ class Settings:
     aren't valid settings.
     """
 
-    def __init__(self, **kwargs):
+    def __init__(self, dictionary={}, **kwargs):
+        self.__dict__.update(dictionary)
         self.APPEND_LOG_FILES: bool = True
         self.MIDDLEWARE: dict | None = None
         self.ABILITIES: list | None = None
@@ -73,15 +67,18 @@ class Settings:
          if not inspect.ismodule(v)
          and not inspect.isfunction(v)]
 
+    def __getitem__(self, item):
+         return self.__dict__[item]
+
     def __set_attr(self, k, v):
         tmp = v
         if isinstance(v, dict):
             tmp = self.__dict2obj(v)
             
         setattr(self, k, tmp)
-        
+
     def __dict2obj(self, dictionary):
-        return json.loads(json.dumps(dictionary), object_hook=CustomUserDict)
+        return json.loads(json.dumps(dictionary), object_hook=Settings)
 
     def __repr__(self):
         _attrs = {name: value for name, value in self.__dict__.items()}
