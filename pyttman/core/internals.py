@@ -50,7 +50,9 @@ class Settings:
     aren't valid settings.
     """
 
-    def __init__(self, dictionary={}, **kwargs):
+    def __init__(self, dictionary=None, **kwargs):
+        if dictionary is None:
+            dictionary = {}
         self.__dict__.update(dictionary)
         self.APPEND_LOG_FILES: bool = True
         self.MIDDLEWARE: dict | None = None
@@ -63,14 +65,14 @@ class Settings:
         self.LOG_FORMAT: str | None = None
         self.LOG_TO_STDOUT: bool = False
 
-        [self.__set_attr(k, v) for k, v in kwargs.items()
+        [self._set_attr(k, v) for k, v in kwargs.items()
          if not inspect.ismodule(v)
          and not inspect.isfunction(v)]
 
     def __getitem__(self, item):
          return self.__dict__[item]
 
-    def __set_attr(self, k, v):
+    def _set_attr(self, k, v):
         tmp = v
         if isinstance(v, dict):
             tmp = Settings._dict_to_object(v)
