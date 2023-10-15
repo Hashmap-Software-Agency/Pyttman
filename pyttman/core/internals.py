@@ -35,6 +35,12 @@ def depr_graceful(message: str, version: str):
     out = f"{message} - This was deprecated in version {version}."
     warnings.warn(out, DeprecationWarning)
 
+class CustomUserDict(UserDict):
+
+    def __init__(self, dictionary):
+        self.data = dictionary
+        self.__dict__.update(dictionary)
+
 class Settings:
     """
     Dataclass holding settings configured in the settings.py
@@ -85,7 +91,7 @@ class Settings:
 
     @staticmethod
     def _dict_to_object(dictionary):
-        return json.loads(json.dumps(dictionary), object_hook=Settings)
+        return json.loads(json.dumps(dictionary), object_hook=CustomUserDict)
 
 def _generate_name(name):
     """
