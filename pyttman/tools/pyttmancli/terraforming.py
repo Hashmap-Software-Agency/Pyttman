@@ -141,7 +141,7 @@ def bootstrap_app(module: str = None, devmode: bool = False,
         logging_format = logging.BASIC_FORMAT
 
     logging_handle.setFormatter(logging.Formatter(logging_format))
-    logger = logging.getLogger("Pyttman logger")
+    logger = logging.getLogger(f"Pyttman logger on app {app_name}")
     logger.setLevel(logging.DEBUG)
     logger.addHandler(logging_handle)
 
