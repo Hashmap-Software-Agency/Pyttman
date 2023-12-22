@@ -124,12 +124,18 @@ def _generate_error_entry(message: MessageMixin, exc: BaseException) -> Reply:
     traceback.print_exc()
     warnings.warn(f"{datetime.now()} - A critical error occurred in the "
                   f"application logic. Error id: {error_id}")
-    pyttman.logger.log(level="error",
-                       message=f"CRITICAL ERROR: ERROR ID={error_id} - "
-                               f"The error was caught while processing "
-                               f"message: '{message}'. Error message: '{exc}'")
+    error_message = (f"CRITICAL ERROR: ERROR ID={error_id} - "
+                     f"The error was caught while processing message: "
+                     f"'{message}'. Error message: '{exc}'")
+    try:
+        pyttman.logger.log(level="error", message=error_message)
+    except Exception:
+        print(error_message)
 
-    auto_reply = pyttman.settings.MIDDLEWARE['FATAL_EXCEPTION_AUTO_REPLY']
+    try:
+        auto_reply = pyttman.settings.MIDDLEWARE['FATAL_EXCEPTION_AUTO_REPLY']
+    except Exception:
+        auto_reply = "An internal error occurred in the application."
     return Reply(f"{auto_reply} ({error_id})")
 
 
