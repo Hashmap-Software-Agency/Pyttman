@@ -64,19 +64,21 @@ class Settings:
         self.APP_NAME: str | None = None
         self.LOG_FORMAT: str | None = None
         self.LOG_TO_STDOUT: bool = False
+        self.STATIC_FILES_DIR: Path | None = None
+        self.TIME_ZONE: pytz.timezone = None
 
         [self._set_attr(k, v) for k, v in kwargs.items()
          if not inspect.ismodule(v)
          and not inspect.isfunction(v)]
 
     def __getitem__(self, item):
-         return self.__dict__[item]
+        return self.__dict__[item]
 
     def _set_attr(self, k, v):
         tmp = v
         if isinstance(v, dict):
             tmp = Settings._dict_to_object(v)
-            
+
         setattr(self, k, tmp)
 
     def __repr__(self):
