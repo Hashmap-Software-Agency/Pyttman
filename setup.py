@@ -40,7 +40,6 @@ setup(
         "requests",
         "py7zr",
         "ordered_set",
-        "pytz"
     ],
     entry_points={
         "console_scripts": [
