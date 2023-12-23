@@ -4,11 +4,12 @@ import uuid
 import warnings
 from dataclasses import dataclass, field
 from datetime import datetime
+from pathlib import Path
 from typing import Any
 import json
 from collections import UserDict
 
-
+import pytz
 import pyttman
 from pyttman.core.containers import MessageMixin, Reply
 from pyttman.core.decorators import LifecycleHookRepository
@@ -35,11 +36,13 @@ def depr_graceful(message: str, version: str):
     out = f"{message} - This was deprecated in version {version}."
     warnings.warn(out, DeprecationWarning)
 
+
 class CustomUserDict(UserDict):
 
     def __init__(self, dictionary):
         self.data = dictionary
         self.__dict__.update(dictionary)
+
 
 class Settings:
     """
@@ -70,19 +73,21 @@ class Settings:
         self.APP_NAME: str | None = None
         self.LOG_FORMAT: str | None = None
         self.LOG_TO_STDOUT: bool = False
+        self.STATIC_FILES_DIR: Path | None = None
+        self.TIME_ZONE: pytz.timezone = None
 
         [self._set_attr(k, v) for k, v in kwargs.items()
          if not inspect.ismodule(v)
          and not inspect.isfunction(v)]
 
     def __getitem__(self, item):
-         return self.__dict__[item]
+        return self.__dict__[item]
 
     def _set_attr(self, k, v):
         tmp = v
         if isinstance(v, dict):
             tmp = Settings._dict_to_object(v)
-            
+
         setattr(self, k, tmp)
 
     def __repr__(self):
@@ -91,7 +96,9 @@ class Settings:
 
     @staticmethod
     def _dict_to_object(dictionary):
-        return json.loads(json.dumps(dictionary), object_hook=CustomUserDict)
+        return json.loads(json.dumps(dictionary), object_hook=Settings)
+
+
 
 def _generate_name(name):
     """
@@ -130,12 +137,18 @@ def _generate_error_entry(message: MessageMixin, exc: BaseException) -> Reply:
     traceback.print_exc()
     warnings.warn(f"{datetime.now()} - A critical error occurred in the "
                   f"application logic. Error id: {error_id}")
-    pyttman.logger.log(level="error",
-                       message=f"CRITICAL ERROR: ERROR ID={error_id} - "
-                               f"The error was caught while processing "
-                               f"message: '{message}'. Error message: '{exc}'")
+    error_message = (f"CRITICAL ERROR: ERROR ID={error_id} - "
+                     f"The error was caught while processing message: "
+                     f"'{message}'. Error message: '{exc}'")
+    try:
+        pyttman.logger.log(level="error", message=error_message)
+    except Exception:
+        print(error_message)
 
-    auto_reply = pyttman.settings.MIDDLEWARE['FATAL_EXCEPTION_AUTO_REPLY']
+    try:
+        auto_reply = pyttman.settings.MIDDLEWARE['FATAL_EXCEPTION_AUTO_REPLY']
+    except Exception:
+        auto_reply = "An internal error occurred in the application."
     return Reply(f"{auto_reply} ({error_id})")
 
 

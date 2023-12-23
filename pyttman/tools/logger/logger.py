@@ -15,24 +15,9 @@ class PyttmanLogger:
     choice, configuring it the way you want, then
     pass it to the logger.set_logger method.
 
-    __verify_complete (method):
-        Internal use only. Used upon importing the package
-        in __init__.py, to ensure the PyttmanLogger class has a
-        dedicated `logger` instance to work with.
-
-    loggedmethod (decorator method):
-        This method is designed to be a decorator for bound
-        and unbound methods in a software stack. The log method
-        is static and has a closure method called inner, where
-        the wrapped method is executed. Exceptions & return from
-        the wrapped method are both logged to the log file using
-        the static 'logging' instance, configured for the class.
-        Simply add the decorator above your method to enable logging
-        for it. Presuming you import this package as pyttman;
-
-        @pyttman.logger.log
-        def myfunc(self, *args, **kwargs):
-            ...
+    @pyttman.logger
+    def myfunc(self, *args, **kwargs):
+        ...
 
     log (method):
         If you want to manually log custom messages in your code,
@@ -42,57 +27,56 @@ class PyttmanLogger:
 
     LOG_INSTANCE = None
 
-    @staticmethod
-    def __verify_config_complete():
-        if pyttman.logger.LOG_INSTANCE is None:
-            raise RuntimeError('Internal Pyttman Error: '
-                               'No Logger instance set.\r\n')
-
-    @staticmethod
-    def loggedmethod(func):
+    def __call__(self, func):
         """
         Wrapper method for providing logging functionality.
         Use @logger to implement this method where logging
         of methods are desired.
-        :param func:
-            method that will be wrapped
-        :returns:
-            function
         """
-        @functools.wraps(func)
-        def inner(*args, **kwargs):
+        def inner(*args, log_level="debug", log_exception=True, **kwargs):
             """
             Inner method, executing the func parameter function,
             as well as executing the logger.
             :returns:
                 Output from executed function in parameter func
             """
-            PyttmanLogger.__verify_config_complete()
-
+            PyttmanLogger._verify_config_complete()
             try:
                 results = func(*args, **kwargs)
+                message = f"Return value from '{func.__name__}': '{results}'"
+                self.log(message=message, level=log_level)
                 return results
             except Exception as e:
-                pyttman.logger.LOG_INSTANCE.error(
-                    f'Exception occurred in {func.__name__}. Traceback '
-                    f'{traceback.format_exc()} {e}')
+                if log_exception:
+                    message = (f"Exception occurred in {func.__name__}. "
+                               f"Traceback: {traceback.format_exc()} {e}")
+                    self.log(message=message, level="error")
                 raise e
         return inner
 
     @staticmethod
-    def log(message: str, level="debug") -> None:
+    def _verify_config_complete():
+        if pyttman.logger.LOG_INSTANCE is None:
+            raise RuntimeError('Internal Pyttman Error: '
+                               'No Logger instance set.\r\n')
+
+    def loggedmethod(self, func: callable):
+        """
+        Backward compatibility only; use @logger
+        """
+        def inner(*args, **kwargs):
+            return self.__call__(func)(*args, **kwargs)
+        return inner
+
+    def log(self, message: str, level="debug") -> None:
         """
         Allow for manual logging during runtime.
-        :param message: str, message to be logged
-        :param level: level for logging
-        :returns:
-            arbitrary
         """
-        PyttmanLogger.__verify_config_complete()
-        log_levels = {'info': lambda _message: pyttman.logger.LOG_INSTANCE.info(_message),
-                      'debug': lambda _message: pyttman.logger.LOG_INSTANCE.debug(_message),
-                      'error': lambda _message: pyttman.logger.LOG_INSTANCE.error(_message)}
+        PyttmanLogger._verify_config_complete()
+        log_levels = {"info": self.LOG_INSTANCE.info,
+                      "debug": self.LOG_INSTANCE.debug,
+                      "error": self.LOG_INSTANCE.error}
         try:
             log_levels[level](message)
         except KeyError:
-            log_levels['debug'](message)
+            log_levels["debug"](message)
