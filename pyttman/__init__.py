@@ -35,7 +35,8 @@ class _AppNotConfigured:
 app: PyttmanApp | None = None
 settings = _SettingsNotConfigured
 is_configured = False
-logger = PyttmanLogger
+
+logger = PyttmanLogger()
 
 """
 I love you
