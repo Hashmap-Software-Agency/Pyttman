@@ -5,6 +5,9 @@ import warnings
 from dataclasses import dataclass, field
 from datetime import datetime
 from typing import Any
+import json
+from collections import UserDict
+
 
 import pyttman
 from pyttman.core.containers import MessageMixin, Reply
@@ -32,7 +35,6 @@ def depr_graceful(message: str, version: str):
     out = f"{message} - This was deprecated in version {version}."
     warnings.warn(out, DeprecationWarning)
 
-
 class Settings:
     """
     Dataclass holding settings configured in the settings.py
@@ -48,7 +50,10 @@ class Settings:
     aren't valid settings.
     """
 
-    def __init__(self, **kwargs):
+    def __init__(self, dictionary=None, **kwargs):
+        if dictionary is None:
+            dictionary = {}
+        self.__dict__.update(dictionary)
         self.APPEND_LOG_FILES: bool = True
         self.MIDDLEWARE: dict | None = None
         self.ABILITIES: list | None = None
@@ -59,15 +64,30 @@ class Settings:
         self.APP_NAME: str | None = None
         self.LOG_FORMAT: str | None = None
         self.LOG_TO_STDOUT: bool = False
+        self.STATIC_FILES_DIR: Path | None = None
+        self.TIME_ZONE: pytz.timezone = None
 
-        [setattr(self, k, v) for k, v in kwargs.items()
+        [self._set_attr(k, v) for k, v in kwargs.items()
          if not inspect.ismodule(v)
          and not inspect.isfunction(v)]
+
+    def __getitem__(self, item):
+        return self.__dict__[item]
+
+    def _set_attr(self, k, v):
+        tmp = v
+        if isinstance(v, dict):
+            tmp = Settings._dict_to_object(v)
+
+        setattr(self, k, tmp)
 
     def __repr__(self):
         _attrs = {name: value for name, value in self.__dict__.items()}
         return f"Settings({_attrs})"
 
+    @staticmethod
+    def _dict_to_object(dictionary):
+        return json.loads(json.dumps(dictionary), object_hook=Settings)
 
 def _generate_name(name):
     """
