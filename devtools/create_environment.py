@@ -40,10 +40,6 @@ if __name__ == "__main__":
     subprocess.run(f"{venv_python} -m pip install multidict".split())
     subprocess.run(f"{venv_python} -m pip install {package_file}".split())
 
-    clear_sc = "clear" if os.name == "posix" else "cls"
-    os.system(clear_sc)
-
-    os.system("cls")
     print("\nFinished! Here's how to get started:",
           f"1. Activate the virtual environment:\n\tcd dev_env\n\tvenv/scripts/activate",
           f"2. Run the command 'pyttman' to see available commands to the Pyttman CLI",
