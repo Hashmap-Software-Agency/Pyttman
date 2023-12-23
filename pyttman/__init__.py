@@ -37,6 +37,11 @@ settings = _SettingsNotConfigured
 is_configured = False
 
 logger = PyttmanLogger()
+"""
+Logs function return value and/or exceptions to the application 
+log file. 
+"""
+
 
 """
 I love you
