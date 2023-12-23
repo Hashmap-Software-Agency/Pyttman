@@ -72,6 +72,9 @@ class CreateNewApp(Intent, PyttmanCliComplainerMixin):
             print(f"- Attempt [{i + 1}/{num_retries}]:", end=" ")
             try:
                 terraformer.terraform()
+            except FileExistsError as e:
+                return Reply(str(e))
+
             except requests.exceptions.ConnectionError as e:
                 print("failed.",
                       "Cannot connect to the server, "
@@ -179,26 +182,22 @@ class RunFile(Intent, PyttmanCliComplainerMixin):
 
     def respond(self, message: Message) -> Reply | ReplyStream:
         app_name = message.entities["app_name"]
-        script_file = message.entities["script_file_name"]
-
-        if complaint := self.complain_app_not_found(app_name):
-            return Reply(complaint)
-        if script_file is None:
+        if (script_path := message.entities["script_file_name"]) is None:
             return Reply("Filename must be entered, as a '.py' file. "
                          f"Example: {self.example}")
+        if complaint := self.complain_app_not_found(app_name):
+            return Reply(complaint)
 
-        script_file = Path(script_file)
         app = bootstrap_app(devmode=True, module=app_name)
         app.hooks.trigger(LifeCycleHookType.before_start)
         global_variables = globals().copy()
         global_variables.update(locals())
         shell = code.InteractiveConsole(global_variables)
-        script_path = Path.cwd() / script_file
 
         with open(script_path.as_posix(), "r") as f:
             # Set variable to indicate for the running script that it's main
             source = f.read()
-            code_obj = compile(source, script_file.as_posix(), "exec")
+            code_obj = compile(source, script_path.as_posix(), "exec")
             global_variables["__name__"] = "__main__"
             exec(code_obj, global_variables)
         return Reply(f"Script file executed successfully.")
