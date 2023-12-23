@@ -27,8 +27,8 @@ class PyttmanCli(Ability):
         self.storage.put("app", None)
         self.storage.put("ready", False)
         self.storage.put("template_url",
-                         "https://github.com/dotchetter/pyttman-"
-                         "project-template/archive/refs/heads/main.zip")
+                         "https://github.com/Hashmap-Software-Agency/"
+                         "pyttman-project-template/archive/refs/heads/main.zip")
 
     def run_application(self) -> None:
         """
