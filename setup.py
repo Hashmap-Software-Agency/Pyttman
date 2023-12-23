@@ -22,7 +22,7 @@ setup(
         "Bug Tracker": "https://github.com/dotchetter/Pyttman/issues",
         "Changelog": "https://github.com/dotchetter/Pyttman/blob/main/CHANGELOG.md"
     },
-    author_email="simon@dotchetter.se",
+    author_email="simon@hashmap.se",
     license="MIT",
     classifiers=[
         "License :: OSI Approved :: MIT License",
@@ -40,7 +40,6 @@ setup(
         "requests",
         "py7zr",
         "ordered_set",
-        "pytz"
     ],
     entry_points={
         "console_scripts": [

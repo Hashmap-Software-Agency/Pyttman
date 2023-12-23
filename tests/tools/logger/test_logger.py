@@ -21,7 +21,7 @@ class TestPyttmanLogger(PyttmanInternalBaseTestCase):
         def broken():
             raise Exception("This is a log message")
 
-        @pyttman.logger()
+        @pyttman.logger
         def working():
             return "I work"
 
