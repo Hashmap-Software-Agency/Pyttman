@@ -23,8 +23,10 @@ if __name__ == "__main__":
                                 "Run devtools/create_environment.py first.")
 
     print("Building new Pyttman package...")
+    os.system("deactivate")
     subprocess.check_call("python devtools/build.py".split())
     os.chdir(LAB_ENV_PATH.as_posix())
+    shutil.rmtree("venv")
     subprocess.run("python -m virtualenv venv".split())
 
     while not Path("venv").exists():
@@ -39,11 +41,6 @@ if __name__ == "__main__":
     venv_python = (LAB_ENV_PATH / "venv/scripts/python.exe").as_posix()
     subprocess.run(f"{venv_python} -m pip install multidict".split())
     subprocess.run(f"{venv_python} -m pip install --upgrade {package_file}".split())
-
-    clear_sc = "clear" if os.name == "posix" else "cls"
-    os.system(clear_sc)
-    os.system("cls")
-
     print("\nFinished! Here's how to get started:",
           f"1. Activate the virtual environment:\n\tcd dev_env\n\tvenv/scripts/activate",
           f"2. Run the command 'pyttman' to see available commands to the Pyttman CLI",
