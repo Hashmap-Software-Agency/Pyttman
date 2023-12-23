@@ -188,6 +188,7 @@ class RunFile(Intent, PyttmanCliComplainerMixin):
         if complaint := self.complain_app_not_found(app_name):
             return Reply(complaint)
 
+        script_path = Path(script_path)
         app = bootstrap_app(devmode=True, module=app_name)
         app.hooks.trigger(LifeCycleHookType.before_start)
         global_variables = globals().copy()
