@@ -139,9 +139,9 @@ class PyttmanApp(PrettyReprMixin):
     client: Any
     name: str | None = field(default=None)
     settings: Settings | None = field(default=None)
-    abilities: set = field(default_factory=set)
     hooks: LifecycleHookRepository = field(
         default_factory=lambda: LifecycleHookRepository())
+    _abilities: set = field(default_factory=set)
 
     def start(self):
         """
@@ -152,3 +152,13 @@ class PyttmanApp(PrettyReprMixin):
             self.client.run_client()
         except Exception:
             warnings.warn(traceback.format_exc())
+
+    @property
+    def abilities(self):
+        return self._abilities
+
+    @abilities.setter
+    def abilities(self, abilities):
+        for ability in abilities:
+            setattr(self, ability.__class__.__name__, ability)
+            self._abilities.add(ability)
