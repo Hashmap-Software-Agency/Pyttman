@@ -40,6 +40,13 @@ class PyttmanCli(Ability):
         # #(used for attribute access in completion)
         app: PyttmanApp = None
         if (app := self.storage.get("app")) is not None:
+            if not app.client.message_router.abilities:
+                print("There are no abilities loaded, the app will not "
+                      "respond to any messages. Create abilities by " 
+                      "running 'pyttman new ability' in the terminal.\n"
+                      "Next up, add them to your app's settings.py file "
+                      "under the ABILITIES key.")
+                exit(0)
             print(f"- Ability classes loaded: "
                   f"{app.client.message_router.abilities}")
             app.start()
