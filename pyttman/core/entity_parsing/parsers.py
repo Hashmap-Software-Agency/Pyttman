@@ -1,3 +1,5 @@
+import re
+import string
 import typing
 from itertools import zip_longest
 from typing import Type, Dict, Union
@@ -19,6 +21,8 @@ class EntityFieldValueParser(PrettyReprMixin):
     EntityParser Api component: 'EntityField'.
     """
     __repr_fields__ = ("identifier", "exclude", "prefixes", "suffixes")
+    ignore_chars = True
+    chars_to_ignore = ".,;:!?-"
 
     def __init__(self,
                  prefixes: tuple | typing.Callable = None,
@@ -122,14 +126,21 @@ class EntityFieldValueParser(PrettyReprMixin):
             output = []
             word_index = 0
 
-            casefolded_msg = message.lowered_content()
+            message_lowered = message.lowered_content()
+            if self.ignore_chars:
+                # Strip away special chars
+                message_lowered = [
+                    re.sub(rf"[{self.chars_to_ignore}]", "", word)
+                    for word in message_lowered
+                ]
+
             common_occurrences = tuple(
-                OrderedSet(casefolded_msg).intersection(self.valid_strings))
+                OrderedSet(message_lowered).intersection(self.valid_strings))
 
             for i, word in enumerate(common_occurrences):
                 if i > self.span and not self.as_list:
                     break
-                word_index = casefolded_msg.index(word)
+                word_index = message_lowered.index(word)
                 output.append(message.content[word_index])
 
             if len(output) > 1:
@@ -142,6 +153,13 @@ class EntityFieldValueParser(PrettyReprMixin):
             self._validate_prefixes_suffixes(message)
 
             if self.value:
+                if self.ignore_chars:
+                    if isinstance(self.value.value, list):
+                        for i, elem in enumerate(self.value.value):
+                            elem = re.sub(rf"[{self.chars_to_ignore}]", "", elem)
+                            self.value.value[i] = elem
+                    elif isinstance(self.value.value, str):
+                        self.value.value = re.sub(rf"[{self.chars_to_ignore}]", "", self.value.value)
                 entity = self.value
                 if entity.value == self.default:
                     return
