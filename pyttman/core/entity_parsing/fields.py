@@ -23,15 +23,34 @@ class EntityFieldBase(EntityFieldValueParser, ABC):
 
     Not only to find the word(s) but also type-convert to a given
     datatype if a match is True.
-
     """
     default = None
+    """
+    Specify a default return value, if no match is found.
+    """
     type_cls = None
+    """
+    The type_cls is the class which the value is converted to.
+    For example: int, str, float, etc.
+    """
     identifier_cls = None
+    """
+    Identifier class is a class which specializes in finding
+    patterns in text. You can provide a custom Identifier class
+    to further increase the granularity of the value you're looking for.
+    """
+    pre_processor = None
+    """
+    Pre-processor is a callable which is called before the
+    value is converted to the type_cls of the EntityField.
+    You can specify any callable here, and it will be called
+    with the value as its only argument.
+    """
 
     def __init__(self,
                  identifier: Type[Identifier] | None = None,
                  default: Any = None,
+                 pre_processor: callable = None,
                  **kwargs):
         """
         :param as_list: If set to True combined with providing 'valid_strings',
@@ -48,6 +67,7 @@ class EntityFieldBase(EntityFieldValueParser, ABC):
                You can read more about Identifier classes in the Pyttman
                documentation.
         """
+        self.pre_processor = pre_processor
         if self.type_cls is None or inspect.isclass(self.type_cls) is False:
             raise InvalidPyttmanObjectException("All EntityField classes "
                                                 "must define a 'type_cls', "
@@ -91,6 +111,15 @@ class EntityFieldBase(EntityFieldValueParser, ABC):
         except Exception as e:
             raise TypeConversionFailed(from_type=type(value),
                                        to_type=self.type_cls) from e
+
+        try:
+            if self.pre_processor is not None and callable(self.pre_processor):
+                converted_value = self.pre_processor(converted_value)
+        except Exception as e:
+            value_err = ValueError("The pre_processor callable '"
+                                   f"'{self.pre_processor}' failed: {e}")
+            raise TypeConversionFailed(from_type=type(value),
+                                       to_type=self.type_cls) from value_err
         return converted_value
 
     def before_conversion(self, value: Any) -> str:
