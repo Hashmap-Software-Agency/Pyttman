@@ -12,8 +12,10 @@
     
     ```python
     class SomeIntent(Intent):
-        class EntityParser:
-            name = StringEntityField(post_processor=lambda x: x.strip())
+        """
+        In this example, the name will be stripped of any leading or trailing whitespace.
+        """
+        name = StringEntityField(default="", post_processor=lambda x: x.strip())  
     ```
 * **All `ability` classes are now available by exact name on the `app` instance**
 
