@@ -409,3 +409,22 @@ class PyttmanIntentInternalTestTextEntityDefault(
         cheese_type = StringEntityField(valid_strings=("blue", "yellow"),
                                         default="blue",
                                         as_list=True)
+
+
+class PyttmanInternalTestEntityPreProcessor(
+    PyttmanInternalTestBaseCase
+):
+    mock_message = Message("I would like some tea, please.")
+    process_message = True
+    expected_entities = {
+        "beverage": "Tea",
+    }
+
+    class IntentClass(ImplementedTestIntent):
+        """
+        Tests that the 'post_processor' callable is executed and
+        can process the return value before it's spat out.
+        """
+        beverage = StringEntityField(valid_strings=("tea", "coffee"),
+                                     post_processor=lambda x: x.capitalize())
+

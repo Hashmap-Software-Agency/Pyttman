@@ -141,9 +141,14 @@ def bootstrap_app(module: str = None, devmode: bool = False,
         logging_format = logging.BASIC_FORMAT
 
     logging_handle.setFormatter(logging.Formatter(logging_format))
-    logger = logging.getLogger(f"Pyttman logger on app {app_name}")
+    logger = logging.getLogger(app_name)
     logger.setLevel(logging.DEBUG)
     logger.addHandler(logging_handle)
+
+    if settings.LOG_TO_STDOUT:
+        stdout_handle = logging.StreamHandler(sys.stdout)
+        stdout_handle.setFormatter(logging.Formatter(logging_format))
+        logger.addHandler(stdout_handle)
 
     # Set the configured instance of logger to the pyttman.PyttmanLogger object
     pyttman.logger.LOG_INSTANCE = logger
