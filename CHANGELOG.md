@@ -1,5 +1,66 @@
 # Pyttman Changelog
 
+  V 1.3.2
+
+### :star2: News* **
+* **Removed clutter from log entries**
+
+  The log entries from Pyttman are now cleaner, without as much clutter for each log entry.
+* **New argment to `EntityField` classes available: `post_processor`**
+
+    The `post_processor` argument allows you to define a function which will be called on the value of the entity after it has been parsed. This is useful for scenarios where you want to clean up the value of the entity, or perform other operations on it before it is stored in `message.entities` in the `respond` method.
+    
+    ```python
+    class SomeIntent(Intent):
+        class EntityParser:
+            name = StringEntityField(post_processor=lambda x: x.strip())
+    ```
+* **All `ability` classes are now available by exact name on the `app` instance**
+
+    The `app` instance in Pyttman apps now has all `Ability` classes available by their exact name, as defined in the `settings.py` file. This is useful for scenarios where you want to access the `storage` object of an ability, or other properties of the ability.
+   
+   ```python
+      # ability.py
+      class SomeAbility(Ability):
+          pass
+     
+      # settings.py
+      ABILITIES = [
+          "some_ability.SomeAbility"
+      ]
+  
+      # any file in the project
+      from pyttman import app
+        
+  ```
+
+
+### **🐛 Splatted bugs and corrected issues**
+
+* **Fixed a bug where `LOG_TO_STDOUT` didn't work, and logs were not written to STDOUT:** [#86](https://github.com/dotchetter/Pyttman/issues/86)
+
+# V 1.3.1
+
+### :star2: News
+* **New setting variable: `STATIC_FILES_DIR`**
+  
+  This new setting is set by default in all new apps, and offers a standard way to keep static files in a project.
+  All new apps, even ones created with older versions of Pyttman, will have the `static_files` directory
+  as part of the app catalog. 
+
+* **Simplified the use of the logger in Pyttman** 
+  The logger in pyttman offers a simple, ready-to-use logger for your app.
+  It offers a decorator previously as `@pyttman.logger.logged_method` which is now simplified to `@pyttman.logger`.
+  
+  
+### **🐛 Splatted bugs and corrected issues**
+
+* **Corrected an issue when using `pyttman runfile` to execute scripts**
+  An issue with the relative path to the script file being exeucted has been 
+  corrected; now, an absolute path can be provided to the script file, and
+  the script will be executed as expected.
+**
+
 # V 1.3.0.1
 Hotfix release, addressing an issue with PyttmanCLI executing scripts,
 where the directory of the app is included in the path for a script 
