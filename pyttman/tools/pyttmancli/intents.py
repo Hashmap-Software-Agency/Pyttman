@@ -29,8 +29,7 @@ class ShellMode(Intent, PyttmanCliComplainerMixin):
     example = "pyttman shell <app name>"
     help_string = "Opens a Python interactive shell with access to modules, " \
                   "app settings and the Pyttman 'app' object."
-    app_name = TextEntityField(default="",
-                               pre_processor=lambda x: re.sub("[^a-zA-Z0-9_]", "", x))
+    app_name = TextEntityField(default="")
 
     def respond(self, message: Message) -> Reply | ReplyStream:
         app_name = message.entities["app_name"]
@@ -50,8 +49,7 @@ class CreateNewApp(Intent, PyttmanCliComplainerMixin):
     Create a new Pyttman app. The directory is terraformed
     and prepared with a template project.
     """
-    app_name = TextEntityField(default="",
-                               pre_processor=lambda x: re.sub("[^a-zA-Z0-9_]", "", x))
+    app_name = TextEntityField(default="")
     lead = ("new",)
     trail = ("app",)
     ordered = True
@@ -107,8 +105,7 @@ class RunAppInDevMode(Intent, PyttmanCliComplainerMixin):
     Run a Pyttman app in dev mode. This sets "DEV_MODE"
     to True and opens a chat interface in the terminal.
     """
-    app_name = TextEntityField(default="",
-                               pre_processor=lambda x: re.sub("[^a-zA-Z0-9_]", "", x))
+    app_name = TextEntityField(default="")
     fail_gracefully = True
     lead = ("dev",)
     example = "pyttman dev <app name>"
@@ -151,8 +148,7 @@ class RunAppInClientMode(Intent, PyttmanCliComplainerMixin):
                   "settings.py under 'CLIENT'.\n" \
                   f"Example: {example}"
 
-    app_name = TextEntityField(default="",
-                               pre_processor=lambda x: re.sub("[^a-zA-Z0-9_]", "", x))
+    app_name = TextEntityField(default="")
 
     def respond(self, message: Message) -> Reply | ReplyStream:
         app_name = message.entities["app_name"]
@@ -182,8 +178,7 @@ class RunFile(Intent, PyttmanCliComplainerMixin):
     help_string = "Run a singe file within a Pyttman app context. " \
                   f"Example: {example}"
 
-    app_name = TextEntityField(default="",
-                               pre_processor=lambda x: re.sub("[^a-zA-Z0-9_]", "", x))
+    app_name = TextEntityField(default="")
     script_file_name = TextEntityField(prefixes=(app_name,))
 
     def respond(self, message: Message) -> Reply | ReplyStream:
