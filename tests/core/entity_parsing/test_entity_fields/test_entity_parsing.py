@@ -422,9 +422,9 @@ class PyttmanInternalTestEntityPreProcessor(
 
     class IntentClass(ImplementedTestIntent):
         """
-        Tests that the 'pre_processor' callable is executed and
+        Tests that the 'post_processor' callable is executed and
         can process the return value before it's spat out.
         """
         beverage = StringEntityField(valid_strings=("tea", "coffee"),
-                                     pre_processor=lambda x: x.capitalize())
+                                     post_processor=lambda x: x.capitalize())
 

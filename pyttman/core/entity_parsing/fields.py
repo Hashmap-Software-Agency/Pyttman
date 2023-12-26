@@ -39,7 +39,7 @@ class EntityFieldBase(EntityFieldValueParser, ABC):
     patterns in text. You can provide a custom Identifier class
     to further increase the granularity of the value you're looking for.
     """
-    pre_processor = None
+    post_processor = None
     """
     Pre-processor is a callable which is called before the
     value is converted to the type_cls of the EntityField.
@@ -50,7 +50,7 @@ class EntityFieldBase(EntityFieldValueParser, ABC):
     def __init__(self,
                  identifier: Type[Identifier] | None = None,
                  default: Any = None,
-                 pre_processor: callable = None,
+                 post_processor: callable = None,
                  **kwargs):
         """
         :param as_list: If set to True combined with providing 'valid_strings',
@@ -67,7 +67,7 @@ class EntityFieldBase(EntityFieldValueParser, ABC):
                You can read more about Identifier classes in the Pyttman
                documentation.
         """
-        self.pre_processor = pre_processor
+        self.post_processor = post_processor
         if self.type_cls is None or inspect.isclass(self.type_cls) is False:
             raise InvalidPyttmanObjectException("All EntityField classes "
                                                 "must define a 'type_cls', "
@@ -113,11 +113,11 @@ class EntityFieldBase(EntityFieldValueParser, ABC):
                                        to_type=self.type_cls) from e
 
         try:
-            if self.pre_processor is not None and callable(self.pre_processor):
-                converted_value = self.pre_processor(converted_value)
+            if self.post_processor is not None and callable(self.post_processor):
+                converted_value = self.post_processor(converted_value)
         except Exception as e:
-            value_err = ValueError("The pre_processor callable '"
-                                   f"'{self.pre_processor}' failed: {e}")
+            value_err = ValueError("The post_processor callable '"
+                                   f"'{self.post_processor}' failed: {e}")
             raise TypeConversionFailed(from_type=type(value),
                                        to_type=self.type_cls) from value_err
         return converted_value
