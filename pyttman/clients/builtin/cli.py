@@ -21,9 +21,7 @@ class CliClient(BaseClient):
                   end="\n\n")
             while True:
                 message = Message(input("[YOU]: "), client=self)
-                reply: Reply | ReplyStream = self.\
-                    message_router.get_reply(message)
-
+                reply = self.reply_to_message(message)
                 if isinstance(reply, ReplyStream):
                     while reply.qsize():
                         print(f"[{pyttman.settings.APP_NAME.upper()}]: ",
