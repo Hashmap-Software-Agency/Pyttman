@@ -23,6 +23,7 @@ class MessageMixin(PrettyReprMixin):
 
     def __init__(self, content=None, **kwargs):
         self.author = "anonymous"
+        self.user = None
         self.created = datetime.now()
         self.client = None
         self.content = content
