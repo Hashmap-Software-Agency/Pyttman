@@ -7,10 +7,19 @@ class BaseClient(abc.ABC):
     Baseclass for Clients, for interfacing
     with users directly or through an API.
     """
+    class PluginIntercept(enum.StrEnum):
+        before_intents = "before_intents"
+        after_intents = "after_intents"
+        before_app = "before_app"
+        after_app = "after_app"
 
-    def __init__(self, *args, message_router: AbstractMessageRouter, **kwargs):
+    def __init__(self,
+                 message_router: AbstractMessageRouter,
+                 plugins: list[PyttmanPlugin],
+                 **kwargs):
         self.message_router = message_router
         self.name = self.__class__.__name__
+        self.plugins = plugins
 
         [setattr(self, k, v) for k, v in kwargs.items()]
 
