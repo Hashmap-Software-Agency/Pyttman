@@ -1,4 +1,5 @@
 import re
+from dataclasses import dataclass
 from datetime import datetime
 from queue import Queue
 from typing import List, Iterable
@@ -19,10 +20,14 @@ class MessageMixin(PrettyReprMixin):
     inheritance when a Message-like class is developed
     for supporting a 3rd party library / API.
     """
-    __repr_fields__ = ("author", "created")
+    __repr_fields__ = ("author", "user", "created", "entities")
+
+    @dataclass
+    class Author:
+        id: int = None
 
     def __init__(self, content=None, **kwargs):
-        self.author = "anonymous"
+        self.author = self.Author()
         self.user = None
         self.created = datetime.now()
         self.client = None
