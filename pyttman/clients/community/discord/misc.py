@@ -17,10 +17,3 @@ class DiscordMessage(MessageMixin, discord.Message):
     """
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-
-    def __repr__(self):
-        return f"{self.__class__.__name__}(" \
-               f"content={self.content}, " \
-               f"author={self.author}, " \
-               f"channel={self.channel}, " \
-               f"reactions={self.reactions})"
