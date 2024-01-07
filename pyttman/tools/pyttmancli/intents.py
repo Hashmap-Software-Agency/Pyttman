@@ -37,10 +37,12 @@ class ShellMode(Intent, PyttmanCliComplainerMixin):
             return Reply(complaint)
         app = bootstrap_app(devmode=True, module=app_name)
         app.hooks.trigger(LifeCycleHookType.before_start)
+        app.execute_plugins_before_start()
         global_variables = globals().copy()
         global_variables.update(locals())
         shell = code.InteractiveConsole(global_variables)
         shell.interact()
+        app.execute_plugins_after_stop()
         return Reply("Exited shell")
 
 
