@@ -196,3 +196,11 @@ class PyttmanApp(PrettyReprMixin):
     def execute_plugins_after_stop(self):
         for plugin in self.plugins:
             plugin.after_app_stops(self)
+
+    def execute_plugins_before_intent(self, message):
+        for plugin in self.plugins:
+            plugin.before_intent(message)
+
+    def execute_plugins_after_intent(self, reply):
+        for plugin in self.plugins:
+            plugin.after_intent(reply)
