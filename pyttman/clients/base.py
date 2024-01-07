@@ -31,3 +31,31 @@ class BaseClient(abc.ABC):
         associated with.
         """
         pass
+
+    def execute_plugins(self,
+                        intercept_point: PluginIntercept,
+                        payload: MessageMixin):
+        """
+        Executes plugin methods.
+        """
+        for plugin in self.plugins:
+            if intercept_point is self.PluginIntercept.before_intents:
+                plugin.before_intent(payload)
+            elif intercept_point is self.PluginIntercept.after_intents:
+                plugin.after_intent(payload)
+            elif intercept_point is self.PluginIntercept.before_app:
+                plugin.before_app_start(pyttman.app)
+            elif intercept_point is self.PluginIntercept.after_app:
+                plugin.after_app_stops(pyttman.app)
+
+    def reply_to_message(self, message: MessageMixin) -> Reply | ReplyStream:
+        """
+        Wrapper for calling the message router for a reply, whilst
+        calling plugin methods in order.
+        """
+        self.execute_plugins(intercept_point=self.PluginIntercept.before_intents,
+                             payload=message)
+        reply = self.message_router.get_reply(message)
+        self.execute_plugins(intercept_point=self.PluginIntercept.after_intents,
+                             payload=message)
+        return reply
