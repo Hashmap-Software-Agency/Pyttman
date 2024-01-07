@@ -10,7 +10,9 @@ from typing import Any
 import pyttman
 from pyttman.core.containers import MessageMixin, Reply
 from pyttman.core.decorators import LifecycleHookRepository
+from pyttman.core.exceptions import PyttmanPluginException
 from pyttman.core.mixins import PrettyReprMixin
+from pyttman.core.plugins.base import PyttmanPlugin
 
 
 def depr_raise(message: str, version: str) -> None:
@@ -73,6 +75,7 @@ class Settings:
     def __repr__(self):
         _attrs = {name: value for name, value in self.__dict__.items()}
         return f"Settings({_attrs})"
+
 
 def _generate_name(name):
     """
