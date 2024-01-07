@@ -64,6 +64,7 @@ class Settings:
         self.LOG_FORMAT: str | None = None
         self.LOG_TO_STDOUT: bool = False
         self.STATIC_FILES_DIR: Path | None = None
+        self.PLUGINS: list | None = None
 
         [setattr(self, k, v) for k, v in kwargs.items()
          if not inspect.ismodule(v)
