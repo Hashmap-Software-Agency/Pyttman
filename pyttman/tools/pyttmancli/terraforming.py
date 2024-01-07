@@ -16,6 +16,7 @@ from pyttman.core.ability import Ability
 from pyttman.core.exceptions import PyttmanProjectInvalidException
 from pyttman.core.internals import Settings, PyttmanApp, depr_raise
 from pyttman.core.middleware.routing import AbstractMessageRouter
+from pyttman.core.plugins.base import PyttmanPlugin
 
 
 class TerraFormer:
@@ -163,6 +164,11 @@ def bootstrap_app(module: str = None, devmode: bool = False,
                    "attribute in settings.py.",
                    "1.3.2")
 
+    # Load plugins
+    try:
+        plugins: list[PyttmanPlugin] = settings.PLUGINS
+    except AttributeError as e:
+        raise AttributeError("PLUGINS is missing from settings.py.") from e
 
     message_router_class_name = message_router_config.pop()
     message_router_module = ".".join(message_router_config)
@@ -207,10 +213,12 @@ def bootstrap_app(module: str = None, devmode: bool = False,
 
     # If devmode is active, return only one CliClient in a runner.
     if devmode:
-        client = CliClient(message_router=message_router)
+        client = CliClient(message_router=message_router,
+                           plugins=plugins)
         app = PyttmanApp(client=client,
                          name=settings.APP_NAME,
-                         settings=settings)
+                         settings=settings,
+                         plugins=plugins)
         pyttman.app = app
         app.abilities = load_abilities(settings)
         message_router.abilities = app.abilities
@@ -243,13 +251,17 @@ def bootstrap_app(module: str = None, devmode: bool = False,
                            f"the following error and correct "
                            f"any syntax error in settings.py: "
                            f"\n{e}") from e
-    client = client_class(message_router=message_router, **settings.CLIENT)
+    client = client_class(message_router=message_router,
+                          **settings.CLIENT,
+                          plugins=plugins)
 
     # Create a log entry for app start
     pyttman.logger.log(f" -- App {app_name} started: {datetime.now()} -- ")
     app = PyttmanApp(client=client,
                      name=settings.APP_NAME,
-                     settings=settings)
+                     settings=settings,
+                     plugins=plugins)
+
     pyttman.app = app
     app.abilities = load_abilities(settings)
     prepare_app(module)
