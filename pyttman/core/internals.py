@@ -137,22 +137,38 @@ class PyttmanApp(PrettyReprMixin):
     """
     __repr_fields__ = ("name", "client", "hooks")
 
+    @dataclass
+    class LoadedPluginContainer:
+        """
+        Access point for loaded plugins during the app runtime, e.g:
+        `from pyttman import app`
+        `my_plugin = app.loaded_plugins.SomePluginName`
+        """
+
+        def ingest(self, plugin):
+            setattr(self, plugin.__class__.__name__, plugin)
+
     client: Any
     name: str | None = field(default=None)
     settings: Settings | None = field(default=None)
     hooks: LifecycleHookRepository = field(
         default_factory=lambda: LifecycleHookRepository())
     _abilities: set = field(default_factory=set)
+    plugins: list[PyttmanPlugin] = field(default_factory=list)
+    loaded_plugins: LoadedPluginContainer = field(default_factory=LoadedPluginContainer)
 
     def start(self):
         """
         Start a Pyttman application.
         """
         # noinspection PyBroadException
+        # Execute plugin hooks
+        self.execute_plugins_before_start()
         try:
             self.client.run_client()
         except Exception:
             warnings.warn(traceback.format_exc())
+        self.execute_plugins_after_stop()
 
     @property
     def abilities(self):
