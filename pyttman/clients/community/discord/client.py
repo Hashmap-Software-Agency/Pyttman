@@ -2,15 +2,14 @@ import asyncio
 from datetime import datetime
 
 import discord
-from discord import Intents
 
 from pyttman import logger
-from pyttman.core.middleware.routing import AbstractMessageRouter
-from pyttman.core.exceptions import ClientImproperlyConfiguredError
 from pyttman.clients.base import BaseClient
 from pyttman.clients.community.discord.misc import DiscordMessage
-from pyttman.core.containers import Reply, ReplyStream
+from pyttman.core.containers import ReplyStream
+from pyttman.core.exceptions import ClientImproperlyConfiguredError
 from pyttman.core.internals import _generate_error_entry
+from pyttman.core.middleware.routing import AbstractMessageRouter
 
 
 class DiscordClient(discord.Client, BaseClient):
@@ -87,13 +86,16 @@ class DiscordClient(discord.Client, BaseClient):
         message_endswith = kwargs.get("message_endswith")
         self.message_startswith = message_startswith or self.message_startswith
         self.message_startswith = message_endswith or self.message_endswith
-        self.message_router = message_router
         self._token = token
         self.guild = guild
-        super().__init__(*args,
-                         **kwargs,
-                         guild=guild,
-                         intents=discord_intents)
+        BaseClient.__init__(self,
+                            message_router,
+                            **kwargs)
+        discord.Client.__init__(self,
+                                token=token,
+                                guild=guild,
+                                intents=discord_intents,
+                                **kwargs)
 
     async def on_ready(self):
         logger.log(f"App online on discord.")
@@ -136,9 +138,7 @@ class DiscordClient(discord.Client, BaseClient):
             return
 
         try:
-            reply: Reply | ReplyStream = self.message_router.get_reply(
-                discord_message)
-
+            reply = self.reply_to_message(discord_message)
             if isinstance(reply, ReplyStream):
                 while reply.qsize():
                     await discord_message.channel.send(reply.get().as_str())
