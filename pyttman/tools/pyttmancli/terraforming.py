@@ -153,14 +153,16 @@ def bootstrap_app(module: str = None, devmode: bool = False,
     # Set the configured instance of logger to the pyttman.PyttmanLogger object
     pyttman.logger.LOG_INSTANCE = logger
 
-    # Import the router defined in MIDDLEWARE in settings.py
+    # Import the router defined in ROUTER in settings.py
     try:
-        message_router_config = settings.MIDDLEWARE.get(
+        message_router_config = settings.ROUTER.get(
             "ROUTER_CLASS"
         ).split(".")
     except AttributeError:
-        depr_raise("Please rename 'MESSAGE_ROUTER' to 'MIDDLEWARE' in "
-                   "'settings.py' for this application.", "1.1.11")
+        depr_raise("Failed to load ROUTER config; 'ROUTER' is a required "
+                   "attribute in settings.py.",
+                   "1.3.2")
+
 
     message_router_class_name = message_router_config.pop()
     message_router_module = ".".join(message_router_config)
@@ -174,7 +176,7 @@ def bootstrap_app(module: str = None, devmode: bool = False,
                           f"Verify the MESSAGE_ROUTER setting in settings.py.")
 
     # Retrieve the help keyword from settings
-    if not (help_keyword := settings.MIDDLEWARE.get("HELP_KEYWORD")):
+    if not (help_keyword := settings.ROUTER.get("HELP_KEYWORD")):
         raise AttributeError("'HELP_KEYWORD' not defined in settings.py. "
                              "Please define a word for the automatic "
                              "help page generation to trigger on in your "
@@ -183,11 +185,11 @@ def bootstrap_app(module: str = None, devmode: bool = False,
                              "'HELP_KEYWORD' = 'help'")
 
     # Retrieve command-unknown-responses from settings
-    if not (command_unknown_responses := settings.MIDDLEWARE.
+    if not (command_unknown_responses := settings.ROUTER.
             get("COMMAND_UNKNOWN_RESPONSES")):
         raise ValueError("There are no responses provided for when "
                          "no intents match a query. Define these in "
-                         "MIDDLEWARE['COMMAND_UNKNOWN_RESPONSES'] as "
+                         "ROUTER['COMMAND_UNKNOWN_RESPONSES'] as "
                          "a list of strings")
 
     # Import the client classes defined in CLIENTS in settings.py
