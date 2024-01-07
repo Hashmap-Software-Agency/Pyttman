@@ -54,7 +54,7 @@ class Settings:
             dictionary = {}
         self.__dict__.update(dictionary)
         self.APPEND_LOG_FILES: bool = True
-        self.MIDDLEWARE: dict | None = None
+        self.ROUTER: dict | None = None
         self.ABILITIES: list | None = None
         self.FATAL_EXCEPTION_AUTO_REPLY: list | None = None
         self.CLIENT: dict | None = None
