@@ -10,7 +10,7 @@ from pyttman.core.entity_parsing.parsers import parse_entities
 from pyttman.core.ability import Ability
 from pyttman.core.intent import Intent
 from pyttman.core.containers import MessageMixin, Reply, ReplyStream, Message
-from pyttman.core.internals import _generate_error_entry
+from pyttman.core.internals import _generate_error_entry, PyttmanApp
 
 
 class AbstractMessageRouter(abc.ABC):
@@ -37,7 +37,10 @@ class AbstractMessageRouter(abc.ABC):
 
     def __init__(self, abilities: List[Ability],
                  intent_unknown_responses: List[str],
-                 help_keyword: str, **kwargs):
+                 help_keyword: str,
+                 app: PyttmanApp = None,
+                 **kwargs):
+        self.app = app
         self.abilities = abilities
         self.help_keyword = help_keyword
         self.intent_unknown_responses = intent_unknown_responses
@@ -68,8 +71,8 @@ class AbstractMessageRouter(abc.ABC):
         """
         pass
 
-    @staticmethod
-    def process(message: Message,
+    def process(self,
+                message: Message,
                 intent: Intent,
                 keep_alive_on_exc=True) -> Reply | ReplyStream:
         """
@@ -95,17 +98,27 @@ class AbstractMessageRouter(abc.ABC):
         truncated_content = [i for i in message.content
                              if i.casefold() not in joined_patterns]
         truncated_message = Message(content=truncated_content)
-        entities: dict[str: Any] = parse_entities(
-            message=truncated_message,
-            entity_fields=intent.user_entity_fields,
-            original_message_content=copy(message.content),
-            exclude=intent.ignore_in_entities)
+        try:
+            entities: dict[str: Any] = parse_entities(
+                message=truncated_message,
+                entity_fields=intent.user_entity_fields,
+                original_message_content=copy(message.content),
+                exclude=intent.ignore_in_entities)
 
-        message.entities = {k: v.value for k, v in entities.items()}
+            message.entities = {k: v.value for k, v in entities.items()}
+        except Exception as e:
+            reply = _generate_error_entry(message, e)
+            if keep_alive_on_exc is False:
+                raise e
+            return reply
 
         try:
             intent.before_respond(message)
+            if self.app is not None:
+                self.app.execute_plugins_before_intent(message)
             reply: Reply | ReplyStream = intent.respond(message=message)
+            if self.app is not None:
+                self.app.execute_plugins_after_intent(reply)
             intent.after_respond(message, reply)
         except Exception as e:
             reply = _generate_error_entry(message, e)
