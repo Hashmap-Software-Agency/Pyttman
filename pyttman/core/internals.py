@@ -163,3 +163,17 @@ class PyttmanApp(PrettyReprMixin):
         for ability in abilities:
             setattr(self, ability.__class__.__name__, ability)
             self._abilities.add(ability)
+
+    def execute_plugins_before_start(self):
+        try:
+            for plugin in self.plugins:
+                self.loaded_plugins.ingest(plugin)
+                plugin.before_app_start(self)
+        except Exception as e:
+            raise PyttmanPluginException(
+                f"The plugin '{plugin.__class__.__name__}' "
+                f"caused the boostrap to fail.") from e
+
+    def execute_plugins_after_stop(self):
+        for plugin in self.plugins:
+            plugin.after_app_stops(self)
