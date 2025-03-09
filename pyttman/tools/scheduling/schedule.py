@@ -5,8 +5,8 @@ import warnings
 from datetime import datetime
 from queue import Queue
 from typing import Dict, Generator, Any, Callable, Tuple
-
 from multidict import MultiDict
+
 
 from pyttman.tools.scheduling.components import Job, TimeTrigger
 
