@@ -1,7 +1,6 @@
 from pyttman.core.internals import PyttmanApp
 
 from pyttman import version
-from pyttman.tools.scheduling.schedule import schedule
 from pyttman.tools.logger.logger import PyttmanLogger
 
 __version__ = version.__version__
