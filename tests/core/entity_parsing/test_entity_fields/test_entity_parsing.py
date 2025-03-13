@@ -318,7 +318,7 @@ class PyttmanIntentInternalEntityParserTestDefaultValues(
     PyttmanInternalTestBaseCase
 ):
     process_message = True
-    mock_message = Message("My new shoes cost me 140:- retail")
+    mock_message = Message("My new shoes cost me 140:- retail and they're called Freerider Pro")
 
     expected_entities = {
         "should_be_foo": "foo",
@@ -327,6 +327,7 @@ class PyttmanIntentInternalEntityParserTestDefaultValues(
         "should_be_0": 0,
         "should_be_42_default_int": 42,
         "purchase_was_retail": True,
+        "shoe_name": "Freerider Pro"
     }
 
     class IntentClass(ImplementedTestIntent):
@@ -341,8 +342,8 @@ class PyttmanIntentInternalEntityParserTestDefaultValues(
         should_be_none_str = StringEntityField(default="None")
         should_be_0 = IntegerEntityField(default=0)
         should_be_42_default_int = IntegerEntityField(default=42)
-        purchase_was_retail = BoolEntityField(
-            message_contains=("retail",))
+        purchase_was_retail = BoolEntityField(message_contains=("retail",))
+        shoe_name = StringEntityField(prefixes=("called",), span=2)
 
 
 class PyttmanIntentInternalTestTrailAndLeadAreNotIgnored(
