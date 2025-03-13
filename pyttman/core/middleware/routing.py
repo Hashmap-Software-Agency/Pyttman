@@ -11,6 +11,7 @@ from pyttman.core.ability import Ability
 from pyttman.core.intent import Intent
 from pyttman.core.containers import MessageMixin, Reply, ReplyStream, Message
 from pyttman.core.internals import _generate_error_entry, PyttmanApp
+from pyttman.core.plugins.base import PyttmanPluginIntercept
 
 
 class AbstractMessageRouter(abc.ABC):
@@ -114,11 +115,15 @@ class AbstractMessageRouter(abc.ABC):
 
         try:
             intent.before_respond(message)
+
             if self.app is not None:
-                self.app.execute_plugins_before_intent(message)
-            reply: Reply | ReplyStream = intent.respond(message=message)
+                message = self.app.execute_plugins_before_intent(message)
+
+            reply = intent.respond(message=message)
+
             if self.app is not None:
-                self.app.execute_plugins_after_intent(reply)
+                reply = self.app.execute_plugins_after_intent(reply)
+
             intent.after_respond(message, reply)
         except Exception as e:
             reply = _generate_error_entry(message, e)
@@ -162,10 +167,18 @@ class FirstMatchingRouter(AbstractMessageRouter):
     multiple abilities matches a Message - the first one
     in order is chosen.
     """
-
     def get_reply(self, message: Message) -> Reply:
+        if self.app is not None:
+            message = self.app.execute_plugins_before_router(message)
+
         try:
             if not (matching_intents := self.get_matching_intent(message)):
+                original_message = copy(message.content)
+
+                if self.app is not None:
+                    reply = self.app.execute_plugins_no_intent_match(message)
+                    if reply.content != original_message:
+                        return reply
                 return Reply(random.choice(self.intent_unknown_responses))
         except Exception as e:
             return _generate_error_entry(message, e)
@@ -197,8 +210,7 @@ class FirstMatchingRouter(AbstractMessageRouter):
                 # else:
                 #  TODO - Return help chapter for ability
         try:
-            reply: Reply | ReplyStream = self.process(message=message,
-                                                      intent=chosen_intent)
+            reply = self.process(message=message, intent=chosen_intent)
         except Exception as e:
             reply: Reply = _generate_error_entry(message, e)
         return reply
