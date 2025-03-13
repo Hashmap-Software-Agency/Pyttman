@@ -137,17 +137,18 @@ class DiscordClient(discord.Client, BaseClient):
                 self.message_endswith):
             return
 
-        try:
-            reply = self.reply_to_message(discord_message)
-            if isinstance(reply, ReplyStream):
-                while reply.qsize():
-                    await discord_message.channel.send(reply.get().as_str())
-                    await asyncio.sleep(0.01)
-            else:
-                await discord_message.channel.send(reply.as_str())
-        except Exception as e:
-            await discord_message.channel.send(
-                _generate_error_entry(discord_message, e).as_str())
+        async with message.channel.typing():
+            try:
+                reply = self.reply_to_message(discord_message)
+                if isinstance(reply, ReplyStream):
+                    while reply.qsize():
+                        await discord_message.channel.send(reply.get().as_str())
+                        await asyncio.sleep(0.01)
+                else:
+                    await discord_message.channel.send(reply.as_str())
+            except Exception as e:
+                await discord_message.channel.send(
+                    _generate_error_entry(discord_message, e).as_str())
 
     def run_client(self):
         if not self._token:
