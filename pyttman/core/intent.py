@@ -141,6 +141,7 @@ class BaseIntent(AbstractIntent, ABC, PrettyReprMixin):
     example: str = None
     lead: tuple[str] = None
     trail: tuple[str] = None
+    exact_match: tuple[str] = None
     ordered: bool = False
     help_string: str = None
     storage: Storage = None
@@ -201,9 +202,11 @@ class BaseIntent(AbstractIntent, ABC, PrettyReprMixin):
         :returns:
             Bool, True if self matches Intent
         """
-
         match_trail = False
         sanitized = message.as_list(sanitized=True)
+
+        if self.exact_match is not None:
+            return sanitized == self.exact_match
 
         if not (match_lead := [i for i in self.lead if i in sanitized]):
             return False
@@ -279,15 +282,14 @@ class BaseIntent(AbstractIntent, ABC, PrettyReprMixin):
 
     def before_respond(self, message: Message) -> None:
         """
-        Implement this method to execute code before an Intent starts
-        and goes online to users.
+        Implement this method to execute code before the 'respond' method
         """
         pass
 
     def after_respond(self, message: Message, reply: Reply) -> None:
         """
-        Implement this method to execute code before the App starts
-        and goes online to users.
+        Implement this method to execute code after the 'respond' method
+        has executed.
         """
         pass
 
