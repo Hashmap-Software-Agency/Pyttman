@@ -3,7 +3,7 @@ import traceback
 import pyttman
 from pyttman.core import exceptions
 from pyttman.core.containers import Message
-from pyttman.core.plugins.base import PyttmanPlugin
+from pyttman.core.plugins.base import PyttmanPlugin, PyttmanPluginIntercept
 
 if __name__ != "__main__":
     try:
@@ -95,20 +95,22 @@ class MongoEnginePlugin(PyttmanPlugin):
                  port: int | str,
                  user_binding: MessageUserBinding = None,
                  username: str = None,
-                 password: str = None):
+                 password: str = None,
+                 allowed_intercepts: list[PyttmanPluginIntercept] or None = None):
         self.user_binding = user_binding
         self.db_name = db_name
         self.host = host
         self.port = int(port)
         self._username = username
         self._password = password
+        super().__init__(allowed_intercepts)
 
     def before_app_start(self, app):
         """
         Set up a connection with MongoDB using mongoengine
         with provided credentials.
         """
-        pyttman.logger.log("Mongoengine connecting...")
+        pyttman.logger.log("- [MongoEnginePlugin]: connecting...")
         mongoengine.connect(
             tlsCAFile=certifi.where(),
             db=self.db_name,
@@ -118,10 +120,13 @@ class MongoEnginePlugin(PyttmanPlugin):
             port=self.port)
         del self._password
         del self._username
+        pyttman.logger.log("- [MongoEnginePlugin]: connection successful.")
+
 
     def after_app_stops(self, app):
-        pyttman.logger.log("Mongoengine disconnecting...")
+        pyttman.logger.log("- [MongoEnginePlugin]: disconnecting...")
         mongoengine.disconnect_all()
+        pyttman.logger.log("- [MongoEnginePlugin]: disconnection successful.")
 
     def before_intent(self, message: Message):
         if self.user_binding is None:
@@ -144,3 +149,4 @@ class MongoEnginePlugin(PyttmanPlugin):
                         f"{traceback.format_exc()}")
             user = None
         message.user = user
+        return message
