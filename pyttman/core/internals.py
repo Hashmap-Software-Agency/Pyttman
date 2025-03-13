@@ -12,7 +12,7 @@ from pyttman.core.containers import MessageMixin, Reply
 from pyttman.core.decorators import LifecycleHookRepository
 from pyttman.core.exceptions import PyttmanPluginException
 from pyttman.core.mixins import PrettyReprMixin
-from pyttman.core.plugins.base import PyttmanPlugin
+from pyttman.core.plugins.base import PyttmanPlugin, PyttmanPluginIntercept
 
 
 def depr_raise(message: str, version: str) -> None:
@@ -160,18 +160,22 @@ class PyttmanApp(PrettyReprMixin):
     plugins: list[PyttmanPlugin] = field(default_factory=list)
     loaded_plugins: LoadedPluginContainer = field(default_factory=LoadedPluginContainer)
 
+    def __post_init__(self):
+        for plugin in self.plugins:
+            self.loaded_plugins.ingest(plugin)
+
     def start(self):
         """
         Start a Pyttman application.
         """
         # noinspection PyBroadException
         # Execute plugin hooks
-        self.execute_plugins_before_start()
+        self.execute_plugins_before_app_start()
         try:
             self.client.run_client()
         except Exception:
             warnings.warn(traceback.format_exc())
-        self.execute_plugins_after_stop()
+        self.execute_plugins_after_app_stop()
 
     @property
     def abilities(self):
@@ -183,24 +187,64 @@ class PyttmanApp(PrettyReprMixin):
             setattr(self, ability.__class__.__name__, ability)
             self._abilities.add(ability)
 
-    def execute_plugins_before_start(self):
-        try:
-            for plugin in self.plugins:
-                self.loaded_plugins.ingest(plugin)
+    def raise_if_none(self, message: MessageMixin, plugin: PyttmanPlugin, method: callable):
+        """
+        Raise a ValueError if the message is None.
+        """
+        if message is None:
+            raise PyttmanPluginException(f"Plugin malfunction: {plugin} returned None "
+                                         f"instead of a MessageMixin object when executing"
+                                         f"method '{method}'.")
+
+    def execute_plugins_before_router(self, message: MessageMixin):
+        for plugin in self.plugins:
+            if plugin.allowed_to_intercept_at(PyttmanPluginIntercept.before_router):
+                message = plugin.before_router(message)
+                self.raise_if_none(message, plugin, plugin.before_router)
+        return message
+
+    def execute_plugins_before_entity_extraction(self, message: MessageMixin):
+        for plugin in self.plugins:
+            if plugin.allowed_to_intercept_at(PyttmanPluginIntercept.before_entity_extraction):
+                message = plugin.before_entity_extraction(message)
+                self.raise_if_none(message, plugin, plugin.before_entity_extraction)
+        return message
+
+    def execute_plugins_after_entity_extraction(self, message: MessageMixin):
+        for plugin in self.plugins:
+            if plugin.allowed_to_intercept_at(PyttmanPluginIntercept.after_entity_extraction):
+                message = plugin.after_entity_extraction(message)
+                self.raise_if_none(message, plugin, plugin.after_entity_extraction)
+        return message
+
+    def execute_plugins_before_intent(self, message: MessageMixin):
+        for plugin in self.plugins:
+            if plugin.allowed_to_intercept_at(PyttmanPluginIntercept.before_intent):
+                message = plugin.before_intent(message)
+                self.raise_if_none(message, plugin, plugin.before_intent)
+        return message
+
+    def execute_plugins_after_intent(self, reply: Reply):
+        for plugin in self.plugins:
+            if plugin.allowed_to_intercept_at(PyttmanPluginIntercept.after_intent):
+                reply = plugin.after_intent(reply)
+                self.raise_if_none(reply, plugin, plugin.after_intent)
+        return reply
+
+    def execute_plugins_before_app_start(self):
+        for plugin in self.plugins:
+            if plugin.allowed_to_intercept_at(PyttmanPluginIntercept.before_app_start):
                 plugin.before_app_start(self)
-        except Exception as e:
-            raise PyttmanPluginException(
-                f"The plugin '{plugin.__class__.__name__}' "
-                f"caused the boostrap to fail.") from e
 
-    def execute_plugins_after_stop(self):
+    def execute_plugins_after_app_stop(self):
         for plugin in self.plugins:
-            plugin.after_app_stops(self)
+            if plugin.allowed_to_intercept_at(PyttmanPluginIntercept.after_app_stops):
+                plugin.after_app_stops(self)
 
-    def execute_plugins_before_intent(self, message):
+    def execute_plugins_no_intent_match(self, message: MessageMixin):
+        reply = None
         for plugin in self.plugins:
-            plugin.before_intent(message)
-
-    def execute_plugins_after_intent(self, reply):
-        for plugin in self.plugins:
-            plugin.after_intent(reply)
+            if plugin.allowed_to_intercept_at(PyttmanPluginIntercept.no_intent_match):
+                reply = plugin.no_intent_match(message)
+                self.raise_if_none(message, plugin, plugin.no_intent_match)
+        return reply
