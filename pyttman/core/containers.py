@@ -42,6 +42,11 @@ class MessageMixin(PrettyReprMixin):
         for k, v in kwargs.items():
             setattr(self, k, v)
 
+    def __eq__(self, other):
+        if isinstance(other, self.__class__):
+            return self.content == other.content
+        return False
+
     def __getitem__(self, index: int) -> str:
         return self.content[index]
 
