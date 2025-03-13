@@ -89,7 +89,7 @@ class EntityFieldBase(EntityFieldValueParser, ABC):
         :param value: Any
         :return: Any
         """
-        if value is None:
+        if value is None or type(value) == self.type_cls:
             return value
 
         try:
