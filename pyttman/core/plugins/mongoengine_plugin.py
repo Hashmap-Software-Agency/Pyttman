@@ -101,11 +101,11 @@ class MongoEnginePlugin(PyttmanPlugin):
         self.db_name = db_name
         self.host = host
         self.port = int(port)
-        self._username = username
-        self._password = password
+        self.username = username
+        self.password = password
         super().__init__(allowed_intercepts)
 
-    def before_app_start(self, app):
+    def on_app_start(self):
         """
         Set up a connection with MongoDB using mongoengine
         with provided credentials.
@@ -115,11 +115,10 @@ class MongoEnginePlugin(PyttmanPlugin):
             tlsCAFile=certifi.where(),
             db=self.db_name,
             host=self.host,
-            username=self._username,
-            password=self._password,
+            username=self.username,
+            password=self.password,
             port=self.port)
-        del self._password
-        del self._username
+        self.password = None
         pyttman.logger.log("- [MongoEnginePlugin]: connection successful.")
 
 
