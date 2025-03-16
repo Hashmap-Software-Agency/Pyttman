@@ -79,6 +79,15 @@ class RagMemoryBank:
             data = self.as_json()
             f.write(json.dumps(data, indent=4))
 
+    def memories_as_str(self, key: str) -> str:
+        """
+        Return the memories as a string.
+        """
+        key = str(key)
+        base = "These are your long term memories with this user: "
+        return base + "\n".join(self.memories[key])
+
+
 class OpenAIPlugin(PyttmanPlugin):
     """
     The OpenAIPlugin offers seamless integrations with the OpenAI API.
@@ -123,7 +132,7 @@ class OpenAIPlugin(PyttmanPlugin):
                             "something, Read the content of what to remember from the "
                             "user message and return the memory in this format: "
                             "'[MEMORY]: {your memory content here}'. If the message does "
-                            "not match memory making or is a question, return False.")
+                            "not match memory making or is a question, return 0")
 
     def __init__(self,
                  api_key: str,
@@ -201,7 +210,7 @@ class OpenAIPlugin(PyttmanPlugin):
             user_prompt = message.as_str()
 
         if self.enable_memories:
-            memories = self.long_term_memory.get_memories(message.author.id)
+            memories = self.long_term_memory.get_memories(message.author)
             system_prompt += (f"\nThese are your long term memories "
                               f"with this user: {"\n".join(memories)}")
 
@@ -241,7 +250,7 @@ class OpenAIPlugin(PyttmanPlugin):
         try:
             response = self.session.post(self.url, json=payload)
             memory = response.json()["choices"][0]["message"]["content"]
-            if memory == "False":
+            if str(memory) == "0":
                 return None
             return memory
         except requests.exceptions.RequestException as e:
@@ -255,23 +264,22 @@ class OpenAIPlugin(PyttmanPlugin):
         """
         Hook. Executed when no intent matches the user's message.
         """
-        memory_key = message.author.id
         if new_memory := self.create_memory_if_applicable(message):
-            self.long_term_memory.append_memory(message.author.id, new_memory)
+            self.long_term_memory.append_memory(message.author, new_memory)
             self.long_term_memory.save()
 
-        if self.conversation_rag.get(memory_key) is None:
-            self.conversation_rag[memory_key] = {"user": [message.as_str()], "ai": []}
+        if self.conversation_rag.get(message.author) is None:
+            self.conversation_rag[message.author] = {"user": [message.as_str()], "ai": []}
         else:
-            self.conversation_rag[memory_key]["user"].append(message.as_str())
+            self.conversation_rag[message.author]["user"].append(message.as_str())
 
         while True:
-            user_length = len("".join(self.conversation_rag[memory_key]["user"]))
-            ai_length = len("".join(self.conversation_rag[memory_key]["ai"]))
+            user_length = len("".join(self.conversation_rag[message.author]["user"]))
+            ai_length = len("".join(self.conversation_rag[message.author]["ai"]))
 
             if user_length + ai_length > self.max_conversation_length:
-                self.conversation_rag[memory_key]["user"].pop(0)
-                self.conversation_rag[memory_key]["ai"].pop(0)
+                self.conversation_rag[message.author]["user"].pop(0)
+                self.conversation_rag[message.author]["ai"].pop(0)
             else:
                 break
 
