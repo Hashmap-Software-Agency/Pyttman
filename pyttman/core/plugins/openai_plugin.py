@@ -1,10 +1,8 @@
 import json
 from dataclasses import dataclass, field
-from functools import partial
 from itertools import zip_longest
 from pathlib import Path
-from types import new_class
-from uuid import uuid4
+from typing import Callable
 
 import requests
 
@@ -40,44 +38,117 @@ class RagMemoryBank:
     The OpenAiRagMemoryBank is a dataclass that holds
     the conversation history with a user, and the
     memories that the AI should remember.
+
+    Saving the RAG data can be defined by the user, building the app.
+    They can provide callbacks for us to use when CRUD:ing memories.
     """
-    file_path: Path
+    file_path: Path | None = None
     memories: dict[str, list[str]] = field(default_factory=dict)
+    callbacks: dict[str, Callable or None] = field(default_factory=dict)
 
-    def get_memories(self, key: str) -> list[str]:
-        """
-        Return the memories for a given key.
-        """
-        return self.memories.get(str(key), [])
-
-    def append_memory(self, key: str, memory: str):
-        """
-        Append a memory to the memory bank.
-        """
-        key = str(key)
-        if self.memories.get(str(key)) is None:
-            self.memories[key] = [memory]
-        else:
-            self.memories[key].append(memory)
-
-    def as_json(self):
-        return {
-            "memories": self.memories
+    def __post_init__(self):
+        self.callbacks = {
+            "purge_all_memories": None,
+            "purge_memories": None,
+            "append_memory": None,
+            "get_memories": None,
         }
 
-    def load_memories(self):
+    def _execute_callback(self, callback_name: str, *args) -> any:
+        """
+        Execute a callback if it's defined.
+        """
+        try:
+            if (callback := self.callbacks.get(callback_name)) is not None:
+                response = callback(*args)
+                return True if response is None else response
+        except Exception as e:
+            pyttman.logger.log(level="error",
+                               message=f"OpenAIPlugin: RagMemoryBank: "
+                                       f"callback {callback_name} failed: {e}")
+
+    def _load_memories_from_file(self):
+        """
+        Load the memories source
+        """
+        if self.file_path is None:
+            raise ValueError("OpenAIPlugin: RagMemoryBank: Using file storage "
+                             "fallback failed. No file path defined for the "
+                             "memory bank.")
+
         if not self.file_path.exists():
             self.file_path.parent.mkdir(parents=True, exist_ok=True)
-            self.save()
+            self.save_to_file()
 
         with open(self.file_path, "r", encoding="utf-8") as f:
             data = json.loads(f.read())
             self.memories = data["memories"]
 
-    def save(self):
+    def _get_memory_from_file(self, key):
+        """
+        Fallback, unless user implements callback. Use file-based memories.
+        """
+        if not self.memories:
+            self._load_memories_from_file()
+        return self.memories.get(str(key), [])
+
+    def _add_memory_to_file(self, key, memory):
+        if not self.memories:
+            self._load_memories_from_file()
+
+        key = str(key)
+        if self.memories.get(key) is None:
+            self.memories[key] = [memory]
+        else:
+            self.memories[key].append(memory)
+        self.save_to_file()
+
+    def purge_all_memories(self):
+        """
+        Purge all memories.
+        """
+        if self._execute_callback("purge_all_memories") is not None:
+            return
+        self.memories.clear()
+
+    def purge_memories(self, key: str):
+        """
+        Purge all memories for a given key.
+        """
+        if self._execute_callback("purge_memories", key) is not None:
+            return
+        self.memories[key] = []
+
+    def get_memories(self, key: str) -> tuple[str] or list[str]:
+        """
+        Return the memories for a given key.
+        """
+        if (memories := self._execute_callback("get_memories", key)) is not None:
+            print("Memories:", memories)
+            if not isinstance(memories, (list, tuple)):
+                raise ValueError("OpenAIPlugin: The memories callback must "
+                                 "return a list or tuple.")
+            return memories
+        return self._get_memory_from_file(key)
+
+    def add_memory(self, key: str, memory: str):
+        """
+        Append a memory to the memory bank.
+        """
+        if callback_return := self._execute_callback("add_memory", key, memory):
+            return callback_return
+        self._add_memory_to_file(key, memory)
+
+    def save_to_file(self):
+        """
+        Save the memories to a file.
+        """
         with open(self.file_path, "w", encoding="utf-8") as f:
             data = self.as_json()
             f.write(json.dumps(data, indent=4))
+
+    def as_json(self):
+        return {"memories": self.memories}
 
     def memories_as_str(self, key: str) -> str:
         """
@@ -85,7 +156,8 @@ class RagMemoryBank:
         """
         key = str(key)
         base = "These are your long term memories with this user: "
-        return base + "\n".join(self.memories[key])
+        memories = self.get_memories(key)
+        return base + "\n".join(memories)
 
 
 class OpenAIPlugin(PyttmanPlugin):
@@ -142,7 +214,11 @@ class OpenAIPlugin(PyttmanPlugin):
                  enable_conversations: bool = False,
                  enable_memories: bool = False,
                  max_conversation_length: int = 32_000,
-                 allowed_intercepts: list[PyttmanPluginIntercept] = None):
+                 allowed_intercepts: list[PyttmanPluginIntercept] = None,
+                 purge_all_memories_callback: callable or None = None,
+                 purge_memories_callback: callable or None = None,
+                 add_memory_callback: callable or None = None,
+                 get_memories_callback: callable or None = None):
         super().__init__(allowed_intercepts)
         self.api_key = api_key
         self.model = model
@@ -158,6 +234,11 @@ class OpenAIPlugin(PyttmanPlugin):
         self.long_term_memory: RagMemoryBank | None = None
         self.conversation_rag = {}
 
+        self._purge_all_memories_callback = purge_all_memories_callback
+        self._purge_memories_callback = purge_memories_callback
+        self._add_memory_callback = add_memory_callback
+        self._get_memories_callback = get_memories_callback
+
         self.session.headers.update({"Content-Type": "application/json"})
         self.session.headers.update({"Accept-Type": "application/json"})
         self.session.headers.update({"Authorization": f"Bearer {self.api_key}"})
@@ -167,14 +248,15 @@ class OpenAIPlugin(PyttmanPlugin):
     def on_app_start(self):
         if (static_files_dir := self.app.settings.STATIC_FILES_DIR) is None:
             static_files_dir = Path(self.app.settings.APP_BASE_DIR / "static")
-
         self.rag_memories_path = static_files_dir / "rag_memories" / "memories.json"
         self.long_term_memory = RagMemoryBank(self.rag_memories_path)
 
+        self.long_term_memory.callbacks["purge_all_memories"] = self._purge_all_memories_callback
+        self.long_term_memory.callbacks["purge_memories"] = self._purge_memories_callback
+        self.long_term_memory.callbacks["add_memory"] = self._add_memory_callback
+        self.long_term_memory.callbacks["get_memories"] = self._get_memories_callback
+
         pyttman.logger.log("- [OpenAIPlugin]: Plugin started.")
-        if self.enable_memories:
-            self.long_term_memory.load_memories()
-        pyttman.logger.log("- [OpenAIPlugin]: Loaded")
 
     def _prepare_rag_prompt(self, message: MessageMixin) -> str:
         """
@@ -186,8 +268,8 @@ class OpenAIPlugin(PyttmanPlugin):
 
         conversation = ""
         for user_message, ai_message in zip_longest(
-            self.conversation_rag[message.author]["user"],
-            self.conversation_rag[message.author]["ai"],
+            self.conversation_rag[message.author.id]["user"],
+            self.conversation_rag[message.author.id]["ai"],
                 fillvalue=""
         ):
             if user_message:
@@ -204,13 +286,13 @@ class OpenAIPlugin(PyttmanPlugin):
             user_prompt = self._prepare_rag_prompt(message)
             system_prompt = self.system_prompt + self.conversation_prompt
             pyttman.logger.log(f" - [OpenAIPlugin]: conversation size "
-                               f"for user {message.author}: {len(user_prompt)}")
+                               f"for user {message.author.id}: {len(user_prompt)}")
         else:
             system_prompt = self.system_prompt
             user_prompt = message.as_str()
 
         if self.enable_memories:
-            memories = self.long_term_memory.get_memories(message.author)
+            memories = self.long_term_memory.get_memories(message.author.id)
             system_prompt += (f"\nThese are your long term memories "
                               f"with this user: {"\n".join(memories)}")
 
@@ -265,21 +347,20 @@ class OpenAIPlugin(PyttmanPlugin):
         Hook. Executed when no intent matches the user's message.
         """
         if new_memory := self.create_memory_if_applicable(message):
-            self.long_term_memory.append_memory(message.author, new_memory)
-            self.long_term_memory.save()
+            self.long_term_memory.add_memory(message.author.id, new_memory)
 
-        if self.conversation_rag.get(message.author) is None:
-            self.conversation_rag[message.author] = {"user": [message.as_str()], "ai": []}
+        if self.conversation_rag.get(message.author.id) is None:
+            self.conversation_rag[message.author.id] = {"user": [message.as_str()], "ai": []}
         else:
-            self.conversation_rag[message.author]["user"].append(message.as_str())
+            self.conversation_rag[message.author.id]["user"].append(message.as_str())
 
         while True:
-            user_length = len("".join(self.conversation_rag[message.author]["user"]))
-            ai_length = len("".join(self.conversation_rag[message.author]["ai"]))
+            user_length = len("".join(self.conversation_rag[message.author.id]["user"]))
+            ai_length = len("".join(self.conversation_rag[message.author.id]["ai"]))
 
             if user_length + ai_length > self.max_conversation_length:
-                self.conversation_rag[message.author]["user"].pop(0)
-                self.conversation_rag[message.author]["ai"].pop(0)
+                self.conversation_rag[message.author.id]["user"].pop(0)
+                self.conversation_rag[message.author.id]["ai"].pop(0)
             else:
                 break
 
@@ -304,7 +385,7 @@ class OpenAIPlugin(PyttmanPlugin):
 
         try:
             gpt_content = response.json()["choices"][0]["message"]["content"]
-            self.conversation_rag[message.author]["ai"].append(gpt_content)
+            self.conversation_rag[message.author.id]["ai"].append(gpt_content)
             if new_memory:
                 gpt_content = f"Memory updated.\n{gpt_content}"
             return Reply(gpt_content)
