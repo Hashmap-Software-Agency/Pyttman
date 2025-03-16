@@ -47,7 +47,7 @@ class PyttmanCli(Ability):
                       "Next up, add them to your app's settings.py file "
                       "under the ABILITIES key.")
                 exit(0)
-            print(f"- Ability classes loaded: "
+            print(f"- [Pyttman]: Ability classes loaded: "
                   f"{app.client.message_router.abilities}")
             app.start()
         else:

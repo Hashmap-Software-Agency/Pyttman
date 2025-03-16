@@ -167,8 +167,8 @@ class RunAppInClientMode(Intent, PyttmanCliComplainerMixin):
                          "bootstrapping, see traceback above.")
         self.storage.put("app", app)
         self.storage.put("ready", True)
-        return Reply(f"- Starting app '{app_name}' in client mode...")
-
+        app.execute_plugins_before_app_start()
+        return Reply(f"- [Pyttman]: Starting app '{app_name}' in client mode")
 
 class RunFile(Intent, PyttmanCliComplainerMixin):
     """

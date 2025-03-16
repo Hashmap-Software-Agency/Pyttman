@@ -98,7 +98,7 @@ class DiscordClient(discord.Client, BaseClient):
                                 **kwargs)
 
     async def on_ready(self):
-        logger.log(f"App online on discord.")
+        logger.log(f"- [DiscordClient]: App online on discord.")
 
     async def on_message(self, message: DiscordMessage) -> None:
         """

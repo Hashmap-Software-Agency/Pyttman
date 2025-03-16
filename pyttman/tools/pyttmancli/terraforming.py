@@ -165,12 +165,12 @@ def bootstrap_app(module: str = None, devmode: bool = False,
                    "1.3.2")
 
     # Load plugins
-    pyttman.logger.log("- Loading plugins...")
+    pyttman.logger.log("- [Pyttman]: Loading plugins...")
     try:
         plugins: list[PyttmanPlugin] = settings.PLUGINS
     except AttributeError as e:
         raise AttributeError("PLUGINS is missing from settings.py.") from e
-    pyttman.logger.log(f"- Plugins loaded: {[i.__class__.__name__ for i in plugins]}")
+    pyttman.logger.log(f"- [Pyttman]: Plugins loaded: {[i.__class__.__name__ for i in plugins]}")
 
     message_router_class_name = message_router_config.pop()
     message_router_module = ".".join(message_router_config)
@@ -258,7 +258,7 @@ def bootstrap_app(module: str = None, devmode: bool = False,
                           plugins=plugins)
 
     # Create a log entry for app start
-    pyttman.logger.log(f" - App {app_name} started: {datetime.now()} -- ")
+    pyttman.logger.log(f"- [Pyttman]: App {app_name} started: {datetime.now()} -- ")
     app = PyttmanApp(client=client,
                      name=settings.APP_NAME,
                      settings=settings,
