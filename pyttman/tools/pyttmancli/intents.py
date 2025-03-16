@@ -37,12 +37,12 @@ class ShellMode(Intent, PyttmanCliComplainerMixin):
             return Reply(complaint)
         app = bootstrap_app(devmode=True, module=app_name)
         app.hooks.trigger(LifeCycleHookType.before_start)
-        app.execute_plugins_before_start()
+        app.execute_plugins_before_app_start()
         global_variables = globals().copy()
         global_variables.update(locals())
         shell = code.InteractiveConsole(global_variables)
         shell.interact()
-        app.execute_plugins_after_stop()
+        app.execute_plugins_after_app_stop()
         return Reply("Exited shell")
 
 
@@ -131,6 +131,7 @@ class RunAppInDevMode(Intent, PyttmanCliComplainerMixin):
             print(traceback.format_exc())
             return Reply("The app could not start due to issues with "
                          "bootstrapping, see traceback above.")
+        app.execute_plugins_before_app_start()
         self.storage.put("app", app)
         self.storage.put("ready", True)
         return Reply(f"- Starting app '{app_name}' in dev mode...")
@@ -197,7 +198,7 @@ class RunFile(Intent, PyttmanCliComplainerMixin):
         global_variables = globals().copy()
         global_variables.update(locals())
         shell = code.InteractiveConsole(global_variables)
-
+        app.execute_plugins_before_app_start()
         with open(script_path.as_posix(), "r") as f:
             # Set variable to indicate for the running script that it's main
             source = f.read()

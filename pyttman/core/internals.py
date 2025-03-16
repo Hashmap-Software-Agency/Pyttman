@@ -162,6 +162,8 @@ class PyttmanApp(PrettyReprMixin):
 
     def __post_init__(self):
         for plugin in self.plugins:
+            plugin.app = self
+            plugin.on_app_start()
             self.loaded_plugins.ingest(plugin)
 
     def start(self):
