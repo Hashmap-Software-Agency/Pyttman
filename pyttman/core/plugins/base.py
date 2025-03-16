@@ -40,8 +40,18 @@ class PyttmanPlugin:
         to intercept the application runtime. An empty list will allow
         no intercepts, effectively disabling the plugin.
     """
-    def __init__(self, allowed_intercepts: list[PyttmanPluginIntercept] or None = None):
+    def __init__(self,
+                 allowed_intercepts: list[PyttmanPluginIntercept] or None = None,
+                 app = None):
         self.allowed_intercepts = set(allowed_intercepts) if allowed_intercepts else set()
+        self.app = app
+
+    def on_app_start(self):
+        """
+        Execute code when the app starts, with the 'app' object available.
+        """
+        pass
+
 
     def allowed_to_intercept_at(self, intercept: PyttmanPluginIntercept):
         """
