@@ -206,7 +206,7 @@ class BaseIntent(AbstractIntent, ABC, PrettyReprMixin):
         sanitized = message.as_list(sanitized=True)
 
         if self.exact_match is not None:
-            return sanitized == self.exact_match
+            return tuple(i.lower() for i in sanitized) == (i.lower() for i in self.exact_match)
 
         if not (match_lead := [i for i in self.lead if i in sanitized]):
             return False
