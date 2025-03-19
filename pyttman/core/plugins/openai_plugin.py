@@ -183,6 +183,43 @@ class OpenAIPlugin(PyttmanPlugin):
     conversation intact. While recommended, it's important to note that
     the data is stored in memory, non-encrypted, and will be lost when
     the application is restarted.
+
+    :param api_key: The OpenAI API key to use for the plugin.
+    :param model: The model to use for the OpenAI API. For valid options,
+        see OpenAI's API documentation.
+    :param system_prompt: A system prompt to use for the OpenAI API. Set
+        this to configure your app behavior.
+    :param max_tokens: The maximum number of tokens to use for the OpenAI API.
+    :param enable_conversations: Enable RAG: conversational mode. This will
+        keep a conversation history for each user,
+        greatly improving the experience for conversational applications.
+        Disable for stateless apps.
+    :param enable_memories: Enable memory making. This will allow the AI to
+        remember details about the user, automatically.
+        To define custom functions for CRUD operations with memory to use
+        a database or other source, provide the callbacks for the plugin to use.
+    :param max_conversation_length: The maximum length of the conversation
+        history to keep in memory. When the conversation history exceeds this
+        length, the memory is truncated oldest first, making for a seamless
+        experience.
+    :param allowed_intercepts: A list of PyttmanPluginIntercept enums that
+        define when the plugin should be executed in the Pyttman application.
+        Use these intercepts to align the system prompts you set, with
+        the time of execution in the Pyttman application. For example,
+        use PyttmanPluginIntercept.before_router to correct spelling mistakes
+        or otherwise pre-process the message before it's sent on to the intents.
+        In this case, the system prompt could be a spell-checker prompt,
+        return the message to the user spell corrected and otherwise intact.
+        Stack multiple plugins with different intercept points to create
+        a powerful AI system.
+    :param time_aware: Set to True if the plugin should be aware of the current
+        datetime. If True, the system prompt will be prepended with the current
+        datetime, making the AI aware of the time of day. This can really
+        improve the experience since the AI can reason about when things
+        occur, and you can introduce reasoning about future and past events
+        with the AI.
+    :param time_zone: The timezone to use for the time awareness. If not set,
+        the system will use the system timezone.
     """
 
     conversation_prompt = ("You will get a copy of the conversation history "
