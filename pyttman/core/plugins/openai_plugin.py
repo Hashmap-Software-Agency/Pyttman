@@ -1,8 +1,10 @@
 import json
 from dataclasses import dataclass, field
+from datetime import datetime
 from itertools import zip_longest
 from pathlib import Path
 from typing import Callable
+from zoneinfo import ZoneInfo
 
 import requests
 
@@ -124,7 +126,6 @@ class RagMemoryBank:
         Return the memories for a given key.
         """
         if (memories := self._execute_callback("get_memories", key)) is not None:
-            print("Memories:", memories)
             if not isinstance(memories, (list, tuple)):
                 raise ValueError("OpenAIPlugin: The memories callback must "
                                  "return a list or tuple.")
@@ -252,11 +253,18 @@ class OpenAIPlugin(PyttmanPlugin):
                  enable_memories: bool = False,
                  max_conversation_length: int = 32_000,
                  allowed_intercepts: list[PyttmanPluginIntercept] = None,
+                 time_aware: bool = False,
+                 time_zone: ZoneInfo = None,
                  purge_all_memories_callback: callable or None = None,
                  purge_memories_callback: callable or None = None,
                  add_memory_callback: callable or None = None,
                  get_memories_callback: callable or None = None):
+
+        if time_zone and not isinstance(time_zone, ZoneInfo):
+            raise ValueError("OpenAIPlugin: time_zone must be a ZoneInfo object,"
+                             " or None to use the system timezone.")
         super().__init__(allowed_intercepts)
+
         self.api_key = api_key
         self.model = model
         self.system_prompt = system_prompt
@@ -269,6 +277,8 @@ class OpenAIPlugin(PyttmanPlugin):
         self.enable_memories = enable_memories
         self.rag_memories_path: Path | None = None
         self.long_term_memory: RagMemoryBank | None = None
+        self.time_aware = time_aware
+        self.zone_info = time_zone
         self.conversation_rag = {}
 
         self._purge_all_memories_callback = purge_all_memories_callback
@@ -279,7 +289,6 @@ class OpenAIPlugin(PyttmanPlugin):
         self.session.headers.update({"Content-Type": "application/json"})
         self.session.headers.update({"Accept-Type": "application/json"})
         self.session.headers.update({"Authorization": f"Bearer {self.api_key}"})
-
         del self.api_key
 
     def on_app_start(self):
@@ -333,6 +342,10 @@ class OpenAIPlugin(PyttmanPlugin):
             system_prompt += (f"\nThese are your long term memories "
                               f"with this user: {"\n".join(memories)}")
 
+        if self.time_aware:
+            now = datetime.now(tz=self.zone_info) if self.zone_info else datetime.now()
+            time_prompt = f"The date time right now is {now.strftime('%Y-%m-%d %H:%M:%S')}."
+            system_prompt = f"{time_prompt}\n{system_prompt}"
         return OpenAiRequestPayload(
             model=self.model,
             system_prompt=system_prompt,
