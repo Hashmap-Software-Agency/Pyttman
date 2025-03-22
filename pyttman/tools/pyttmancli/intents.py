@@ -221,8 +221,8 @@ class CreateNewAbilityIntent(Intent, PyttmanCliComplainerMixin):
                   "a template for new Ability classes for your app.\n" \
                   f"Example: {example}"
 
-    ability_name = TextEntityField()
-    app_name = TextEntityField(prefixes=(ability_name,))
+    app_name = TextEntityField()
+    ability_name = TextEntityField(prefixes=(app_name,))
 
     def respond(self, message: Message) -> Reply | ReplyStream:
         files_to_create = ("__init__.py", "ability.py",
