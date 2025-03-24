@@ -1,3 +1,4 @@
+from pyttman.core.containers import Message
 from pyttman.core.internals import PyttmanApp
 from pyttman.core.decorators import LifecycleHookRepository, LifeCycleHookType
 from tests.module_helper import PyttmanInternalBaseTestCase
@@ -27,3 +28,12 @@ class PyttmanInternalTestPyttmanApp(PyttmanInternalBaseTestCase):
         # Execute hooks and verify.
         app.hooks.trigger(LifeCycleHookType.before_start)
         self.assertTrue(hook_executed)
+
+    def test_message(self):
+        # Test that segmentation of messages works as expected.
+        # The segmentation should split the message into segments
+        # to the closest possible word, and not split words in half.
+        message = Message("This is a test message")
+        expected = ["This is a", "test message"]
+        segmented = list(message.segmented(12))
+        self.assertEqual(expected, segmented)
