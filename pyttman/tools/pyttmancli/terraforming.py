@@ -224,6 +224,7 @@ def bootstrap_app(module: str = None, devmode: bool = False,
         pyttman.app = app
         app.abilities = load_abilities(settings)
         message_router.abilities = app.abilities
+        message_router.app = app
         prepare_app(module)
         del settings.CLIENT
         return app
