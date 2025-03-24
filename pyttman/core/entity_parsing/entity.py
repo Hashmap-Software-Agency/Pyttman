@@ -17,6 +17,7 @@ class Entity:
     value: Any
     index_in_message: int = 0
     is_fallback_default: bool = False
+    as_list: bool = False
 
     def __eq__(self, other):
         if isinstance(other, str):

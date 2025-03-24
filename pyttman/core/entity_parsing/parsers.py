@@ -383,7 +383,7 @@ class EntityFieldValueParser(PrettyReprMixin):
         if parsed_entity is None:
             return parsed_entity
 
-        while parsed_entity.value.casefold() in self.exclude:
+        while parsed_entity.value.lower() in [i.lower() for i in self.exclude]:
             parsed_entity.index_in_message += 1
             # Traverse the message for as long as the current found
             # entity is in the 'exclude' tuple. If the end of message
@@ -439,8 +439,11 @@ def parse_entities(message: MessageMixin,
     :return: Dictionary with the name of the entity against its parsed value.
     """
     output = {}
+
     if exclude is None:
-        exclude = tuple()
+        exclude = []
+    elif isinstance(exclude, tuple):
+        exclude = list(exclude)
 
     # The memoization dict is provided each EntityFieldValueParser instance
     # in order for them to avoid catching a string, previously
@@ -450,6 +453,7 @@ def parse_entities(message: MessageMixin,
 
     for field_name, entity_field_instance in entity_fields.items():
 
+        exclude.extend(entity_field_instance.exclude)
         # Collect all parser pre- and suffixes
         parser_joined_suffixes_and_prefixes.update(
             entity_field_instance.prefixes + entity_field_instance.suffixes)
@@ -471,6 +475,7 @@ def parse_entities(message: MessageMixin,
             output[field_name] = Entity(entity_field_instance.default,
                                         is_fallback_default=True)
         else:
+            parsed_entity.as_list = entity_field_instance.as_list
             output[field_name] = parsed_entity
 
             # Store the entity for memoization to
@@ -518,16 +523,28 @@ def parse_entities(message: MessageMixin,
             duplicate_cache.update(split_value)
             duplicate_cache.update(set([i.casefold()
                                         for i in split_value]))
-            value_for_type_conversion = str(" ").join(split_value)
+            if not entity.as_list:
+                value_for_type_conversion = str(" ").join(split_value)
+            else:
+                value_for_type_conversion = entity.value
 
         # New in 1.1.9 - If this is an EntityField class, convert
         # the value in the Entity with it.
         try:
-            entity.value = entity_field.convert_value(
-                value_for_type_conversion)
+            if entity.as_list:
+                entity.value = [entity_field.convert_value(i) for i in entity.value]
+            else:
+                entity.value = entity_field.convert_value(value_for_type_conversion)
         except AttributeError:
             entity.value = value_for_type_conversion
+
         output[field_name] = entity
+    case_converted_output = [i.lower() for i in output]
+
+    for word in exclude:
+        if case_converted_output.count(word):
+            output.remove(output[case_converted_output.index(word)])
+
     return output
 
 
