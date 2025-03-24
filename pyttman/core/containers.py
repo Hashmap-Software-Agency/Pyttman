@@ -1,4 +1,5 @@
 import re
+from copy import copy
 from dataclasses import dataclass
 from datetime import datetime
 from queue import Queue
@@ -49,6 +50,25 @@ class MessageMixin(PrettyReprMixin):
 
     def __getitem__(self, index: int) -> str:
         return self.content[index]
+
+    def segmented(self, batch_size: int):
+        """
+        Returns a generator that yields the content
+        of the message in segments of 'batch_size'.
+        The generator will yield the content closest to
+        a complete word, and not split words in half,
+        which is why the generator may yield less than
+        'batch_size' elements.
+        """
+        buf = []
+        content = copy(self.content)
+        while content:
+            if len(" ".join(buf)) + len(content[0]) < batch_size:
+                buf.append(content.pop(0))
+            else:
+                yield " ".join(buf)
+                buf = []
+        yield " ".join(buf)
 
     @property
     def content(self):
