@@ -1,4 +1,3 @@
-import asyncio
 from datetime import datetime
 
 import discord
@@ -6,7 +5,7 @@ import discord
 from pyttman import logger
 from pyttman.clients.base import BaseClient
 from pyttman.clients.community.discord.misc import DiscordMessage
-from pyttman.core.containers import ReplyStream
+from pyttman.core.containers import ReplyStream, Reply
 from pyttman.core.exceptions import ClientImproperlyConfiguredError
 from pyttman.core.internals import _generate_error_entry
 from pyttman.core.middleware.routing import AbstractMessageRouter
@@ -58,6 +57,7 @@ class DiscordClient(discord.Client, BaseClient):
     guild: int = None
     message_startswith: str = ""
     message_endswith: str = ""
+    message_length_limit = 2000
 
     def __init__(self,
                  message_router: AbstractMessageRouter,
@@ -100,6 +100,12 @@ class DiscordClient(discord.Client, BaseClient):
     async def on_ready(self):
         logger.log(f"- [DiscordClient]: App online on discord.")
 
+    async def send_message_segmented(self,
+                                     outgoing_message: Reply,
+                                     channel: any) -> None:
+        for segment in outgoing_message.segmented(self.message_length_limit):
+            await channel.send(segment)
+
     async def on_message(self, message: DiscordMessage) -> None:
         """
         Overloads on_message in discord.Client().The
@@ -134,7 +140,7 @@ class DiscordClient(discord.Client, BaseClient):
         if self.message_startswith and not msg_as_str.startswith(
                 self.message_startswith) \
                 or self.message_endswith and not msg_as_str.endswith(
-                self.message_endswith):
+            self.message_endswith):
             return
 
         async with message.channel.typing():
@@ -142,10 +148,9 @@ class DiscordClient(discord.Client, BaseClient):
                 reply = self.reply_to_message(discord_message)
                 if isinstance(reply, ReplyStream):
                     while reply.qsize():
-                        await discord_message.channel.send(reply.get().as_str())
-                        await asyncio.sleep(0.01)
+                        await self.send_message_segmented(reply.get(), message.channel)
                 else:
-                    await discord_message.channel.send(reply.as_str())
+                    await self.send_message_segmented(reply, message.channel)
             except Exception as e:
                 await discord_message.channel.send(
                     _generate_error_entry(discord_message, e).as_str())
